@@ -192,3 +192,7 @@ def tool_selection(request):
         request,
         'swatusers/tool_selection.html',
         context)
+
+@login_required
+def task_status(request):
+    return render(request, 'swatusers/task_status.html')
