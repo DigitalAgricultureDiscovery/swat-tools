@@ -55,6 +55,9 @@ urlpatterns = [
     # Select tool
     url(r'^tool_selection$', swatusers_views.tool_selection, name='tool_selection'),
 
+    # Task status
+    url(r'^task_status$', swatusers_views.task_status, name='task_status'),
+
     # SWAT LUU urls
     url(r'^swatluu$', swatluu_views.index, name='swatluu'),
     url(r'^swatluu/upload_swat_model_zip$', swatluu_views.upload_swat_model_zip, name='swatluu/upload_swat_model_zip'),
