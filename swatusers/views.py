@@ -7,6 +7,7 @@ from django.shortcuts import render, resolve_url
 from django.template.response import TemplateResponse
 from django.template import RequestContext
 from forms import ContactUsForm, LoginForm, RegistrationForm
+from models import UserTask
 
 import os
 import shutil
@@ -196,13 +197,21 @@ def tool_selection(request):
 
 @login_required
 def task_status(request):
+    # Query user tasks
+    user_tasks_query = UserTask.objects.filter(email=request.user.email)
+
+    if user_tasks_query:
+        user_tasks = []
+        for task in user_tasks_query:
+            user_tasks.append({
+                'name': task.task_id,
+                'stime': task.time_started,
+                'status': task.task_status,
+                'download': False,
+                })
+
     # Test data
     context = RequestContext(request)
-    context.push({
-        'task_items': [
-            {'name': 'name_test1', 'stime': 'stime_test1', 'status': 'status_test1', 'download': 'download_test1'},
-            {'name': 'name_test2', 'stime': 'stime_test2', 'status': 'status_test2', 'download': 'download_test2'}
-        ]
-    })
+    context.push({'task_items': user_tasks})
     
     return render(request, 'swatusers/task_status.html', context)
