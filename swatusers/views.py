@@ -200,8 +200,8 @@ def task_status(request):
     context = RequestContext(request)
     context.push({
         'task_items': [
-            {'id': 'id_test1', 'stime': 'stime_test1', 'status': 'status_test1', 'download': 'download_test1'},
-            {'id': 'id_test2', 'stime': 'stime_test2', 'status': 'status_test2', 'download': 'download_test2'}
+            {'name': 'name_test1', 'stime': 'stime_test1', 'status': 'status_test1', 'download': 'download_test1'},
+            {'name': 'name_test2', 'stime': 'stime_test2', 'status': 'status_test2', 'download': 'download_test2'}
         ]
     })
     
