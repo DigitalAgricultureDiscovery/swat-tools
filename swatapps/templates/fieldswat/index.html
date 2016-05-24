@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+
+{% load static %}
+
+    {# Load jquery resources #}
+
+    <script type='text/javascript'>
+        // Updates process message DOM after user clicks Process Button
+        function showProcess() {
+            document.getElementById(
+                'message_process')
+                    .innerHTML = 
+                        'Processing may take several minutes. ' +
+                        'Please wait. Do not refresh or close tab'; 
+        }
+
+        function executeQuery() {
+            $.ajax({
+                url: './getProgress',
+                async: false,
+                success: function(data) {
+
+                }
+            });
+            setTimeout(executeQuery, 5000);
+        }
+
+        // Load jquery date picker input
+        $(function() {
+            $(".datepicker").datepicker();
+        });
+
+        $(document).ready(function() {
+            $(".tool-title").text('Field SWAT');
+            $("#Help1").mouseover(function() {
+                $("#help1div").show();
+                $("#help1div").append(
+                    "<p id='message1'>The input should be a zip folder with " +
+                    "name same as the Swat folder that is compressed. The " +
+                    "input folder should contain all required data.</p>");    
+            });
+            $("#Help1").mouseout(function() {
+                $("#help1div").hide();
+                $("#message1").remove();
+            });
+
+            $("#Help2").mouseover(function() {
+                $("#help2div").show();
+                $("#help2div").append(
+                    "<p id='message2'>The input should be a zip folder with " +
+                    "name same as the Landuse folder that is compressed. The " +
+                    "input folder should contain all required data.</p>");
+            });
+            $("#Help2").mouseout(function() {
+                $("#help2div").hide();
+                $("#message2").remove();
+            });
+
+            $("#Help3").mouseover(function() {
+                $("#help3div").show();
+                $("#help3div").append(
+                    "<p id='message3'>Select your desired output and aggregation methods.</p>");
+            });
+            $("#Help3").mouseout(function() {
+                $("#help3div").hide();
+                $("#message3").remove(); 
+            });
+        });
+
+    </script>
+
+    <div class="row" style="padding-top: 15px;">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
+            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;">
+                <form id="form1" role="form" method="post" action="{% url 'fieldswat/upload_swat_model_zip' %}" enctype="multipart/form-data" style="text-align: left">
+                    {% csrf_token %}
+                    <label><b>SWAT Model Input:</b> &nbsp;</label>
+
+                    {% buttons %}
+                        <div align="left">
+                            <input style="display: inline; padding-bottom: 5px" id="SwatModel" type="file" name="swat_model_zip">
+                            <button id="upload1" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading').show();">Upload</button>
+                            <button id="Help1" type="button">?</button>
+                        {% if request.session.fieldswat_swat_model_dir %}
+                            <span class="icon" style="color: #33CC33; margin-left: 15px">
+                                <i class="glyphicon glyphicon glyphicon-ok"></i>
+                            </span>
+                        {% endif %}
+                        </div>
+                    {% endbuttons %}
+
+                    <div id="help1div" class="alert alert-info" role="alert"></div>
+                    <div id="loading" style="display: none; text-align: center">
+                        <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="padding-top: 15px">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
+            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;">
+                <form id="form4" role="form" method="post" action="{%  url 'fieldswat/select_year' %}" enctype="multipart/form-data" style="text-align: left">
+                    {% csrf_token %}
+                    <label><strong>Select Year:</strong> &nbsp;</label>
+                    <br>
+                    {% if fieldswat_unique_years %}
+                        {% for year in fieldswat_unique_years %}
+                            {% if forloop.counter0 == 0 %}
+                                <label class="radio-inline"><input type="radio" name="fieldswat_year" checked="checked" value="{{ year }}">{{ year }}</label>
+                            {% else %}
+                                <label class="radio-inline"><input type="radio" name="fieldswat_year" value="{{ year }}">{{ year }}</label>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    <br><br>
+                    {% buttons %}
+                        <div align="left">
+                            <button id="upload1" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading4').show();" {% if not request.session.fieldswat_swat_model_dir %}disabled{% endif %}>Select Year</button>
+                            {% if request.session.fieldswat_selected_year %}
+                                <span class="icon" style="color: #33CC33; margin-left: 15px">
+                                    <i class="glyphicon glyphicon glyphicon-ok"></i>
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endbuttons %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="padding-top: 15px;">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
+            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;">
+                <form id="form2" role="form" method="post" action="{% url 'fieldswat/upload_fields_shapefile_zip' %}" enctype="multipart/form-data" style="text-align: left">
+                    {% csrf_token %}
+                    <label><b>Field Shapes Folder:</b> &nbsp;</label>
+
+                    {% buttons %}
+                        <div align="left">
+                            <input style="display: inline; padding-bottom: 5px" id="fields_shapefile_zip" type="file" name="fields_shapefile_zip">
+                            <button id="upload1" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading2').show();" {% if not request.session.fieldswat_selected_year %}disabled{% endif %}>Upload</button>
+                            <button id="Help2" type="button">?</button>
+                        {% if request.session.fieldswat_fields_shapefile_filepath %}
+                            <span class="icon" style="color: #33CC33; margin-left: 15px">
+                                <i class="glyphicon glyphicon glyphicon-ok"></i>
+                            </span>
+                        {% endif %}
+                        </div>
+                    {% endbuttons %}
+
+                    <div id="help2div" class="alert alert-info" role="alert"></div>
+                    <div id="loading2" style="display: none; text-align: center">
+                        <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+   
+    <div class="row" style="padding-top: 15px;">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
+            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%; text-align: left;">
+                <form id="form3" role="form" method="post" action="{% url 'fieldswat/confirm_output_and_agg' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <label><b>Output: </b>&nbsp;</label>
+                    <br>
+                    {% if request.session.fieldswat_output_type == 'runoff' or request.session.fieldswat_output_type == none %}
+                        <label class="radio-inline"><input type="radio" name="fieldswat_output" checked="checked" value="runoff">Runoff</label>
+                        <label class="radio-inline"><input type="radio" name="fieldswat_output" value="sediment">Sediment</label>
+                    {% else %}
+                        <label class="radio-inline"><input type="radio" name="fieldswat_output" value="runoff">Runoff</label>
+                        <label class="radio-inline"><input type="radio" name="fieldswat_output" value="sediment" checked="checked">Sediment</label>
+                    {% endif %}
+                    <br><br>
+                    <label><b>Aggregation method: </b>&nbsp;</label>
+                    <br>
+                    {% if request.session.fieldswat_aggregation_method == 'mean' or request.session.fieldswat_output_type == none %}
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" checked="checked" value="mean">Mean</label>
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" value="mode">Mode</label>
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" value="geomean">GeoMean</label>
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" value="area_weighted_mean">Area Weighted Mean</label>
+                    {% elif request.session.fieldswat_aggregation_method == 'mode' %}
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" value="mean">Mean</label>
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" checked="checked" value="mode">Mode</label>
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" value="geomean">GeoMean</label>
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" value="area_weighted_mean">Area Weighted Mean</label>
+                    {% elif request.session.fieldswat_aggregation_method == 'geomean' %}
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" value="mean">Mean</label>
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" value="mode">Mode</label>
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" checked="checked" value="geomean">GeoMean</label>
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" value="area_weighted_mean">Area Weighted Mean</label>
+                    {% elif request.session.fieldswat_aggregation_method == 'area_weighted_mean' %}
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" value="mean">Mean</label>
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" value="mode">Mode</label>
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" value="geomean">GeoMean</label>
+                        <label class="radio-inline"><input type="radio" name="fieldswat_agg" checked="checked" value="area_weighted_mean">Area Weighted Mean</label>
+                    {% endif %}
+                    <br><br>
+                    {% buttons %}
+                        <div align="left">
+                            <button id="upload3" type="submit" class="btn btn-primary" value="Confirm" onclick="$('#loading3').show();" {% if not request.session.fieldswat_fields_shapefile_filepath %}disabled{% endif %}>Confirm</button>
+                            {% if request.session.fieldswat_output_type and request.session.fieldswat_aggregation_method %}
+                                <span class="icon" style="color: #33CC33; margin-left: 15px">
+                                    <i class="glyphicon glyphicon glyphicon-ok"></i>
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endbuttons %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="padding: 10px; width: 45%; max-width: 550px; min-width: 500px; margin: auto; text-align: center">
+        <form id="form6" role="form" method="post" action="{% url 'fieldswat/reset' %}" enctype="multipart/form-data" style="display: inline-block">
+        {% csrf_token %}
+            {% buttons %}
+                <button id="reset" type="submit" class="btn btn-warning" value="Reset">Reset</button>
+            {% endbuttons %}
+        </form>
+    
+        <form id="form7" role="form" method="post" action="{% url 'fieldswat/process' %}" enctype="multipart/form-data" style="display: inline-block">
+        {% csrf_token %}
+            {% buttons %}
+            <button id="Process" type="submit" class="btn btn-success" onClick="showProcess()"
+                {% if not request.session.fieldswat_swat_model_dir or not request.session.fieldswat_selected_year or not request.session.fieldswat_fields_shapefile_filepath or not request.session.fieldswat_output_type or not request.session.fieldswat_aggregation_method %}
+                    disabled
+                {% endif %}>Process
+            </button>
+            {% endbuttons %}
+        </form>
+
+    </div>
+
+    <div class="row" style="padding: 10px; width: 45%; max-width: 550px; min-width: 500px; margin: auto; text-align: center">
+        <div class="panel panel-default">
+            <div class="panel-heading" style="background-color: #fcf8e3">
+                <h3 class="panel-title" style="padding-top: 0px"><strong>Status</strong></h3>
+            </div>
+            <div class="panel-body">
+                <div id="progress">
+                    {% for message in request.session.progress_message %}
+                        <b id="message_process" style="color: #33CC33;">{{message }}</b><br/>
+                    {% endfor %}
+                    {% if request.session.error %}
+                        <b style ="color:#F92E31;">{{ request.session.error}}</b><br/>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

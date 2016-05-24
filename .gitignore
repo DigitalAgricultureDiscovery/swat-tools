@@ -1,0 +1,7 @@
+*.pyc
+static/*
+swatapps_venv/*
+swatapps/my.cnf
+swatapps/settings_secret.py
+swatusers/migrations/*
+user_data/*

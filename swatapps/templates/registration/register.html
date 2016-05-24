@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+ 
+    <div class="row" style="padding: 15px">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center">
+            <div class="inner-block">
+                <form role="form" method="post" action="./register" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% bootstrap_form form layout='inline' %}
+                    {% bootstrap_form_errors form layout='inline' %}
+                    {% buttons %}
+                        <div align="center">
+                            <button type="submit" class="btn btn-primary" style="width: 100">
+                                Register
+                            </button>
+                        </div>
+                    {% endbuttons %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

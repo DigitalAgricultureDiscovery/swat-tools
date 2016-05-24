@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% block title %}Contact Us{% endblock %}
+
+{% block content %}
+
+    <div class="row" style="padding: 15px">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center">
+            <div class="inner-block">
+                <form role="form" method="post" action="./contact_us" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% bootstrap_form form layout='inline' %}
+                    {% bootstrap_form_errors form layout='inline' %}
+                    {% buttons %}
+                        <div align="center">
+                            <button type="submit" class="btn btn-primary" style="width: 100" value="Send">
+                                Send
+                            </button>
+                            <button type="reset" class="btn btn-warning" style="width: 100" value="Reset">
+                                Reset
+                            </button>
+                        </div>
+                    {% endbuttons %}
+                </form>
+                {% if request.session.dberror %}
+                    <span class="label label-danger">{{ request.session.dberror }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

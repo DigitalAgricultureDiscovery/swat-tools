@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+
+    <div class="row" style="padding: 15px">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center">
+            <div class="inner-block">
+                {% if next %}
+                <form role="form" method="post" action="/login?next={{next}}" enctype="multipart/form-data">
+                {% else %}
+                <form role="form" method="post" action="{% url 'login' %}" enctype="multipart/form-data">
+                {% endif %}
+                    {% csrf_token %}
+                    {% bootstrap_form form layout='inline' %}
+                    {% bootstrap_form_errors form layout='inline' %}
+                    <div align="center">
+                        {% buttons %}
+                            <button type="submit" class="btn btn-primary" value="Login">
+                                Login
+                            </button>
+                            <a href="{% url 'password_reset' %}"><span style="margin-left: 5px">Forgot your password?</span></a>
+                        {% endbuttons %}
+                    </div>
+                </form>
+                {% if request.session.dberror %}
+                    <span class="label label-danger">{{ request.session.dberror }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

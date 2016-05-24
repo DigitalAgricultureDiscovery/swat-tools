@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+
+{% load static %}
+
+    {# Load jquery resources #}
+
+    <script type='text/javascript'>
+        // Updates process message DOM after user clicks Process Button
+        function showProcess() {
+            document.getElementById(
+                'message_process')
+                    .innerHTML = 
+                        'Processing may take several minutes. ' +
+                        'Please wait. Do not refresh or close tab'; 
+        }
+
+        // Load jquery date picker input
+        $(function() {
+            $(".datepicker").datepicker();
+        });
+
+        // Load popup help messages' mouseover and mouseout events
+        $(document).ready(function() {
+            $(".tool-title").text('SWAT LUU');
+            $("#Help1").mouseover(function() {
+                $("#help1div").show();
+                $("#help1div").append(
+                    "<p id='message1'>" +
+                    "The input should be a zip folder with name same " +
+                    "as the Swat folder that is compressed. The input " +
+                    "folder should contain all required data.</p>");
+            });
+            $("#Help1").mouseout(function() {
+                $("#help1div").hide();
+                $("#message1").remove();
+            });
+
+            $("#Help2").mouseover(function() {
+                $("#help2div").show();
+                $("#help2div").append(
+                    "<p id='message2'>" +
+                    "The input should be a zip folder with name same as " +
+                    "the Landuse folder that is compressed. The input " +
+                    "folder should contain all required data.</p>");
+            });
+            $("#Help2").mouseout(function() {
+                $("#help2div").hide();
+                $("#message2").remove();
+            });
+        
+            $("#Help3").mouseover(function() {
+                $("#help3div").show();
+                $("#help3div").append(
+                    "<p id='message3'>" +
+                    "Specify the number of land use files available. " +
+                    "Count should be greater than 1.</p>");
+            });
+            $("#Help3").mouseout(function() {
+                $("#help3div").hide();
+                $("#message3").remove();
+            });
+
+            $("#Help4").mouseover(function() {
+                $("#help4div").show();
+                $("#help4div").append(
+                    "<p id='message4'>" +
+                    "Select the land use files along with dates. " +
+                    "The files selected should be available in " +
+                    "Landuse folder in grid format.</p>");
+            });
+            $("#Help4").mouseout(function() {
+                $("#help4div").hide();
+                $("#message4").remove();
+            });
+
+            $("#Help5").mouseover(function() {
+                $("#help5div").show();
+                $("#help5div").append(
+                    "<p id='message5'>" +
+                    "Select the look up file containing land use codes.</p>");
+            });
+            $("#Help5").mouseout(function() {
+                $("#help5div").hide();
+                $("#message5").remove();
+            });
+        });
+    </script>
+
+    <!-- SWAT MODEL UPLOAD -->
+    <div class="row" style="padding-top: 15px;">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
+            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;">
+                <form id="form1" role="form" method="post" action="{% url 'swatluu/upload_swat_model_zip' %}" enctype="multipart/form-data" style="text-align: left">
+                    {% csrf_token %}
+                    <label><b>SWAT Model Input:</b> &nbsp;</label>
+                    
+                    {% buttons %}
+                        <div align="left">
+                            <input style="display: inline; padding-bottom: 5px" id="SwatModel" type="file" name="swat_model_zip">
+                            <button id="upload1" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading').show();">Upload</button>
+                            <button id="Help1" type="button">?</button>
+                        {% if request.session.swat_model_filepath %}
+                            <span class="icon" style="color: #33CC33; margin-left: 15px">
+                                <i class="glyphicon glyphicon glyphicon-ok"></i>
+                            </span>
+                        {% endif %}
+                        </div>
+                    {% endbuttons %}
+
+                    <div id="help1div" class="alert alert-info" role="alert"></div>
+                    <div id="loading" style="display: none; text-align: center">
+                        <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="padding-top: 5px">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
+            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;">
+                <form id="form2" role="form" method="post" action="{% url 'swatluu/upload_landuse_zip' %}" enctype="multipart/form-data" style="text-align: left">
+                    {% csrf_token %}
+                    <label><b>Landuse Folder: </b>&nbsp;</label>
+                    
+                    {% buttons %}
+                        <div align="left">
+                            <input style="display: inline; padding-bottom: 5px" id="Landuse" type="file" name="landuse_zip">
+                            <button id="upload2" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading1').show();" {% if not request.session.swat_model_filepath %}disabled{% endif %}>Upload</button>
+                            <button id="Help2" type="button">?</button>         
+                        {% if request.session.landuse_filepath %}
+                            <span class="icon" style="color: #33CC33; margin-left: 15px">
+                                <i class="glyphicon glyphicon glyphicon-ok"></i>
+                            </span>
+                        {% endif %}
+                        </div>
+                    {% endbuttons %}
+
+                    <div id="help2div" class="alert alert-info" role="alert"></div>
+                    <div id="loading1" style="display: none; text-align: center">
+                        <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="row" style="padding-top: 5px">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
+            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;; width: 45%;">
+                <form id="form3" role="form" method="post" action="{% url 'swatluu/select_number_of_landuse_layers' %}" enctype="multipart/form-data" style="text-align: left">
+                    {% csrf_token %}
+                    <label><b>No. of Landuse layers:</b> &nbsp;</label>
+                    
+                    {% buttons %}
+                        <div align="left">
+                            <input style="display: inline; padding-bottom: 5px" id="layersCount" type="text" name="landuse_layer_count" size="5"/>
+                            <button id="upload3" type="submit" class="btn btn-primary" value="OK" onclick="$('#loading6').show();"{% if not request.session.landuse_filepath %}disabled{% endif %}>OK</button>
+                            <button id="Help3" type="button">?</button>
+                        {% if request.session.landuse_layers_names %}
+                            <span class="icon" style="color: #33CC33; margin-left: 15px">
+                                <i class="glyphicon glyphicon glyphicon-ok"></i>
+                            </span>
+                        {% endif %}
+                        </div>
+                    {% endbuttons %}
+                    
+                    <div id="help3div" class="alert alert-info" role="alert"></div>
+                    <div id="loading6" style="display: none; text-align: center">
+                        <img src="{% static "Images/loading1.gif"%}" width="20" alt="" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="padding-top: 5px">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
+            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;">
+                <form id="form4" role="form" method="post" action="{% url 'swatluu/validate_selected_landuse_layers' %}" enctype="multipart/form-data" style="text-align: left">
+                    {% csrf_token %}
+                    {% if loop_times %} 
+                        {% for i in loop_times %}
+                            <label><b>Landuse layer{{ i }}: </b>&nbsp;</label>
+                            <div class="row" style="padding-bottom: 10px">
+                                <div class="col-sm-12 col-md-12 col-lg-12">
+                                    <input style="display: inline" type="file" name="landuse_layers" id="landuse_layers" />
+                                    <input class="datepicker" type="text" name="dates" style="width: 30%"/>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        {% buttons %}
+                            <div align="center">
+                                <button id="upload4" type="submit" class="btn btn-primary" value="Select">Select</button>
+                                <button id="Help4" type="button">?</button>
+                            </div>
+                        {% endbuttons %}
+                    
+                        <div id="help4div" class="alert alert-info" role="alert"></div>
+                    {% else %}
+                        <label><b> Landuse layer1:</b></label>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="padding-top: 5px">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
+            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;">
+                <form id="form5" role="form" method="post" action="{% url 'swatluu/upload_lookup_file' %}" enctype="multipart/form-data" style="text-align: left">
+                    {% csrf_token %}
+                    <label><b>Lookup File: </b>&nbsp;</label>
+                    
+                    {% buttons %}
+                        <div align="left">
+                            <input style="display: inline; padding-bottom: 5px" id="lookup_file" type="file" name="lookup_file">
+                            <button id="upload5" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading2').show();" {% if not request.session.landuse_layers_names %}disabled{% endif %}/>Upload</button>
+                            <button id="Help5" type="button">?</button>         
+                        {% if request.session.lookup_filepath %}
+                            <span class="icon" style="color: #33CC33; margin-left: 15px">
+                                <i class="glyphicon glyphicon glyphicon-ok"></i>
+                            </span>
+                        {% endif %}
+                        </div>
+                    {% endbuttons %}
+
+                    <div id="help5div" class="alert alert-info" role="alert"></div>
+                    <div id="loading2" style="display: none; text-align: center">
+                        <img src="{% static "Images/loading1.gif"%}" width="20" alt="" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="padding: 10px; width: 45%; max-width: 550px; min-width: 500px; margin: auto; text-align: center">
+        <form id="form6" role="form" method="post" action="{% url 'swatluu/reset' %}" enctype="multipart/form-data" style="display: inline-block">
+        {% csrf_token %}
+            {% buttons %}
+                <button id="reset" type="submit" class="btn btn-warning" value="Reset">Reset</button>
+            {% endbuttons %}
+        </form>
+    
+        <form id="form7" role="form" method="post" action="{% url 'swatluu/process' %}" enctype="multipart/form-data" style="display: inline-block">
+        {% csrf_token %}
+            {% buttons %}
+            <button id="Process" type="submit" class="btn btn-success" onClick="showProcess()"
+                {% if not request.session.landuse_layers_names or not request.session.lookup_filepath or not request.session.landuse_filepath or not request.session.swat_model_filepath %}
+                    disabled
+                {% endif %}>Process
+            </button>
+            {% endbuttons %}
+        </form>
+    </div>
+
+    <div class="row" style="padding: 10px; width: 45%; max-width: 550px; min-width: 500px; margin: auto; text-align: center">
+        <div class="panel panel-default">
+            <div class="panel-heading" style="background-color: #fcf8e3">
+                <h3 class="panel-title" style="padding-top: 0px"><strong>Status</strong></h3>
+            </div>
+            <div class="panel-body">
+                <div id="progress">
+                    {% for message in request.session.progress_message %}
+                        <b id="message_process" style="color: #33CC33;">{{message }}</b><br/>
+                    {% endfor %}
+                    {% if request.session.error %}
+                        <b style ="color:#F92E31;">{{ request.session.error}}</b><br/>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+{% endblock content %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% load staticfiles %}
+
+{% block title %}App Selection{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-sm-12 col-md-6 col-lg-6">
+            <div class="thumbnail">
+                <a href="{% url 'luuchecker' %}">
+                    <img style="max-height: 400px;" src="{% static "Images\luu_checker_home.png" %}" alt="LUU Checker Home">
+                </a>
+                <div class="caption">
+                    <h3>LUU Checker</h3>
+                    <p>LUU Checker compares multiple land use cover 
+                    datasets against a base layer on a subbasin level. 
+                    Emerging land use covers are detected and a user 
+                    defined percentage area of the new land use covers 
+                    is applied to the base raster in the relevant subbasins.</p>
+                    <p>
+                        <a style="text-decoration: none; color: white" href="{% url "luuchecker" %}" class="btn btn-success" role="button">Open</a>
+                        <a style="text-decoration: none;" target="_blank" href="{% static "luu_checker_user_manual.pdf" %}" class="btn btn-default" role="button">Manual</a>
+                        <a disabled title="Coming soon" style="text-decoration: none;" href="" class="btn btn-default" role="button">Video Tutorial</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-md-6 col-lg-6">
+            <div class="thumbnail">
+                <a href="{% url 'swatluu' %}">
+                    <img style="max-height: 400px;" src="{% static "Images\swat_luu_home.png" %}" alt="SWAT LUU Home">
+                </a>
+                <div class="caption">
+                    <h3>SWAT LUU</h3>
+                    <p>SWAT LUU is a geospatial tool that ingests multiple land 
+                    use/land cover geospatial datasets and other associated information 
+                    interactively and prepares the input files necessary for activating
+                    the land use update (LUU) module in SWAT.</p>
+                    <p>
+                        <a style="text-decoration: none; color: white" href="{% url "swatluu" %}" class="btn btn-success" role="button">Open</a>
+                        <a style="text-decoration: none;" target="_blank" href="{% static "swat_luu_user_manual.pdf" %}" class="btn btn-default" role="button">Manual</a>
+                        <a disabled title="Coming soon" style="text-decoration: none;" href="" class="btn btn-default" role="button">Video Tutorial</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12 col-md-6 col-lg-6">
+            <div class="thumbnail">
+                <a href="{% url 'uncertainty' %}">
+                    <img style="max-height: 400px;" src="{% static "Images\uncertainty_home.png" %}" alt="LUU Uncertainty">
+                </a>
+                <div class="caption">
+                    <h3>LUU Uncertainty</h3>
+                    <p>Small LULC errors can have a substantial effect on 
+                    watershed model output. LUU Uncertainty enables the user 
+                    to integrate LULC realizations in the SWAT model and 
+                    evaluate the sensitivity of SWAT output to LULC errors.</p>
+                    <p>
+                        <a style="text-decoration: none; color: white" href="{% url "uncertainty" %}" class="btn btn-success" role="button">Open</a>
+                        <a disabled style="text-decoration: none;" target="_blank" href="{% static "luu_uncertainty_user_manual.pdf" %}" class="btn btn-default" role="button">Manual</a>
+                        <a disabled title="Coming soon" style="text-decoration: none;" href="" class="btn btn-default" role="button">Video Tutorial</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-md-6 col-lg-6">
+            <div class="thumbnail">
+                <a href="{% url 'fieldswat' %}">
+                    <img style="max-height: 400px;" src="{% static "Images\fieldswat_home.png" %}" alt="Field SWAT">
+                </a>
+                <div class="caption">
+                    <h3>Field SWAT</h3>
+                    <p>Field SWAT is designed to map SWAT simulations from a 
+                    HRU layer to a user-defined field boundaries layer. The 
+                    tool ingests spatial and nonspatial SWAT ouputs and helps 
+                    in visualizing them at the field scale using four 
+                    different aggregation methods.</p>
+                    <p>
+                        <a style="text-decoration: none; color: white" href="{% url "fieldswat" %}" class="btn btn-success" role="button">Open</a>
+                        <a disabled style="text-decoration: none;" target="_blank" href="{% static "field_swat_user_manual.pdf" %}" class="btn btn-default" role="button">Manual</a>
+                        <a disabled title="Coming soon" style="text-decoration: none;" href="" class="btn btn-default" role="button">Video Tutorial</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
