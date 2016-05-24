@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, QueryDict
 from django.shortcuts import render, resolve_url
 from django.template.response import TemplateResponse
+from django.template import RequestContext
 from forms import ContactUsForm, LoginForm, RegistrationForm
 
 import os
@@ -195,4 +196,13 @@ def tool_selection(request):
 
 @login_required
 def task_status(request):
-    return render(request, 'swatusers/task_status.html')
+    # Test data
+    context = RequestContext(request)
+    context.push({
+        'task_items': [
+            {'id': 'id_test1', 'stime': 'stime_test1', 'status': 'status_test1', 'download': 'download_test1'},
+            {'id': 'id_test2', 'stime': 'stime_test2', 'status': 'status_test2', 'download': 'download_test2'}
+        ]
+    })
+    
+    return render(request, 'swatusers/task_status.html', context)

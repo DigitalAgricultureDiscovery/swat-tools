@@ -9,7 +9,28 @@
 <div class="row" style="padding: 15px">
     <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center">
         <div class="inner-block">
-
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Start Time</th>
+                    <th>Status</th>
+                    <th>Download</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% if task_items %}
+                {% for task in task_items %}
+                    <tr>
+                        <th>{{ task.id }}</th>
+                        <th>{{ task.stime }}</th>
+                        <th>{{ task.status }}</th>
+                        <th>{{ task.download }}</th>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+            </tbody>
+        </table>
         </div>
     </div>
 </div>
