@@ -117,7 +117,7 @@ def contact_us(request):
                         contact_form.cleaned_data['subject'],
                         contact_form.cleaned_data['message'],
                         request.user.get_full_name(),
-                        ['swat.luc.tool@gmail.com', 'ben.hancock@gmail.com'],
+                        ['swattoolspurdue@gmail.com'],
                         fail_silently=False)
                     if send_mail_status != 0:
                         return HttpResponseRedirect(
