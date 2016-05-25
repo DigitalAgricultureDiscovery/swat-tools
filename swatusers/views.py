@@ -244,8 +244,10 @@ def task_status(request):
                 'download': task_download_url,
                 })
 
-    # Test data
-    context = RequestContext(request)
-    context.push({'task_items': user_tasks})
+        # Test data
+        context = RequestContext(request)
+        context.push({'task_items': user_tasks})
     
-    return render(request, 'swatusers/task_status.html', context)
+        return render(request, 'swatusers/task_status.html', context)
+    else:
+        return render(request, 'swatusers/task_status.html')
