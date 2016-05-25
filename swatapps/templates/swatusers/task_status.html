@@ -24,17 +24,35 @@
                     <tbody>
                     {% if task_items %}
                         {% for task in task_items %}
-                            <tr>
+                            {% if task.download %}
+                            <tr class='list-group-item-success'>
+                            {% else %}
+                            <tr class='list-group-item-warning'>
+                            {% endif %}
                                 <th>{{ task.name }}</th>
                                 <th>{{ task.stime }}</th>
                                 <th>{{ task.status }}</th>
-                                <th>{{ task.download }}</th>
+                                <th>
+                                    {% if task.download %}
+                                    <a href="{{ task.download }}">Results Link</a>
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </th>
                             </tr>
                         {% endfor %}
                     {% endif %}
                     </tbody>
                 </table>
             </div>
+
+            <p>
+            The above table shows tasks submitted in the last 48 hours.
+            </p>
+            <p>Please <a title="Contact Us" href="{% url 'contact_us' %}">
+            contact us</a> if you are experiencing any issues.
+            </p>
+
         </div>
     </div>
 </div>

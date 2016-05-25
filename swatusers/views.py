@@ -203,11 +203,45 @@ def task_status(request):
     if user_tasks_query:
         user_tasks = []
         for task in user_tasks_query:
+            # Get name of tool
+            task_name = task.task_id.split('_')[2]
+            # Change to proper name
+            if task_name == 'luuchecker':
+                task_name = 'LUU Checker'
+            elif task_name == 'swatluu':
+                task_name = 'SWAT LUU'
+            elif task_name == 'uncertainty':
+                task_name = 'LUU Uncertainty'
+            elif task_name == 'fieldswat':
+                task_name = 'Field SWAT'
+            else:
+                task_name = 'Unknown'
+
+            # Download URL
+            task_download_url = False
+
+            # Set appropriate task status message
+            if int(task.task_status) == 0:
+                task_status = 'In progress'
+            elif int(task.task_status) == 1:
+                task_status = 'Complete'
+                if task_name == 'LUU Checker':
+                    task_download_url = 'https://saraswat-swat.rcac.purdue.edu/luuchecker/download_data?id=' + task.task_id
+                elif task_name == 'SWAT LUU':
+                    task_download_url = 'https://saraswat-swat.rcac.purdue.edu/swatluu/download_data?id=' + task.task_id
+                elif task_name == 'LUU Uncertainty':
+                    task_download_url = 'https://saraswat-swat.rcac.purdue.edu/uncertainty/download_data?id=' + task.task_id
+                elif task_name == 'Field SWAT':
+                    task_download_url = 'https://saraswat-swat.rcac.purdue.edu/fieldswat/download_data?id=' + task.task_id
+
+            else:
+                task_status = 'Error, please contact us.'
+
             user_tasks.append({
-                'name': task.task_id,
+                'name': task_name,
                 'stime': task.time_started,
-                'status': task.task_status,
-                'download': False,
+                'status': task_status,
+                'download': task_download_url,
                 })
 
     # Test data
