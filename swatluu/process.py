@@ -676,11 +676,13 @@ class SWATLUUProcess(object):
         self.logger.info('Sending user email with link to their data.')
         subject = 'SWAT LUU data is ready'
         message = 'Hi ' + self.user_first_name + ',<br><br>'
-        message += 'Your data has finished processing, please use the following link to retrieve your data: '
-        message += '<a href="https://saraswat-swat.rcac.purdue.edu/swatluu/download_data?id='
-        message += self.task_id + '">Data Link</a>. This link will expire on '
-        message += self.get_expiration_date() + ' (48 hours).'
-        message += '<br><br>Sincerely,<br>SWAT LUU Admin'
+        message += 'Your data has finished processing. Please sign in to '
+        message += 'the SWAT Tools website and go to the '
+        message += '<strong>Task Status</strong> page (found in the navigation menu). '
+        message += 'There you will find a record of your completed '
+        message += 'task and a link to download the results data. '
+        message += 'The link will expire on ' + self.get_expiration_date() 
+        message += ' (48 hours).<br><br>Sincerely,<br>SWAT Tools'
         try:
             send_mail_status = send_mail(
                 subject,
