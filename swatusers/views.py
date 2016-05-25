@@ -116,7 +116,7 @@ def contact_us(request):
                 try:
                     send_mail_status = send_mail(
                         contact_form.cleaned_data['subject'],
-                        contact_form.cleaned_data['message'],
+                        contact_form.cleaned_data['message'] + ' Sent from ' + request.user.email + '.',
                         request.user.get_full_name(),
                         ['swattoolspurdue@gmail.com'],
                         fail_silently=False)
