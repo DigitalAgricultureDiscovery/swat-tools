@@ -31,10 +31,20 @@
                             {% endif %}
                                 <th>{{ task.name }}</th>
                                 <th>{{ task.stime }}</th>
-                                <th>{{ task.status }}</th>
+                                <th>
+                                    {% if task.status %}
+                                    Complete
+                                    <br>
+                                    <span class="label label-success">(Finished: {{ task.etime }})</span>
+                                    {% else %}
+                                    In progress
+                                    {% endif %}
+                                </th>
                                 <th>
                                     {% if task.download %}
                                     <a href="{{ task.download }}">Results Link</a>
+                                    <br>
+                                    <span class="label label-warning">(Expires: {{ task.expiration }})</span>
                                     {% else %}
                                         N/A
                                     {% endif %}

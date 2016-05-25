@@ -9,6 +9,7 @@ from django.template import RequestContext
 from forms import ContactUsForm, LoginForm, RegistrationForm
 from models import UserTask
 
+import datetime
 import os
 import shutil
 
@@ -195,6 +196,25 @@ def tool_selection(request):
         'swatusers/tool_selection.html',
         context)
 
+def get_expiration_date(start_datetime):
+    """
+    Uses Python's datetime to calculate expiration date for processed data.
+
+    Parameters
+    ----------
+    start_datetime: datetime
+        Date and time (mm-dd-YYYY HH:MM:SS) the process
+        expiration countdown starts.
+
+    Returns
+    -------
+    date_string: string
+        Date and time (mm-dd-YYYY HH:MM:SS) 48 hours from the
+        start_datetime in string format.
+    """
+    return (start_datetime + datetime.timedelta(hours=48)).strftime("%m-%d-%Y %H:%M:%S")
+
+
 @login_required
 def task_status(request):
     # Query user tasks
@@ -222,9 +242,9 @@ def task_status(request):
 
             # Set appropriate task status message
             if int(task.task_status) == 0:
-                task_status = 'In progress'
+                task_status = False
             elif int(task.task_status) == 1:
-                task_status = 'Complete'
+                task_status = True
                 if task_name == 'LUU Checker':
                     task_download_url = 'https://saraswat-swat.rcac.purdue.edu/luuchecker/download_data?id=' + task.task_id
                 elif task_name == 'SWAT LUU':
@@ -239,9 +259,11 @@ def task_status(request):
 
             user_tasks.append({
                 'name': task_name,
-                'stime': task.time_started,
+                'stime': task.time_started.strftime("%m-%d-%Y %H:%M:%S"),
+                'etime': task.time_completed.strftime("%m-%d-%Y %H:%M:%S"),
                 'status': task_status,
                 'download': task_download_url,
+                'expiration': get_expiration_date(task.time_completed)
                 })
 
         # Test data
