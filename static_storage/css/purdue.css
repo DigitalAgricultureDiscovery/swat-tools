@@ -2350,7 +2350,7 @@ u {
 }
 }
 .top {
-    background-image: url("https://purdue.edu/purdue/images/templateElements/2015/stripes-tile.png");
+    background-image: url("../Images/purdue/stripes-tile.png");
     background-repeat: repeat;
     width: 100%;
 }
@@ -2714,7 +2714,7 @@ u {
 }
 }
 .content {
-    background-image: url("https://purdue.edu/purdue/images/homeBackground.jpg");
+    background-image: url("../Images/purdue/homeBackground.jpg");
     background-position: center center;
     background-size: cover;
 }
@@ -2756,7 +2756,7 @@ u {
     text-decoration: none;
 }
 .content .boxes {
-    background-image: url("https://purdue.edu/purdue/images/templateElements/2015/lighter50.png");
+    background-image: url("../Images/purdue/lighter50.png");
     background-repeat: repeat;
     padding: 10px 20px;
 }
@@ -5276,201 +5276,4 @@ a#trafficAlert {
 a#trafficAlert small {
     display: inline-block;
     margin-top: 7px;
-}
-@media (min-width: 1200px) {
-a#amazon {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-amazon-lg.jpg") !important;
-}
-a#amazon .divider {
-    background-color: #fff !important;
-}
-a#bgr {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-bgr-lg.jpg") !important;
-}
-a#careerFairs {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-careerFairs-lg.jpg") !important;
-}
-a#currentStudents {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-currentStudents-lg.jpg") !important;
-}
-a#daymond {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-daymondJohn-lg.jpg") !important;
-    font-size: 2.375em;
-}
-a#daymond .caption .subtext {
-    display: block;
-    font-size: 0.57895em;
-    line-height: 1em;
-    margin-top: 5px;
-}
-a#endangeredAnimals {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-tortoise-lg.jpg") !important;
-    font-size: 1.375em;
-    line-height: 1.09091em;
-}
-a#map {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-map-lg.jpg") !important;
-    background-position: center center;
-    background-size: cover;
-}
-a#presidentialLecture {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-duncan-lg.jpg") !important;
-    font-size: 1.75em;
-}
-a#presidentialLecture .caption .subtext {
-    display: block;
-    font-size: 0.71429em;
-    line-height: 1em;
-    margin-top: 5px;
-}
-}
-@media (min-width: 992px) and (max-width: 1199px) {
-a#amazon {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-amazon-md.jpg") !important;
-}
-a#amazon .divider {
-    background-color: #fff !important;
-}
-a#bgr {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-bgr-md.jpg") !important;
-}
-a#careerFairs {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-careerFairs-md.jpg") !important;
-}
-a#currentStudents {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-currentStudents-md.jpg") !important;
-}
-a#daymond {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-daymondJohn-md.jpg") !important;
-    font-size: 2.125em;
-}
-a#daymond .caption .subtext {
-    display: block;
-    font-size: 0.58824em;
-    line-height: 1em;
-    margin-top: 5px;
-}
-a#endangeredAnimals {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-tortoise-md.jpg") !important;
-    font-size: 1.125em !important;
-    line-height: 1.11111em !important;
-}
-a#map {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-map-md.jpg") !important;
-    background-position: center center;
-    background-size: cover;
-}
-a#presidentialLecture {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-duncan-md.jpg") !important;
-    font-size: 1.25em;
-    line-height: 1em;
-}
-a#presidentialLecture .caption .subtext {
-    display: block;
-    font-size: 0.9em;
-    line-height: 1em;
-    margin-top: 5px;
-}
-}
-@media (min-width: 768px) and (max-width: 991px) {
-a#amazon {
-    background-repeat: repeat !important;
-    background-size: auto auto !important;
-}
-a#bgr {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-bgr-sm.jpg") !important;
-}
-a#careerFairs {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-careerFairs-sm.jpg") !important;
-}
-a#currentStudents {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-currentStudents-sm.jpg") !important;
-}
-a#daymond {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-daymondJohn-sm.jpg") !important;
-    font-size: 2.375em;
-}
-a#daymond .caption .subtext {
-    display: block;
-    font-size: 0.57895em;
-    line-height: 1em;
-    margin-top: 5px;
-}
-a#endangeredAnimals {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-tortoise-sm.jpg") !important;
-}
-a#map {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-map-sm.jpg") !important;
-    background-position: center center;
-    background-size: cover;
-}
-a#presidentialLecture {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-duncan-sm.jpg") !important;
-    font-size: 1.75em;
-}
-a#presidentialLecture .caption .subtext {
-    display: block;
-    font-size: 0.64286em;
-    line-height: 1em;
-    margin-top: 5px;
-}
-a#yearRecords .caption .fa {
-    display: block;
-    font-size: 1.61538em;
-}
-}
-
-@media (max-width: 767px) {
-a#amazon {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-amazon-xs.jpg") !important;
-}
-a#amazon .divider {
-    background-color: #fff !important;
-}
-a#bgr {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-bgr-xs.jpg") !important;
-}
-a#careerFairs {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-careerFairs-xs.jpg") !important;
-}
-a#currentStudents {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-currentStudents-sm.jpg") !important;
-}
-a#daymond {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-daymondJohn-xs.jpg") !important;
-    font-size: 1.88889em;
-}
-a#daymond .caption .subtext {
-    display: block;
-    font-size: 0.58824em;
-    line-height: 1em;
-    margin-top: 5px;
-}
-a#endangeredAnimals {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-tortoise-xs.jpg") !important;
-}
-a#entrepreneurship .fa {
-    display: none;
-}
-a#entrepreneurship .text {
-    max-width: none;
-}
-a#map .fa {
-    color: #b1810b !important;
-    display: block;
-    font-size: 50px;
-}
-a#map .divider {
-    background-color: #b1810b !important;
-}
-a#presidentialLecture {
-    background-image: url("https://www.purdue.edu/purdue/images/homepage-duncan-xs.jpg") !important;
-    font-size: 1.55556em;
-}
-a#presidentialLecture .caption .subtext {
-    display: block;
-    font-size: 0.64286em;
-    line-height: 1em;
-    margin-top: 5px;
-}
 }
