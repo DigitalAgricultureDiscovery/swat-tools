@@ -19,6 +19,36 @@ a:link {
     text-decoration: underline;
 }
 
+/* Acknowledgements */
+#acknowledgements {
+    background-color: #F0F0F0;
+    padding: 15px;
+}
+
+#acknowledgements img {
+    width: 100%;
+    height: auto;
+}
+
+#acknowledgements p {
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.hcenter{
+    text-align: center;
+}
+
+/* Footer */
+#footer {
+    background-image: url(./images/abe_footer.jpg);
+    background-position: top center;
+}
+
+footer, #content:after {
+    height: 248px;
+}
+
 .help-block {
     font-size: .7em;
 }
