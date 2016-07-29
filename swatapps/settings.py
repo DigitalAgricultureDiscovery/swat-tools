@@ -43,6 +43,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['saraswat-swat.rcac.purdue.edu']
 
+ADMINS = [('Ben Hancock', 'hancocb@purdue.edu'), ('Dharmendra Saraswat', 'saraswat@purdue.edu')]
+
 FILE_UPLOAD_PERMISSIONS = '0o644'
 MAX_UPLOAD_SIZE = '1073741824'
 

@@ -120,7 +120,7 @@ def contact_us(request):
                         from_email='SWAT Tools',
                         recipient_list=['swattoolspurdue@gmail.com'],
                         fail_silently=False,
-                        html_message=contact_form.cleaned_data['message'] + '<br><br>Sent from ' + request.user.get_full_name() + '. <a href="mailto:' + request.user.email + '">CLICK HERE TO REPLY</a>.'
+                        html_message=contact_form.cleaned_data['message'] + '<br><br>Sent by ' + request.user.get_full_name() + ' (<a href="mailto:' + request.user.email + '">' + request.user.email + '</a>).'
                     )
                     if send_mail_status != 0:
                         return HttpResponseRedirect(
