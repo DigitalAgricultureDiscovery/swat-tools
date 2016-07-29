@@ -115,11 +115,13 @@ def contact_us(request):
             if contact_form.is_valid():
                 try:
                     send_mail_status = send_mail(
-                        contact_form.cleaned_data['subject'],
-                        contact_form.cleaned_data['message'] + ' Sent from ' + request.user.email + '.',
-                        request.user.get_full_name(),
-                        ['swattoolspurdue@gmail.com'],
-                        fail_silently=False)
+                        subject=contact_form.cleaned_data['subject'],
+                        message='',
+                        from_email='SWAT Tools',
+                        recipient_list=['swattoolspurdue@gmail.com'],
+                        fail_silently=False,
+                        html_message=contact_form.cleaned_data['message'] + '<br><br>Sent from ' + request.user.get_full_name() + '. <a href="mailto:' + request.user.email + '">CLICK HERE TO REPLY</a>.'
+                    )
                     if send_mail_status != 0:
                         return HttpResponseRedirect(
                             resolve_url('contact_us_done'))
