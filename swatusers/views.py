@@ -8,6 +8,7 @@ from django.template.response import TemplateResponse
 from django.template import RequestContext
 from forms import ContactUsForm, LoginForm, RegistrationForm
 from models import UserTask
+from swatapps.settings import ADMINS
 
 import datetime
 import os
@@ -118,7 +119,7 @@ def contact_us(request):
                         subject=contact_form.cleaned_data['subject'],
                         message='',
                         from_email='SWAT Tools',
-                        recipient_list=['swattoolspurdue@gmail.com'],
+                        recipient_list=[i[1] for i in ADMINS],
                         fail_silently=False,
                         html_message=contact_form.cleaned_data['message'] + '<br><br>Sent by ' + request.user.get_full_name() + ' (<a href="mailto:' + request.user.email + '">' + request.user.email + '</a>).'
                     )
