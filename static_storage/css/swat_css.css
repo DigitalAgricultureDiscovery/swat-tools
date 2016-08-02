@@ -19,6 +19,15 @@ a:link {
     text-decoration: underline;
 }
 
+.navbar-default .navbar-nav .open .dropdown-menu>li>a {
+    color: #000000;
+    text-decoration: none;
+}
+
+.navbar-default .navbar-toggle:focus {
+    background-color: none;
+}
+
 /* Acknowledgements */
 #acknowledgements {
     background-color: #F0F0F0;
@@ -162,7 +171,7 @@ footer, #content:after {
     background-color: #FFF;
 }
 
-.navbar-default .navbar-toggle:focus, .navbar-default .navbar-toggle:hover .icon-bar {
+.navbar-default .navbar-toggle:hover .icon-bar {
     background-color: #000;
 }
 
