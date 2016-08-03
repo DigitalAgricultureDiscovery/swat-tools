@@ -244,10 +244,11 @@ def task_status(request):
             task_download_url = False
 
             # Set appropriate task status message
+            print "task_status: task.task_status"
             if int(task.task_status) == 0:
-                task_status = False
+                task_status = 'processing'
             elif int(task.task_status) == 1:
-                task_status = True
+                task_status = 'done'
                 if task_name == 'LUU Checker':
                     task_download_url = 'https://saraswat-swat.rcac.purdue.edu/luuchecker/download_data?id=' + task.task_id
                 elif task_name == 'SWAT LUU':
@@ -256,9 +257,8 @@ def task_status(request):
                     task_download_url = 'https://saraswat-swat.rcac.purdue.edu/uncertainty/download_data?id=' + task.task_id
                 elif task_name == 'Field SWAT':
                     task_download_url = 'https://saraswat-swat.rcac.purdue.edu/fieldswat/download_data?id=' + task.task_id
-
             else:
-                task_status = 'Error, please contact us.'
+                task_status = 'error'
 
             user_tasks.append({
                 'name': task_name,

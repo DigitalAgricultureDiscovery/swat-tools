@@ -20,7 +20,13 @@
 
         // Load jquery date picker input
         $(function() {
-            $(".datepicker").datepicker();
+            $(".datepicker").datepicker({
+                buttonImage: "/static/Images/calendar.gif",
+                buttonImageOnly: true,
+                buttonText: "Select start date",
+                showOn: "button",
+                maxDate: ('+D'),
+            });
         });
 
         // Load popup help messages' mouseover and mouseout events
@@ -190,7 +196,7 @@
                             <div class="row" style="padding-bottom: 10px">
                                 <div class="col-sm-12 col-md-12 col-lg-12">
                                     <input style="display: inline" type="file" name="landuse_layers" id="landuse_layers" />
-                                    <input class="datepicker" type="text" name="dates" style="width: 30%"/>
+                                    Date: <input class="datepicker" placeholder="MM/DD/YYYY" type="text" name="dates" style="width: 30%"/>
                                 </div>
                             </div>
                         {% endfor %}

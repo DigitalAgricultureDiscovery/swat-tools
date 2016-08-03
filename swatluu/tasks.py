@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from celery import shared_task
 
 from swatapps.celery import app
 from swatluu.process import SWATLUUProcess
@@ -26,4 +25,4 @@ def process_task(data):
     process.copy_results_to_depot()
     process.clean_up_input_data()
     process.email_user_link_to_results()
-    process.update_task_status_in_database()
+    #process.update_task_status_in_database()

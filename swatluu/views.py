@@ -1,28 +1,18 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, render_to_response, resolve_url
-from django.core.signals import request_finished
+from django.shortcuts import render, resolve_url
 from django.template import RequestContext
 from django.template.response import TemplateResponse
-from numpy.core.fromnumeric import nonzero
 from swatusers.models import UserTask
 from tasks import process_task
 
 import csv
-import django.dispatch
 import datetime
-import distutils.core
 import glob
 import io
-import json
-import math
-import numpy
 import os
-import random
 import shutil
-import stat
-import subprocess
 import zipfile
 
 
@@ -97,24 +87,48 @@ def upload_swat_model_zip(request):
     if request.method == 'POST':
         if 'swat_model_zip' in request.FILES:
             # Get the uploaded file and store the name of the zip
-            file = request.FILES['swat_model_zip']
-            filename = file.name
-            swat_model_file = os.path.splitext(filename)
-            swat_model_filename = swat_model_file[0]
-            swat_model_file_ext = swat_model_file[1]
+            try:
+                file = request.FILES['swat_model_zip']
+                filename = file.name
+                swat_model_file = os.path.splitext(filename)
+                swat_model_filename = swat_model_file[0]
+                swat_model_file_ext = swat_model_file[1]
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('swatluu'))
 
-            # Create base working directory now that user has uploaded a file
-            create_working_directory(request)
-            unique_path = request.session.get('directory')
+            try:
+                # Create base working directory now that user has uploaded a file
+                create_working_directory(request)
+                unique_path = request.session.get('directory')
+            except:
+                request.session['error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect
 
-            # If the SWAT Model directory already exists, remove it to make way for new upload
-            if os.path.exists(unique_path + '/input/' + swat_model_filename):
-                shutil.rmtree(unique_path + '/input/' + swat_model_filename)
+            try:
+                # If the SWAT Model directory already exists, remove it to make way for new upload
+                if os.path.exists(unique_path + '/input/' + swat_model_filename):
+                    shutil.rmtree(unique_path + '/input/' + swat_model_filename)
+            except:
+                request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
+                                           'to reset the tool. If the issue persists please use the Contact Us ' + \
+                                           'form to request further assistance from the site admins.'
+                return HttpResponseRedirect(resolve_url('swatluu'))
 
-            # Read uploaded file into tmp directory
-            with open(unique_path + '/input/' + filename, 'wb+') as destination:
-                for chunk in file.chunks():
-                    destination.write(chunk)
+            try:
+                # Read uploaded file into tmp directory
+                with open(unique_path + '/input/' + filename, 'wb+') as destination:
+                    for chunk in file.chunks():
+                        destination.write(chunk)
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('swatluu'))
 
             try:
                 # Unzip uploaded file in tmp directory
@@ -126,8 +140,9 @@ def upload_swat_model_zip(request):
                 # Remove uploaded zip file
                 os.remove(unique_path + '/input/' + swat_model_filename + swat_model_file_ext)
             except:
-                request.session['error'] = 'Could not unzip the folder. ' + \
-                                           'Please contact administrator'
+                request.session['error'] = 'Unable to unzip the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('swatluu'))
 
             # Check if decompression completed or failed (no folder if failed)
@@ -137,7 +152,10 @@ def upload_swat_model_zip(request):
                                            'Please check if the file is ' + \
                                            'compressed in zip format and ' + \
                                            'has the same name as ' + \
-                                           'compressed folder.'
+                                           'compressed folder. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('swatluu'))
             
             # Check if the required files/folders exist
@@ -154,7 +172,10 @@ def upload_swat_model_zip(request):
                                            swat_model_filename + '". Please ' + \
                                            'check if the file is compressed ' + \
                                            'in zip format and has the same ' + \
-                                           'name as compressed folder.'
+                                           'name as compressed folder. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('swatluu'))
             
             # Check if hru files were found
@@ -165,7 +186,10 @@ def upload_swat_model_zip(request):
                                            '/Scenarios/Default/TxtInOut/' + \
                                            '*.hru. Please check for files ' + \
                                            'in folder and re-upload the ' + \
-                                           'zip file.'
+                                           'zip file. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('swatluu'))
             
             # Check if watershed folder was found
@@ -174,7 +198,10 @@ def upload_swat_model_zip(request):
                                            swat_model_filename + \
                                            '/Watershed/Shapes/hru1.shp. ' + \
                                            'Please check for files in ' + \
-                                           'folder and re-upload the zip file.'
+                                           'folder and re-upload the zip file. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('swatluu'))
             
             # If there were no issues finding the required SWAT Model paths
@@ -211,21 +238,39 @@ def upload_landuse_zip(request):
     if request.method == 'POST':
         if 'landuse_zip' in request.FILES:
             # Get uploaded file and store the name of the zip
-            file = request.FILES['landuse_zip']
-            filename = file.name
-            landuse_filename = os.path.splitext(filename)[0]
+            try:
+                file = request.FILES['landuse_zip']
+                filename = file.name
+                landuse_filename = os.path.splitext(filename)[0]
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('swatluu'))
 
             # Set up the working directory
             unique_path = request.session.get('directory')
 
-            # If an input directory already exists, remove it
-            if os.path.exists(unique_path + '/input/' + landuse_filename):
-                shutil.rmtree(unique_path + '/input/' + landuse_filename)
+            try:
+                # If an input directory already exists, remove it
+                if os.path.exists(unique_path + '/input/' + landuse_filename):
+                    shutil.rmtree(unique_path + '/input/' + landuse_filename)
+            except:
+                request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
+                                           'to reset the tool. If the issue persists please use the Contact Us ' + \
+                                           'form to request further assistance from the site admins.'
+                return HttpResponseRedirect(resolve_url('swatluu'))
 
             # Copy the data to the path
-            with open(unique_path + '/input/' + filename, 'wb+') as destination:
-                for chunk in file.chunks():
-                    destination.write(chunk)
+            try:
+                with open(unique_path + '/input/' + filename, 'wb+') as destination:
+                    for chunk in file.chunks():
+                        destination.write(chunk)
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('swatluu'))
 
             try:
                 # Unzip the landuse data
@@ -241,7 +286,10 @@ def upload_landuse_zip(request):
             except:
                 # Create error message if unzip failed
                 request.session['error'] = 'Could not unzip the folder. ' + \
-                                           'Please contact the administrator.'
+                                           'If the issue ' + \
+                                           'persists please use the Contact ' + \
+                                           'Us form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('swatluu'))
 
             # Check if unzipped folder exists
@@ -250,7 +298,10 @@ def upload_landuse_zip(request):
                                            landuse_filename + '". Please ' + \
                                            'check if the file is compressed ' + \
                                            'in zip format and has the same ' + \
-                                           'name as compressed folder.'
+                                           'name as compressed folder. If the issue ' + \
+                                           'persists please use the Contact ' + \
+                                           'Us form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('swatluu'))
 
             # Update relevant session variables
@@ -274,27 +325,28 @@ def select_number_of_landuse_layers(request):
 
     # If user made a post request
     if request.method == 'POST':
-        
-        # Get the posted landuse layer count value
-        landuse_layer_count = request.POST.get('landuse_layer_count')
+        try:
+            # Get the posted landuse layer count value
+            landuse_layer_count = request.POST.get('landuse_layer_count')
+        except:
+            request.session['error'] = 'Error with submitted value, please try again. If the issue ' + \
+                                       'persists please use the Contact Us form to request further assistance ' + \
+                                       'from the site admins.'
+            return HttpResponseRedirect(resolve_url('swatluu'))
+
         try:
             # Try converting the count to an integer
             landuse_layer_count = int(landuse_layer_count)
         except ValueError:
             # If it fails, display error
-            request.session['error'] = 'Please enter a number.'
+            request.session['error'] = 'Please enter an integer.'
             return HttpResponseRedirect(resolve_url('swatluu'))
         
         # If no value was posted, display error
-        if not landuse_layer_count:
-            request.session['error'] = 'Please enter a value greater than 0.'
-            return HttpResponseRedirect(resolve_url('swatluu'))
-        
-        # If value posted, but less than 1, display error
         if landuse_layer_count < 1:
-            request.session['error'] = 'Please enter a value greater than 0.'
+            request.session['error'] = 'Please enter an integer greater than 0.'
             return HttpResponseRedirect(resolve_url('swatluu'))
-        
+
         # Update relevant session variable
         request.session['landuse_layer_count'] = landuse_layer_count
         
@@ -304,7 +356,7 @@ def select_number_of_landuse_layers(request):
         context.push({
             'loop_times': [i + 1 for i in range(landuse_layer_count)]
         })
-        
+
         return render(request, 'swatluu/index.html', context)
     else:
         # No data posted, reload main page
@@ -323,10 +375,15 @@ def validate_selected_landuse_layers(request):
     
     # If user made a post request
     if request.method == 'POST':
- 
-        # Get the dates if available and recall the landuse layer count
-        dates = request.POST.getlist('dates')
-        landuse_layer_count = request.session.get('landuse_layer_count')
+        try:
+            # Get the dates if available and recall the landuse layer count
+            dates = request.POST.getlist('dates')
+            landuse_layer_count = request.session.get('landuse_layer_count')
+        except:
+            request.session['error'] = 'Unable to receive the dates, please try again. If the issue ' + \
+                                       'persists please use the Contact Us form to request further assistance ' + \
+                                       'from the site admins.'
+            return HttpResponseRedirect(resolve_url('swatluu'))
 
         # Confirm that the number of submitted dates matches the
         # number of selected landuse layers
@@ -339,12 +396,20 @@ def validate_selected_landuse_layers(request):
         try:
             for date in dates:
                 day = date.split('/')
-                request.session['years'].append(day[2])
-                request.session['months'].append(day[0])
-                request.session['day'].append(day[1])
+                if (datetime.datetime.now() - datetime.datetime(int(day[2]), int(day[0]), int(day[1]))).days < 0:
+                    request.session['error'] = 'Please do not select a date that has not occurred yet. ' + \
+                                               'The selected date should be the start date for the ' + \
+                                               'corresponding landuse layer.'
+                    return HttpResponseRedirect(resolve_url('swatluu'))
+                else:
+                    request.session['years'].append(day[2])
+                    request.session['months'].append(day[0])
+                    request.session['day'].append(day[1])
         except IndexError:
-            request.session['error'] = 'Please make sure you are selecting ' + \
-                                       'a date for each landuse layer.'
+            request.session['error'] = 'Please make sure the date you are entering ' + \
+                                       'is in the required format: MM/DD/YYYY. Click the ' + \
+                                       'calendar icon and select your date from the popup calendar ' + \
+                                       'to guarantee the correct format is used.'
             return HttpResponseRedirect(resolve_url('swatluu'))
 
         # Collect the selected landuse layers (.aux) if they are available
@@ -362,17 +427,21 @@ def validate_selected_landuse_layers(request):
             # Loop through each landuse layer file
             for landuse_layer in landuse_layer_files:
                 if not landuse_layer:
-                    request.session['error'] = 'Please seelct a landuse file ' + \
+                    request.session['error'] = 'Please select a landuse file ' + \
                                                'for each input box.'
                     request.session['landuse_layers_names'] = []
                     return HttpResponseRedirect(resolve_url('swatluu'))
  
                 # Get filenames and filepaths
-                landuse_layer_filename = os.path.splitext(
-                    landuse_layer.name)[0]
-                landuse_layer_filepath = request.session.get(
-                    'landuse_filepath') + '/' + landuse_layer_filename \
-                    + '/w001001.adf'
+                try:
+                    landuse_layer_filename = os.path.splitext(landuse_layer.name)[0]
+                    landuse_layer_filepath = request.session.get(
+                        'landuse_filepath') + '/' + landuse_layer_filename + \
+                        '/w001001.adf'
+                except:
+                    request.session['error'] = 'Unable to match selected layers with layers uploaded ' + \
+                                               'in the Landuse Folder input. Make sure you are selecting ' + \
+                                               'the .aux files.'
  
                 # Reset progress messages
                 request.session['progress_message'] = []
@@ -418,22 +487,33 @@ def upload_lookup_file(request):
             lookup_filename = request.FILES['lookup_file'].name
             unique_path = request.session['directory']
 
-            # Check if path to lookup file already exists and if so remove it
-            if os.path.exists(unique_path + '/input/' + lookup_filename):
-                os.remove(unique_path + '/input/' + lookup_filename)
+            try:
+                # Check if path to lookup file already exists and if so remove it
+                if os.path.exists(unique_path + '/input/' + lookup_filename):
+                    os.remove(unique_path + '/input/' + lookup_filename)
+            except:
+                request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
+                                           'to reset the tool. If the issue persists please use the Contact Us ' + \
+                                           'form to request further assistance from the site admins.'
+                return HttpResponseRedirect(resolve_url('swatluu'))
 
-            # Open the lookup file and write it to a new file
-            with open(unique_path + '/input/' + lookup_filename, 'wb+') as destination:
-                for chunk in lookup_file.chunks():
-                    destination.write(chunk)
-            
-            # Set file permissions 
+            try:
+                # Open the lookup file and write it to a new file
+                with open(unique_path + '/input/' + lookup_filename, 'wb+') as destination:
+                    for chunk in lookup_file.chunks():
+                        destination.write(chunk)
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('swatluu'))
+
+            # Set file permissions
             fix_file_permissions(unique_path + '/input/' + lookup_filename)
 
             # Set session variables for the lookup file and update progress
             request.session['lookup_file'] = lookup_filename
-            request.session['lookup_filepath'] = unique_path + '/input/' + \
-                lookup_filename
+            request.session['lookup_filepath'] = unique_path + '/input/' + lookup_filename
             request.session['progress_message'] = []
             request.session['progress_message'].append('Lookup file uploaded.')
 
@@ -462,10 +542,18 @@ def upload_lookup_file(request):
                     return HttpResponseRedirect(resolve_url('swatluu'))
                 lookup_info.append(row)
 
-            # Split up lookup codes and lookup class names
-            for i in range(len(lookup_info)):
-                lookup_info[i][0] = lookup_info[i][0].strip()
-                lookup_info[i][1] = lookup_info[i][1].strip()
+            try:
+                # Split up lookup codes and lookup class names
+                for i in range(len(lookup_info)):
+                    lookup_info[i][0] = lookup_info[i][0].strip()
+                    if i > 0:
+                        int(lookup_info[i][0].strip())
+                    lookup_info[i][1] = lookup_info[i][1].strip()
+            except:
+                request.session['error'] = 'Error occurred while trying to find the lookup ' + \
+                                           'codes and class names in the uploaded file. Please ' + \
+                                           'make sure the lookup file is in the csv format (see ' + \
+                                           'guide for help).'
 
             # Add lookup content to session variable
             request.session['lookup_file_data'] = lookup_info
@@ -514,18 +602,21 @@ def runit(request):
         'landuse_days': request.session.get('day'),
         'landuse_layers_names': request.session.get('landuse_layers_names'),
     }
+    print request.session['error']
+    if not request.session['error']:
+        # run task
+        process_task.delay(data)
 
-    # run task
-    process_task.delay(data)
+        # add task id to database
+        add_task_id_to_database(data['user_id'], data['user_email'], data['task_id'])
 
-    # add task id to database
-    add_task_id_to_database(data['user_id'], data['user_email'], data['task_id'])
+        request.session['progress_message'].append(
+            'Job successfully added to queue. You will receive an email with ' + \
+            'a link to your files once the processing has completed.')
 
-    request.session['progress_message'].append(
-        'Job successfully added to queue. You will receive an email with ' + \
-        'a link to your files once the processing has completed.')
-
-    return render(request, 'swatluu/index.html')
+        return render(request, 'swatluu/index.html')
+    else:
+        return HttpResponseRedirect(resolve_url('swatluu'))
 
 
 def add_task_id_to_database(user_id, user_email, task_id):

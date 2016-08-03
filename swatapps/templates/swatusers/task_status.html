@@ -24,29 +24,41 @@
                     <tbody>
                     {% if task_items %}
                         {% for task in task_items %}
-                            {% if task.download %}
-                            <tr class='list-group-item-success'>
+                            {% if task.status == 'done' %}
+                                <tr class='list-group-item-success'>
+                            {% elif task.status == 'processing' %}
+                                <tr class='list-group-item-warning'>
+                            {% elif task.status == 'error' %}
+                                <tr class='list-group-item-danger'>
                             {% else %}
-                            <tr class='list-group-item-warning'>
+                                <tr class='list-group-item-danger'>
                             {% endif %}
                                 <th>{{ task.name }}</th>
                                 <th>{{ task.stime }}</th>
                                 <th>
-                                    {% if task.status %}
-                                    Complete
-                                    <br>
-                                    <span class="label label-success">(Finished: {{ task.etime }})</span>
+                                    {% if task.status == 'done' %}
+                                        Complete
+                                        <br>
+                                        <span class="label label-success">(Finished: {{ task.etime }})</span>
+                                    {% elif task.status == 'processing' %}
+                                        Processing
+                                    {% elif task.status == 'error' %}
+                                        Error
                                     {% else %}
-                                    In progress
+                                        Unknown error
                                     {% endif %}
                                 </th>
                                 <th>
-                                    {% if task.download %}
+                                    {% if task.status == 'done' %}
                                     <a href="{{ task.download }}">Results Link</a>
                                     <br>
                                     <span class="label label-warning">(Expires: {{ task.expiration }})</span>
-                                    {% else %}
+                                    {% elif task.status == 'processing' %}
                                         N/A
+                                    {% elif task.status == 'error' %}
+                                        <a title="Contact Us" href="{% url 'contact_us' %}">Contact us</a>
+                                    {% else %}
+                                        Unknown error
                                     {% endif %}
                                 </th>
                             </tr>

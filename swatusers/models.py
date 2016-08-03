@@ -69,6 +69,6 @@ class UserTask(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     email = models.EmailField()
     task_id = models.CharField(max_length=100)
-    task_status = models.BooleanField()
+    task_status = models.PositiveSmallIntegerField()
     time_started = models.DateTimeField(auto_now_add=True)
     time_completed = models.DateTimeField()

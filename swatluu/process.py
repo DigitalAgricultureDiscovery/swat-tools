@@ -5,18 +5,15 @@ from swatusers.models import UserTask
 import csv
 import datetime
 import geotools
-import json
 import logging
 import math
 import numpy as np
 import os
 import shutil
-import subprocess
 import swattools
 
 
 class SWATLUUProcess(object):
-
 
     def __init__(self, data=""):
         """
@@ -68,7 +65,6 @@ class SWATLUUProcess(object):
         self.hru_files_data = []
         self.unique_subbasin_ids = []
 
-
     def setup_logger(self):
         # Initialize logger for requested process and set header
         self.logger = logging.getLogger(__name__)
@@ -82,7 +78,6 @@ class SWATLUUProcess(object):
         self.logger.info('User: ' + self.user_email)
         self.logger.info('Task started.')
         self.logger.info('Initializing variables.')
-
 
     def start(self):
         """
@@ -105,6 +100,8 @@ class SWATLUUProcess(object):
                 self.results_dir + '/Raster/hrus1/hrus1.tif')
         except Exception:
             self.logger.exception('Unable to convert raster from .adf to .tif.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise
 
         # merge non-dominant hrus into nearby dominant hrus
         self.merge_thresholds()
@@ -117,7 +114,6 @@ class SWATLUUProcess(object):
 
         # calculate new fractional areas using the uploaded landuse layers
         self.calculate_new_fractional_areas()
-
 
     def create_output_dir(self):
         """
@@ -147,7 +143,6 @@ class SWATLUUProcess(object):
 
         shutil.copytree(self.hrus1_dir, results_dir + '/Raster/hrus1')
 
-
     def create_lupdat_file(self):
         """
         Creates the lup.dat file. The lup.dat file must be written
@@ -174,6 +169,8 @@ class SWATLUUProcess(object):
             lup_file = open(self.results_dir + '/lup.dat', 'a')
         except IOError:
             self.logger.exception('Unable to open the lup.dat file.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise
 
         self.logger.info('Extracting information about landuse layers\' dates.')
         # loop through landuse layers and pull out date information provided by user
@@ -192,6 +189,8 @@ class SWATLUUProcess(object):
                 geotools.convert_adf_to_tif(layer_path, converted_layer_path)
             except Exception:
                 self.logger.exception('Unable to convert raster from .adf to .tif.')
+                UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+                raise
 
             # write the date and file into lup.dat
             self.logger.info('Adding landuse layer, ' + layer_name + ', to lup.dat.')
@@ -207,7 +206,6 @@ class SWATLUUProcess(object):
         lup_file.close()
 
         self.landuse_layers_data = landuse_layers_data
-
 
     def extract_lookup_info(self):
         """
@@ -229,6 +227,8 @@ class SWATLUUProcess(object):
             lookup_file = csv.reader(open(self.lookup_filepath, 'r'), delimiter=',')
         except:
             self.logger.exception('Unable to open the lookup file.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise
 
         # append lookup codes and values to list, throw error if 0 is used
         lookup_info = []
@@ -240,7 +240,6 @@ class SWATLUUProcess(object):
             lookup_info.append([row[0].strip(), row[1].strip()])
 
         self.lookup_info = lookup_info
-
 
     def merge_thresholds(self):
         """
@@ -272,6 +271,8 @@ class SWATLUUProcess(object):
             hrus, hru_info = geotools.read_raster(self.results_dir + '/Raster/hrus1/hrus1.tif')
         except Exception:
             self.logger.exception('Unable to read hrus1.tif.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise
 
         self.logger.info('Reading hru1.shp into numpy array.')
         try:
@@ -286,6 +287,8 @@ class SWATLUUProcess(object):
             sorted_hru = merged_hru[merged_hru[:, 1].argsort()]
         except Exception:
             self.logger.exception('Unable to open shapefile hrus1.shp')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise
 
         self.logger.info('Sorting and merging the non-dominant and dominant hrus.')
         # retrieve dominant hru values - these are the hrus that remained
@@ -308,11 +311,12 @@ class SWATLUUProcess(object):
                 self.results_dir + '/Raster/final_HRU.tif')
         except Exception:
             self.logger.info('Failed to create final_HRU.tif.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise
 
         self.hrus = hrus
         self.dominant_hrus = dominant_hrus
         self.hru_info = hru_info
-
 
     def create_fractional_values(self):
         """
@@ -411,7 +415,6 @@ class SWATLUUProcess(object):
         self.hru_indexes = hru_indexes
         self.old_hru_areas = list(old_hru_areas)
 
-
     def extract_hru_files_data(self):
         """
         Goes to the TxtInOut folder and reads through all of the .hru
@@ -461,11 +464,17 @@ class SWATLUUProcess(object):
             slope_ranges_from_hru_files = hru_files_read[4]
         except Exception:
             self.logger.info('Unable to read the hru files in TxtInOut.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise
 
         # verify the length (count) of the list matches our dominant hrus
         if len(hru_ids_from_hru_files) != len(self.dominant_hrus):
             # halt function
-            raise
+            self.logger.info('Number of HRU ids (' + str(
+                len(hru_ids_from_hru_files)) + ') found in *.hru files does not match number of dominant HRUs (' + str(
+                len(self.dominant_hrus)) + ').')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Number of HRU ids do not match.')
 
         self.logger.info('Collecting subbasin ids, landuse codes, soil codes, slope ranges, and subbasin ids.')
         # get each hru's landuse code
@@ -500,7 +509,6 @@ class SWATLUUProcess(object):
 
         self.hru_files_data = hru_files_data
         self.unique_subbasin_ids = unique_subbasin_ids
-
 
     def calculate_new_fractional_areas(self):
         """
@@ -563,6 +571,8 @@ class SWATLUUProcess(object):
                 landuse_layer_nodata = layer_info[1]
             except Exception:
                 self.logger.exception('Unable to read landuse layer.')
+                UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+                raise
 
             # get indexes for the parts of the current landuse layer inside the watershed
             landuse_layer_values_inside_watershed = landuse_layer_raster[self.inside_watershed_indexes]
@@ -638,7 +648,6 @@ class SWATLUUProcess(object):
 
         self.logger.info('Finished calculating new fractional areas.\n\n')
 
-
     def copy_results_to_depot(self):
         """
         Copies output from process over to web directory for user's consumption.
@@ -652,12 +661,10 @@ class SWATLUUProcess(object):
         # Copy output over to web directory
         shutil.copytree(self.results_dir, self.output_dir)
 
-
     def clean_up_input_data(self):
         """ Removes input data from tmp directory. """
         self.logger.info('Removing input files from tmp.')
         shutil.rmtree(self.process_root_dir)
-
 
     def email_user_link_to_results(self):
         """
@@ -684,7 +691,7 @@ class SWATLUUProcess(object):
         message += 'The link will expire on ' + self.get_expiration_date() 
         message += ' (48 hours).<br><br>Sincerely,<br>SWAT Tools'
         try:
-            send_mail_status = send_mail(
+            send_mail(
                 subject,
                 "",
                 'SWAT LUU User',
@@ -693,7 +700,8 @@ class SWATLUUProcess(object):
                 html_message=message)
         except Exception:
             self.logger.exception('Error sending the user the email to their data.')
-
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise
 
     def get_expiration_date(self):
         """
@@ -711,7 +719,6 @@ class SWATLUUProcess(object):
         self.logger.info('Calculating the date three days from now.')
         return (datetime.datetime.now() + datetime.timedelta(hours=48)).strftime("%m-%d-%Y %H:%M:%S")
 
-
     def update_task_status_in_database(self):
         """
         Adds current task to the database. Helps with removal of task's data
@@ -726,4 +733,6 @@ class SWATLUUProcess(object):
         None
         """
         self.logger.info('Updating the user\'s task status.')
-        UserTask.objects.filter(task_id=self.task_id).update(task_status=1, time_completed=datetime.datetime.now())
+
+        #if UserTask.objects.filter(task_id=self.task_id).task_status < 2:
+         #   UserTask.objects.filter(task_id=self.task_id).update(task_status=1, time_completed=datetime.datetime.now())
