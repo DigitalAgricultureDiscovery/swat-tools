@@ -25,4 +25,4 @@ def process_task(data):
     process.copy_results_to_depot()
     process.clean_up_input_data()
     process.email_user_link_to_results()
-    #process.update_task_status_in_database()
+    process.update_task_status_in_database()

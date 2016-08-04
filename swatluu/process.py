@@ -734,5 +734,4 @@ class SWATLUUProcess(object):
         """
         self.logger.info('Updating the user\'s task status.')
 
-        #if UserTask.objects.filter(task_id=self.task_id).task_status < 2:
-         #   UserTask.objects.filter(task_id=self.task_id).update(task_status=1, time_completed=datetime.datetime.now())
+        UserTask.objects.filter(task_id=self.task_id).update(task_status=1, time_completed=datetime.datetime.now())

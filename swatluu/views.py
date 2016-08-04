@@ -602,7 +602,7 @@ def runit(request):
         'landuse_days': request.session.get('day'),
         'landuse_layers_names': request.session.get('landuse_layers_names'),
     }
-    print request.session['error']
+
     if not request.session['error']:
         # run task
         process_task.delay(data)
