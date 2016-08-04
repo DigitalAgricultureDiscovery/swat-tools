@@ -99,7 +99,7 @@
     <!-- SWAT MODEL UPLOAD -->
     <div class="row" style="padding-top: 15px;">
         <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
-            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;">
+            <div class="inner-block" style="max-width: 650px; min-width: 610px; width: 45%;">
                 <form id="form1" role="form" method="post" action="{% url 'swatluu/upload_swat_model_zip' %}" enctype="multipart/form-data" style="text-align: left">
                     {% csrf_token %}
                     <label><b>SWAT Model Input:</b> &nbsp;</label>
@@ -128,7 +128,7 @@
 
     <div class="row" style="padding-top: 5px">
         <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
-            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;">
+            <div class="inner-block" style="max-width: 650px; min-width: 610px; width: 45%;">
                 <form id="form2" role="form" method="post" action="{% url 'swatluu/upload_landuse_zip' %}" enctype="multipart/form-data" style="text-align: left">
                     {% csrf_token %}
                     <label><b>Landuse Folder: </b>&nbsp;</label>
@@ -158,7 +158,7 @@
     
     <div class="row" style="padding-top: 5px">
         <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
-            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;; width: 45%;">
+            <div class="inner-block" style="max-width: 650px; min-width: 610px; width: 45%;">
                 <form id="form3" role="form" method="post" action="{% url 'swatluu/select_number_of_landuse_layers' %}" enctype="multipart/form-data" style="text-align: left">
                     {% csrf_token %}
                     <label><b>No. of Landuse layers:</b> &nbsp;</label>
@@ -187,7 +187,7 @@
 
     <div class="row" style="padding-top: 5px">
         <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
-            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;">
+            <div class="inner-block" style="max-width: 650px; min-width: 610px; width: 45%;">
                 <form id="form4" role="form" method="post" action="{% url 'swatluu/validate_selected_landuse_layers' %}" enctype="multipart/form-data" style="text-align: left">
                     {% csrf_token %}
                     {% if loop_times %} 
@@ -219,7 +219,7 @@
 
     <div class="row" style="padding-top: 5px">
         <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
-            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;">
+            <div class="inner-block" style="max-width: 650px; min-width: 610px; width: 45%;">
                 <form id="form5" role="form" method="post" action="{% url 'swatluu/upload_lookup_file' %}" enctype="multipart/form-data" style="text-align: left">
                     {% csrf_token %}
                     <label><b>Lookup File: </b>&nbsp;</label>
@@ -246,7 +246,7 @@
         </div>
     </div>
 
-    <div class="row" style="padding: 10px; width: 45%; max-width: 550px; min-width: 500px; margin: auto; text-align: center">
+    <div class="row" style="padding: 10px; width: 45%; max-width: 650px; min-width: 610px; margin: auto; text-align: center">
         <form id="form6" role="form" method="post" action="{% url 'swatluu/reset' %}" enctype="multipart/form-data" style="display: inline-block">
         {% csrf_token %}
             {% buttons %}
@@ -266,7 +266,7 @@
         </form>
     </div>
 
-    <div class="row" style="padding: 10px; width: 45%; max-width: 550px; min-width: 500px; margin: auto; text-align: center">
+    <div class="row" style="padding: 10px; width: 45%; max-width: 650px; min-width: 610px; margin: auto; text-align: center">
         <div class="panel panel-default">
             <div class="panel-heading" style="background-color: #fcf8e3">
                 <h3 class="panel-title" style="padding-top: 0px"><strong>Status</strong></h3>
