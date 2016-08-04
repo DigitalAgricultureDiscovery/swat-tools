@@ -101,7 +101,7 @@ class SWATLUUProcess(object):
         except Exception:
             self.logger.exception('Unable to convert raster from .adf to .tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise
+            raise Exception('Unable to convert raster from .adf to .tif.')
 
         # merge non-dominant hrus into nearby dominant hrus
         self.merge_thresholds()
@@ -170,7 +170,7 @@ class SWATLUUProcess(object):
         except IOError:
             self.logger.exception('Unable to open the lup.dat file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise
+            raise Exception('Unable to open the lup.dat file.')
 
         self.logger.info('Extracting information about landuse layers\' dates.')
         # loop through landuse layers and pull out date information provided by user
@@ -190,7 +190,7 @@ class SWATLUUProcess(object):
             except Exception:
                 self.logger.exception('Unable to convert raster from .adf to .tif.')
                 UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-                raise
+                raise Exception('Unable to convert raster from .adf to .tif.')
 
             # write the date and file into lup.dat
             self.logger.info('Adding landuse layer, ' + layer_name + ', to lup.dat.')
@@ -228,7 +228,7 @@ class SWATLUUProcess(object):
         except:
             self.logger.exception('Unable to open the lookup file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise
+            raise Exception('Unable to open the lookup file.')
 
         # append lookup codes and values to list, throw error if 0 is used
         lookup_info = []
@@ -272,7 +272,7 @@ class SWATLUUProcess(object):
         except Exception:
             self.logger.exception('Unable to read hrus1.tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise
+            raise Exception('Unable to read hrus1.tif.')
 
         self.logger.info('Reading hru1.shp into numpy array.')
         try:
@@ -286,9 +286,9 @@ class SWATLUUProcess(object):
             # old_hrus = [70, 30, 50, 10, 25]
             sorted_hru = merged_hru[merged_hru[:, 1].argsort()]
         except Exception:
-            self.logger.exception('Unable to open shapefile hrus1.shp')
+            self.logger.exception('Unable to open shapefile hrus1.shp.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise
+            raise Exception('Unable to open shapefile hrus1.shp'.)
 
         self.logger.info('Sorting and merging the non-dominant and dominant hrus.')
         # retrieve dominant hru values - these are the hrus that remained
@@ -312,7 +312,7 @@ class SWATLUUProcess(object):
         except Exception:
             self.logger.info('Failed to create final_HRU.tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise
+            raise Exception('Failed to create final_HRU.tif.')
 
         self.hrus = hrus
         self.dominant_hrus = dominant_hrus
@@ -465,7 +465,7 @@ class SWATLUUProcess(object):
         except Exception:
             self.logger.info('Unable to read the hru files in TxtInOut.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise
+            raise Exception('Unable to read the hru files in TxtInOut.')
 
         # verify the length (count) of the list matches our dominant hrus
         if len(hru_ids_from_hru_files) != len(self.dominant_hrus):
@@ -572,7 +572,7 @@ class SWATLUUProcess(object):
             except Exception:
                 self.logger.exception('Unable to read landuse layer.')
                 UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-                raise
+                raise Exception('Unable to read landuse layer.')
 
             # get indexes for the parts of the current landuse layer inside the watershed
             landuse_layer_values_inside_watershed = landuse_layer_raster[self.inside_watershed_indexes]
@@ -701,7 +701,7 @@ class SWATLUUProcess(object):
         except Exception:
             self.logger.exception('Error sending the user the email to their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise
+            raise Exception('Error sending the user the email to their data.')
 
     def get_expiration_date(self):
         """
