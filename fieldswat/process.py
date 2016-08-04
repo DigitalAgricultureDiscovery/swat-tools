@@ -606,7 +606,7 @@ class FieldSWATProcess(object):
         message += 'The link will expire on ' + self.get_expiration_date() 
         message += ' (48 hours).<br><br>Sincerely,<br>SWAT Tools'
         try:
-            send_mail_status = send_mail(
+            send_mail(
                 subject,
                 "",
                 'FieldSWAT User',

@@ -62,7 +62,12 @@ class UncertaintyProcess(object):
         self.logger.info('Processing started.')
 
         # create output directory structure
-        self.create_output_dir()
+        try:
+            self.create_output_dir()
+        except Exception:
+            self.logger.exception('Create output directory structures.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Create output directory structures.')    
 
         # convert hrus1 grid to tif
         try:
@@ -71,18 +76,50 @@ class UncertaintyProcess(object):
                 self.results_dir + '/Raster/hrus1/hrus1.tif')
         except Exception:
             self.logger.exception('Unable to convert raster from .adf to .tif.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Unable to convert raster from .adf to .tif.')
 
-        self.create_lupdat_file()
+        try:
+            self.create_lupdat_file()
+        except Exception:
+            self.logger.exception('An error occurred while creating the lup dat files.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while creating the lup dat files.')
 
-        self.extract_lookup_info()
+        try:
+            self.extract_lookup_info()
+        except Exception:
+            self.logger.exception('An error occurred while extracting lookup info.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while extracting lookup info.')
 
-        self.merge_thresholds()
+        try:
+            self.merge_thresholds()
+        except Exception:
+            self.logger.exception('An error occurred while merging thresholds.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while merging thresholds.')
 
-        self.create_fractional_values()
+        try:
+            self.create_fractional_values()
+        except Exception:
+            self.logger.exception('An error occurred while creating fractional values.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while creating fractional values.')
 
-        self.extract_hru_files_data()
+        try:
+            self.extract_hru_files_data()
+        except Exception:
+            self.logger.exception('An error occurred while extracting hru files data.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while extracting hru files data.')
 
-        self.apply_realization()
+        try:
+            self.apply_realization()
+        except Exception:
+            self.logger.exception('An error occurred while applying realization.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while applying realization.')
 
     def setup_logger(self):
         # Initialize logger for requested process and set header
@@ -155,6 +192,8 @@ class UncertaintyProcess(object):
             lup_file = open(self.results_dir + '/Output/lup.dat', 'a')
         except IOError:
             self.logger.exception('Unable to open the lup.dat file.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Unable to open the lup.dat file.')
 
         self.logger.info('Extracting information about landuse layers\' dates.')
         # loop through landuse layers and pull out date information provided by user
@@ -173,6 +212,8 @@ class UncertaintyProcess(object):
                 geotools.convert_adf_to_tif(layer_path, converted_layer_path)
             except Exception:
                 self.logger.exception('Unable to convert raster from .adf to .tif.')
+                UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+                raise Exception('Unable to convert raster from .adf to .tif.')
 
             # write the date and file into lup.dat
             self.logger.info('Adding landuse layer, ' + layer_name + ', to lup.dat.')
@@ -209,6 +250,8 @@ class UncertaintyProcess(object):
             lookup_file = csv.reader(open(self.lookup_filepath, 'r'), delimiter=',')
         except:
             self.logger.exception('Unable to open the lookup file.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Unable to open the lookup file.')
 
         # append lookup codes and values to list, throw error if 0 is used
         lookup_info = []
@@ -251,6 +294,8 @@ class UncertaintyProcess(object):
             hrus, hru_info = geotools.read_raster(self.results_dir + '/Raster/hrus1/hrus1.tif')
         except Exception:
             self.logger.exception('Unable to read hrus1.tif.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Unable to read hrus1.tif.')
 
         self.logger.info('Reading hru1.shp into numpy array.')
         try:
@@ -265,6 +310,8 @@ class UncertaintyProcess(object):
             sorted_hru = merged_hru[merged_hru[:, 1].argsort()]
         except Exception:
             self.logger.exception('Unable to open shapefile hrus1.shp')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Unable to open shapefile hrus1.shp.')
 
         self.logger.info('Sorting and merging the non-dominant and dominant hrus.')
         # retrieve dominant hru values - these are the hrus that remained
@@ -287,6 +334,8 @@ class UncertaintyProcess(object):
                 self.results_dir + '/Raster/final_HRU.tif')
         except Exception:
             self.logger.info('Failed to create final_HRU.tif.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Failed to create final HRU.tif.')
 
         self.hrus = hrus
         self.dominant_hrus = dominant_hrus
@@ -438,11 +487,17 @@ class UncertaintyProcess(object):
             slope_ranges_from_hru_files = hru_files_read[4]
         except Exception:
             self.logger.info('Unable to read the hru files in TxtInOut.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Unable to read the hru files in TxtInOut.')
 
         # verify the length (count) of the list matches our dominant hrus
         if len(hru_ids_from_hru_files) != len(self.dominant_hrus):
             # halt function
-            raise
+            self.logger.info('Number of HRU ids (' + str(
+                len(hru_ids_from_hru_files)) + ') found in *.hru files does not match number of dominant HRUs (' + str(
+                len(self.dominant_hrus)) + ').')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Number of HRU ids do not match.')
 
         self.logger.info('Collecting subbasin ids, landuse codes, soil codes, slope ranges, and subbasin ids.')
         # get each hru's landuse code
@@ -533,7 +588,7 @@ class UncertaintyProcess(object):
                     error_range = range(-error, error + 1, int((2 * error) / (realization - 1)))
                 except ZeroDivisionError:
                     error_range = range(-error, error + 1, int(2 * error))
-
+                
                 # loop through number of realization range
                 for j in range(0, realization):
 
@@ -651,6 +706,8 @@ class UncertaintyProcess(object):
                 html_message=message)
         except Exception:
             self.logger.exception('Error sending the user the email to their data.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Error sending the user the email to their data.')
 
     def get_expiration_date(self):
         """

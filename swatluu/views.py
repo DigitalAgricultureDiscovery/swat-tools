@@ -554,6 +554,7 @@ def upload_lookup_file(request):
                                            'codes and class names in the uploaded file. Please ' + \
                                            'make sure the lookup file is in the csv format (see ' + \
                                            'guide for help).'
+                return HttpResponseRedirect(resolve_url('swatluu'))
 
             # Add lookup content to session variable
             request.session['lookup_file_data'] = lookup_info

@@ -86,24 +86,48 @@ def upload_swat_model_zip(request):
     if request.method == 'POST':
         if 'swat_model_zip' in request.FILES:
             # Get the uploaded file and store the name of the zip
-            file = request.FILES['swat_model_zip']
-            filename = file.name
-            swat_model_file = os.path.splitext(filename)
-            swat_model_filename = swat_model_file[0]
-            swat_model_file_ext = swat_model_file[1]
+            try:
+                file = request.FILES['swat_model_zip']
+                filename = file.name
+                swat_model_file = os.path.splitext(filename)
+                swat_model_filename = swat_model_file[0]
+                swat_model_file_ext = swat_model_file[1]
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('uncertainty'))
 
-            # Set up the working directory
-            create_working_directory(request)
-            unique_path = request.session.get("directory")
+            try:
+                # Set up the working directory
+                create_working_directory(request)
+                unique_path = request.session.get("directory")
+            except:
+                request.session['error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('uncertainty'))
 
-            # If the SWAT Model directory already exists, remove it to make way for new upload
-            if os.path.exists(unique_path + '/input/' + swat_model_filename):
-                shutil.rmtree(unique_path + '/input/' + swat_model_filename)
+            try:
+                # If the SWAT Model directory already exists, remove it to make way for new upload
+                if os.path.exists(unique_path + '/input/' + swat_model_filename):
+                    shutil.rmtree(unique_path + '/input/' + swat_model_filename)
+            except:
+                request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
+                                           'to reset the tool. If the issue persists please use the Contact Us ' + \
+                                           'form to request further assistance from the site admins.'
+                return HttpResponseRedirect(resolve_url('uncertainty'))
 
-            # Read uploaded file into tmp directory
-            with open(unique_path + '/input/' + filename, 'wb+') as destination:
-                for chunk in file.chunks():
-                    destination.write(chunk)
+            try:
+                # Read uploaded file into tmp directory
+                with open(unique_path + '/input/' + filename, 'wb+') as destination:
+                    for chunk in file.chunks():
+                        destination.write(chunk)
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('uncertainty'))
 
             try:
                 # Unzip uploaded file in tmp directory
@@ -115,8 +139,9 @@ def upload_swat_model_zip(request):
                 # Remove uploaded zip file
                 os.remove(unique_path + '/input/' + swat_model_filename + swat_model_file_ext)
             except:
-                request.session['error'] = 'Could not unzip the folder. ' + \
-                                           'Please contact administrator'
+                request.session['error'] = 'Unable to unzip the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('uncertainty'))
 
             # Check if decompression completed or failed (no folder if failed)
@@ -126,7 +151,10 @@ def upload_swat_model_zip(request):
                                            'Please check if the file is ' + \
                                            'compressed in zip format and ' + \
                                            'has the same name as ' + \
-                                           'compressed folder.'
+                                           'compressed folder. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('uncertainty'))
             
             # Check if the required files/folders exist
@@ -143,7 +171,10 @@ def upload_swat_model_zip(request):
                                            swat_model_filename + '". Please ' + \
                                            'check if the file is compressed ' + \
                                            'in zip format and has the same ' + \
-                                           'name as compressed folder.'
+                                           'name as compressed folder. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('uncertainty'))
             
             # Check if hru files were found
@@ -154,7 +185,10 @@ def upload_swat_model_zip(request):
                                            '/Scenarios/Default/TxtInOut/' + \
                                            '*.hru. Please check for files ' + \
                                            'in folder and re-upload the ' + \
-                                           'zip file.'
+                                           'zip file. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('uncertainty'))
             
             # Check if watershed folder was found
@@ -163,7 +197,10 @@ def upload_swat_model_zip(request):
                                            swat_model_filename + \
                                            '/Watershed/Shapes/hru1.shp. ' + \
                                            'Please check for files in ' + \
-                                           'folder and re-upload the zip file.'
+                                           'folder and re-upload the zip file. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('uncertainty'))
             
             # If there were no issues finding the required SWAT Model paths
@@ -201,29 +238,46 @@ def upload_landuse_zip(request):
     # If user is submitting a zipped landuse folder
     if request.method == 'POST':
         if 'landuse_zip' in request.FILES:
-    
             # Get uploaded file and store the name of the zip
-            file = request.FILES['landuse_zip']
-            filename = file.name
-            landuse_filename = os.path.splitext(filename)[0]
-    
+            try:
+                file = request.FILES['landuse_zip']
+                filename = file.name
+                landuse_filename = os.path.splitext(filename)[0]
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('uncertainty'))
+
             # Set up the working directory
             unique_path = request.session.get('directory')
+
+            try:    
+                # If an input directory already exists, remove it
+                if os.path.exists(unique_path + '/input/' + landuse_filename):
+                    shutil.rmtree(unique_path + '/input/' + landuse_filename)
+            except:
+                request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
+                                           'to reset the tool. If the issue persists please use the Contact Us ' + \
+                                           'form to request further assistance from the site admins.'
+                return HttpResponseRedirect(resolve_url('uncertainty'))
     
-            # If an input directory already exists, remove it
-            if os.path.exists(unique_path + '/input/' + landuse_filename):
-                shutil.rmtree(unique_path + '/input/' + landuse_filename)
-    
-            # Set up the input directory
-            if not os.path.exists(unique_path):
-                os.makedirs(unique_path, 0775)
-            if not os.path.exists(unique_path + '/input'):
-                os.makedirs(unique_path + '/input', 0775)
-    
-            # Copy the data to the path
-            with open(unique_path + '/input/' + filename, 'wb+') as destination:
-                for chunk in file.chunks():
-                    destination.write(chunk)
+            try:
+                # Set up the input directory
+                if not os.path.exists(unique_path):
+                    os.makedirs(unique_path, 0775)
+                if not os.path.exists(unique_path + '/input'):
+                    os.makedirs(unique_path + '/input', 0775)
+        
+                # Copy the data to the path
+                with open(unique_path + '/input/' + filename, 'wb+') as destination:
+                    for chunk in file.chunks():
+                        destination.write(chunk)
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('uncertainty'))
     
             # Uncompress the zip
             try:
@@ -239,7 +293,10 @@ def upload_landuse_zip(request):
             except:
                 # Create error message if unzip failed
                 request.session['error'] = 'Could not unzip the folder. ' + \
-                                           'Please contact the administrator.'
+                                           'If the issue ' + \
+                                           'persists please use the Contact ' + \
+                                           'Us form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('uncertainty'))
     
             # Check if unzipped folder exists
@@ -248,7 +305,10 @@ def upload_landuse_zip(request):
                                            landuse_filename + '". Please ' + \
                                            'check if the file is compressed ' + \
                                            'in zip format and has the same ' + \
-                                           'name as compressed folder.'
+                                           'name as compressed folder. If the issue ' + \
+                                           'persists please use the Contact ' + \
+                                           'Us form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('uncertainty'))
     
             # Update relevant session variables
@@ -278,12 +338,11 @@ def upload_landuse_layer(request):
         try:
             # Get the dates if available and recall the landuse layer count
             date = request.POST.getlist('dates')[0]
-
             day = date.split('/')
             request.session['uncertainty_year'].append(day[2])
             request.session['uncertainty_month'].append(day[0])
             request.session['uncertainty_day'].append(day[1])
-        except IndexError:
+        except:
             request.session['error'] = 'Please make sure you are selecting ' + \
                                        'a date for each landuse layer.'
             return HttpResponseRedirect(resolve_url('uncertainty'))
@@ -291,7 +350,13 @@ def upload_landuse_layer(request):
         # Collect the selected landuse layers (.aux) if they are available
         if 'landuse_layer' in request.FILES:
             # Get the selected landuse layers
-            landuse_layer = request.FILES.getlist('landuse_layer')[0]
+            try:
+                landuse_layer = request.FILES.getlist('landuse_layer')[0]
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('uncertainty'))
 
             if not landuse_layer:
                 request.session['error'] = 'Please seelct a landuse file ' + \
@@ -300,8 +365,7 @@ def upload_landuse_layer(request):
                 return HttpResponseRedirect(resolve_url('uncertainty'))
 
             # Get filenames and filepaths
-            landuse_layer_filename = os.path.splitext(
-                landuse_layer.name)[0]
+            landuse_layer_filename = os.path.splitext(landuse_layer.name)[0]
             landuse_layer_filepath = request.session.get(
                 'uncertainty_landuse_dir') + '/' + landuse_layer_filename \
                 + '/w001001.adf'
@@ -342,28 +406,38 @@ def upload_lookup_file(request):
 
     # If user made post request
     if request.method == 'POST':
-        
         # Get lookup file if available
         if 'lookup_file' in request.FILES:
-
             # Get the lookup filename and set working directory
             lookup_file = request.FILES['lookup_file']
             lookup_filename = request.FILES['lookup_file'].name
             unique_path = request.session['directory']
             
-            # Check if path to lookup file already exists and if so remove it
-            if os.path.exists(unique_path + '/input/' + lookup_filename):
-                os.remove(unique_path + '/input/' + lookup_filename)
-            # If the path does not exist, create it
-            if not os.path.exists(unique_path):
-                os.makedirs(unique_path, 0775)
-            if not os.path.exists(unique_path + '/input'):
-                os.makedirs(unique_path + '/input', 0775)
+            try:
+                # Check if path to lookup file already exists and if so remove it
+                if os.path.exists(unique_path + '/input/' + lookup_filename):
+                    os.remove(unique_path + '/input/' + lookup_filename)
+                # If the path does not exist, create it
+                if not os.path.exists(unique_path):
+                    os.makedirs(unique_path, 0775)
+                if not os.path.exists(unique_path + '/input'):
+                    os.makedirs(unique_path + '/input', 0775)
+            except:
+                request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
+                                           'to reset the tool. If the issue persists please use the Contact Us ' + \
+                                           'form to request further assistance from the site admins.'
+                return HttpResponseRedirect(resolve_url('uncertainty'))
             
-            # Open the lookup file and write it to a new file
-            with open(unique_path + '/input/' + lookup_filename, 'wb+') as destination:
-                for chunk in lookup_file.chunks():
-                    destination.write(chunk)
+            try:
+                # Open the lookup file and write it to a new file
+                with open(unique_path + '/input/' + lookup_filename, 'wb+') as destination:
+                    for chunk in lookup_file.chunks():
+                        destination.write(chunk)
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('uncertainty'))
 
             fix_file_permissions(unique_path + '/input/' + lookup_filename)
 
@@ -399,10 +473,17 @@ def upload_lookup_file(request):
                     return HttpResponseRedirect(resolve_url('uncertainty'))
                 lookup_info.append(row)
             
-            # Split up lookup codes and lookup class names
-            for i in range(len(lookup_info)):
-                lookup_info[i][0] = lookup_info[i][0].strip()
-                lookup_info[i][1] = lookup_info[i][1].strip()
+            try:
+                # Split up lookup codes and lookup class names
+                for i in range(len(lookup_info)):
+                    lookup_info[i][0] = lookup_info[i][0].strip()
+                    lookup_info[i][1] = lookup_info[i][1].strip()
+            except:
+                request.session['error'] = 'Error occurred while trying to find the lookup ' + \
+                                           'codes and class names in the uploaded file. Please ' + \
+                                           'make sure the lookup file is in the csv format (see ' + \
+                                           'guide for help).'
+                return HttpResponseRedirect(resolve_url('uncertainty'))
 
             # Add lookup content to session variable
             request.session['uncertainty_lookup_file_data'] = lookup_info

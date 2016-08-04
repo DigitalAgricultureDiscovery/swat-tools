@@ -31,7 +31,13 @@
 
         // Load jquery date picker input
         $(function() {
-            $(".datepicker").datepicker();
+            $(".datepicker").datepicker({
+                buttonImage: "/static/Images/calendar.gif",
+                buttonImageOnly: true,
+                buttonText: "Select start date",
+                showOn: "button",
+                maxDate: ("+D")
+            });
         });
 
         $(document).ready(function() {
@@ -204,7 +210,7 @@
                             <button id="Help4" type="button">?</button>
                             <br><br>
                             <label><strong>Select layer's start date:</strong></label>
-                            <input class="datepicker" type="text" name="dates" style="width: 30%"/>
+                            <input class="datepicker" placeholder="MM/DD/YYYY" type="text" name="dates" style="width: 30%"/>
                             {% if request.session.uncertainty_landuse_layer_filename %}
                                 <span class="icon" style="color: #33CC33; margin-left: 15px">
                                     <i class="glyphicon glyphicon glyphicon-ok"></i>
