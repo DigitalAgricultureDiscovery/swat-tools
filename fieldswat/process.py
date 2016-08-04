@@ -65,8 +65,13 @@ class FieldSWATProcess(object):
         self.setup_logger()
         self.logger.info('Processing started.')
 
-        # create output directory structure
-        self.create_output_dir()
+        try:
+            # create output directory structure
+            self.create_output_dir()
+        except Exception:
+            self.logger.exception('Create output directory structures.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Create output directory structures.')
 
         # convert hrus1 grid to tif
         try:
@@ -75,27 +80,69 @@ class FieldSWATProcess(object):
                 self.results_dir + '/Raster/hrus1/hrus1.tif')
         except Exception:
             self.logger.exception('Unable to convert raster from .adf to .tif.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Unable to convert raster from .adf to .tif.')
 
         # copy hru1 and fields shapefiles to output directory
-        self.copy_shapefile_to_output_directory()
+        try:
+            self.copy_shapefile_to_output_directory()
+        except Exception:
+            self.logger.exception('An error occurred while copying hru1 and fields shapefiles to output directory.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while copying hru1 and fields shapefiles to output directory.')
 
         # merge hru thresholds
-        self.merge_thresholds()
+        try:
+            self.merge_thresholds()
+        except Exception:
+            self.logger.exception('An error occurred while merging hru thresholds.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while merging hru thresholds.')
 
-        # get hrus1 cols, rows, and resolution
-        hrus1_info = self.get_tif_info()
+        try:
+            # get hrus1 cols, rows, and resolution
+            hrus1_info = self.get_tif_info()
+        except Exception:
+            self.logger.exception('An error occurred while fetching the hrus1 raster details.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while fetching the hrus1 raster details.')
 
-        grid_x_reshape, grid_y_reshape = self.set_gridx_and_gridy_matrices(hrus1_info)
+        try:
+            grid_x_reshape, grid_y_reshape = self.set_gridx_and_gridy_matrices(hrus1_info)
+        except Exception:
+            self.logger.exception('An error occurred while setting the gridx and gridy matrices.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while setting the gridx and gridy matrices.')
 
-        clu = self.create_hru_field_workbook(grid_x_reshape, grid_y_reshape)
+        try:
+            clu = self.create_hru_field_workbook(grid_x_reshape, grid_y_reshape)
+        except Exception:
+            self.logger.exception('An error occurred while creating the hru field workbook.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while creating the hru field workbook.')
 
-        field_shapefile, output_data, hru_output_data = self.update_field_info(hrus1_info['nodata'], clu)
+        try:
+            field_shapefile, output_data, hru_output_data = self.update_field_info(hrus1_info['nodata'], clu)
+        except Exception:
+            self.logger.exception('An error occurred while updating field info.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while updating field info.')
 
-        self.create_new_field_shapefile(field_shapefile, output_data)
+        try:
+            self.create_new_field_shapefile(field_shapefile, output_data)
+        except Exception:
+            self.logger.exception('An error occurred while creating the new shapefile.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while creating the new shapefile.')
 
         hru_shapefile = self.results_dir + '/Output/HRU_Response.shp'
 
-        self.update_hru_shapefile(hru_shapefile, hru_output_data)
+        try:
+            self.update_hru_shapefile(hru_shapefile, hru_output_data)
+        except Exception:
+            self.logger.exception('An error occurred while updating the hru shapefile.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while updating the hru shapefile.')
 
     def create_output_dir(self):
         """
@@ -568,6 +615,8 @@ class FieldSWATProcess(object):
                 html_message=message)
         except Exception:
             self.logger.exception('Error sending the user the email to their data.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Error sending the user the email to their data.')
 
     def get_expiration_date(self):
         """

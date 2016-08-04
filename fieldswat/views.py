@@ -87,24 +87,47 @@ def upload_swat_model_zip(request):
     # If user is submitting a zipped SWAT Model
     if request.method == 'POST':
         if 'swat_model_zip' in request.FILES:
+            try:
+                # Get the uploaded file and store the name of the zip
+                file = request.FILES['swat_model_zip']
+                filename = file.name
+                swat_model_filename = os.path.splitext(filename)[0]
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('fieldswat'))
 
-            # Get the uploaded file and store the name of the zip
-            file = request.FILES['swat_model_zip']
-            filename = file.name
-            swat_model_filename = os.path.splitext(filename)[0]
-
-            # Set up the working directory
-            create_working_directory(request)
-            unique_path = request.session.get("directory")
+            try:
+                # Set up the working directory
+                create_working_directory(request)
+                unique_path = request.session.get("directory")
+            except:
+                request.session['error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('fieldswat'))
             
-            # If the shapefile directory already exists, remove it to make way for new upload
-            if os.path.exists(unique_path + '/input/' + swat_model_filename):
-                shutil.rmtree(unique_path + '/input/' + swat_model_filename)
+            try:
+                # If the shapefile directory already exists, remove it to make way for new upload
+                if os.path.exists(unique_path + '/input/' + swat_model_filename):
+                    shutil.rmtree(unique_path + '/input/' + swat_model_filename)
+            except:
+                request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
+                                           'to reset the tool. If the issue persists please use the Contact Us ' + \
+                                           'form to request further assistance from the site admins.'
+                return HttpResponseRedirect(resolve_url('fieldswat'))
 
-            # Copy compressed data to the working directory
-            with open(unique_path + '/input/' + filename, 'wb+') as destination:
-                for chunk in file.chunks():
-                    destination.write(chunk)
+            try:
+                # Copy compressed data to the working directory
+                with open(unique_path + '/input/' + filename, 'wb+') as destination:
+                    for chunk in file.chunks():
+                        destination.write(chunk)
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('fieldswat'))
 
             # Uncompress the data
             try:
@@ -118,8 +141,9 @@ def upload_swat_model_zip(request):
                 # Remove uploaded zip file
                 os.remove(unique_path + '/input/' + filename)
             except:
-                request.session['error'] = 'Could not unzip the folder. ' + \
-                                           'Please contact administrator'
+                request.session['error'] = 'Unable to unzip the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('fieldswat'))
 
             # Check if decompression completed or failed (no folder if failed)
@@ -129,7 +153,10 @@ def upload_swat_model_zip(request):
                                            'Please check if the file is ' + \
                                            'compressed in zip format and ' + \
                                            'has the same name as ' + \
-                                           'compressed folder.'
+                                           'compressed folder. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('fieldswat'))
 
             # Check if the required files/folders exist
@@ -148,7 +175,10 @@ def upload_swat_model_zip(request):
                                            swat_model_filename + '". Please ' + \
                                            'check if the file is compressed ' + \
                                            'in zip format and has the same ' + \
-                                           'name as compressed folder.'
+                                           'name as compressed folder. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('fieldswat'))
 
             # Check if hru files were found
@@ -159,7 +189,10 @@ def upload_swat_model_zip(request):
                                            '/Scenarios/Default/TxtInOut/' + \
                                            '*.hru. Please check for files ' + \
                                            'in folder and re-upload the ' + \
-                                           'zip file.'
+                                           'zip file. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('fieldswat'))
 
             # Check if watershed folder was found
@@ -168,7 +201,10 @@ def upload_swat_model_zip(request):
                                            swat_model_filename + \
                                            '/Watershed/Shapes/hru1.shp. ' + \
                                            'Please check for files in ' + \
-                                           'folder and re-upload the zip file.'
+                                           'folder and re-upload the zip file. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('fieldswat'))
             if not glob.glob(swatoutputdbloc):
                 request.session['error'] = 'Could not find the folder or ' + \
@@ -176,7 +212,10 @@ def upload_swat_model_zip(request):
                                            swat_model_filename + \
                                            '/Scenarios/Default/TablesOut.' + \
                                            'Please check for files in ' + \
-                                           'folder and re-upload the zip file.'
+                                           'folder and re-upload the zip file. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('fieldswat'))
 
             # If there were no issues finding the required SWAT Model paths
@@ -188,16 +227,24 @@ def upload_swat_model_zip(request):
                 request.session['progress_message'].append(
                     'Swat Model zip folder uploaded.')
 
-                # fetch data from SWATOutput.mdb
-                swatoutput_mdb_data = get_unique_years_from_mdb(request.session['fieldswat_swat_model_dir'])
+                try:
+                    # fetch data from SWATOutput.mdb
+                    swatoutput_mdb_data = get_unique_years_from_mdb(request.session['fieldswat_swat_model_dir'])
 
-                request.session['swatoutput_years'] = swatoutput_mdb_data[0]
-                request.session['swatoutput_runoff'] = swatoutput_mdb_data[1]
-                request.session['swatoutput_sediment'] = swatoutput_mdb_data[2]
+                    request.session['swatoutput_years'] = swatoutput_mdb_data[0]
+                    request.session['swatoutput_runoff'] = swatoutput_mdb_data[1]
+                    request.session['swatoutput_sediment'] = swatoutput_mdb_data[2]
 
-                # get unique_years
-                unique_years = list(set(swatoutput_mdb_data[0]))
-                unique_years.sort()
+                    # get unique_years
+                    unique_years = list(set(swatoutput_mdb_data[0]))
+                    unique_years.sort()
+                except:
+                    request.session['error'] = 'Unable to fetch the unique years associated ' + \
+                                               'with the SWAT Model data. If the issue ' + \
+                                               'persists please use the Contact Us ' + \
+                                               'form to request further assistance ' + \
+                                               'from the site admins.'
+                    return HttpResponseRedirect(resolve_url('fieldswat'))
 
                 request.session['swatoutput_unique_years'] = unique_years
 
@@ -215,7 +262,10 @@ def upload_swat_model_zip(request):
                                            swat_model_filename + \
                                            '/Watershed/Grid/hrus1/w001001.adf.' + \
                                            ' Please check for files in folder ' + \
-                                           'and re-upload the zip file.'
+                                           'and re-upload the zip file. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('fieldswat'))
     else:
         # Nothing was posted, reload main page
@@ -306,25 +356,41 @@ def upload_fields_shapefile_zip(request):
 
     # If user is submitting a zipped SWAT Model
     if request.method == 'POST':
-        
         if 'fields_shapefile_zip' in request.FILES:
-            
-            # Get the uploaded file and store the name of the zip
-            file = request.FILES['fields_shapefile_zip']
-            filename = file.name
-            fields_shapefile_foldername = os.path.splitext(filename)[0]
+            try:
+                # Get the uploaded file and store the name of the zip
+                file = request.FILES['fields_shapefile_zip']
+                filename = file.name
+                fields_shapefile_foldername = os.path.splitext(filename)[0]
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('fieldswat'))
 
             # Set up the working directory
             unique_path = request.session.get("directory")
 
-            # If an input directory already exists, remove it
-            if os.path.exists(unique_path + '/input/' + fields_shapefile_foldername):
-                shutil.rmtree(unique_path + '/input/' + fields_shapefile_foldername)
+            try:
+                # If an input directory already exists, remove it
+                if os.path.exists(unique_path + '/input/' + fields_shapefile_foldername):
+                    shutil.rmtree(unique_path + '/input/' + fields_shapefile_foldername)
+            except:
+                request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
+                                           'to reset the tool. If the issue persists please use the Contact Us ' + \
+                                           'form to request further assistance from the site admins.'
+                return HttpResponseRedirect(resolve_url('fieldswat'))
 
-            # Copy compressed data to the working directory
-            with open(unique_path + '/input/' + filename, 'wb+') as destination:
-                for chunk in file.chunks():
-                    destination.write(chunk)
+            try:
+                # Copy compressed data to the working directory
+                with open(unique_path + '/input/' + filename, 'wb+') as destination:
+                    for chunk in file.chunks():
+                        destination.write(chunk)
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('fieldswat'))
             
             # Uncompress the data
             try:
@@ -382,6 +448,11 @@ def upload_fields_shapefile_zip(request):
 
             # Render the main page
             return render(request, 'fieldswat/index.html')
+        else:
+            request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                       'persists please use the Contact Us form to request further assistance ' + \
+                                       'from the site admins.'
+            return HttpResponseRedirect(resolve_url('fieldswat'))
     else:
         # Nothing was posted, reload main page
         return render(request, 'fieldswat/index.html')
@@ -399,9 +470,15 @@ def confirm_output_and_agg(request):
 
     # if user is submitting a zipped SWAT Model
     if request.method == 'POST':
-        # retrieve posted values
-        output_type = request.POST.get('fieldswat_output')
-        aggregation_method = request.POST.get('fieldswat_agg')
+        try:
+            # retrieve posted values
+            output_type = request.POST.get('fieldswat_output')
+            aggregation_method = request.POST.get('fieldswat_agg')
+        except:
+            request.session['error'] = 'Unable to find selected output and aggregation methods. ' + \
+                                       'Please make sure you have selected an option for both of these ' + \
+                                       'methods and then try again.'
+            return HttpResponseRedirect(resolve_url('fieldswat'))
 
         # verify the value matches what we would expect
         if output_type != u'runoff' and output_type != u'sediment':
@@ -459,17 +536,21 @@ def request_process(request):
         'fieldswat_selected_year': request.session['fieldswat_selected_year'],
     }
 
-    # run task
-    process_task.delay(data)
+    if not request.session['error']:
+        # run task
+        process_task.delay(data)
 
-    # add task id to database
-    add_task_id_to_database(data['user_id'], data['user_email'], data['task_id'])
+        # add task id to database
+        add_task_id_to_database(data['user_id'], data['user_email'], data['task_id'])
 
-    request.session['progress_message'].append(
-        'Job successfully added to queue. You will receive an email with ' + \
-        'a link to your files once the processing has completed.')
+        request.session['progress_message'].append(
+            'Job successfully added to queue. You will receive an email with ' + \
+            'a link to your files once the processing has completed.')
 
-    return render(request, 'fieldswat/index.html')
+        return render(request, 'fieldswat/index.html')
+    else:
+        return HttpResponseRedirect(resolve_url('fieldswat'))
+
 
 def add_task_id_to_database(user_id, user_email, task_id):
     """

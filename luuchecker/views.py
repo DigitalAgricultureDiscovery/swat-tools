@@ -150,7 +150,10 @@ def upload_subbasin_shapefile_zip(request):
                                            'Please check if the file is ' + \
                                            'compressed in zip format and ' + \
                                            'has the same name as ' + \
-                                           'compressed folder.'
+                                           'compressed folder. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('luuchecker'))
 
             subbasin_shapefile_filepath = unique_path + '/input/' + subbasin_shapefile_filename + '/subs1.shp'
@@ -159,7 +162,10 @@ def upload_subbasin_shapefile_zip(request):
                 request.session['error'] = 'Could not find the folder ' + \
                                            subbasin_shapefile_filename + '/subs1.shp. Please ' + \
                                            'check for files in folder and ' + \
-                                           're-upload the zip file.'
+                                           're-upload the zip file. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('luuchecker'))
 
             # Update relevant session variables
@@ -246,7 +252,10 @@ def upload_landuse_folder_zip(request):
                                            landuse_filename + '". Please ' + \
                                            'check if the file is compressed ' + \
                                            'in zip format and has the same ' + \
-                                           'name as compressed folder.'
+                                           'name as compressed folder. If the issue ' + \
+                                           'persists please use the Contact Us ' + \
+                                           'form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('luuchecker'))
 
             # Update relevant session variables

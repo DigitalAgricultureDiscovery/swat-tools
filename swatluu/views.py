@@ -107,7 +107,7 @@ def upload_swat_model_zip(request):
                 request.session['error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect
+                return HttpResponseRedirect(resolve_url('swatluu'))
 
             try:
                 # If the SWAT Model directory already exists, remove it to make way for new upload
