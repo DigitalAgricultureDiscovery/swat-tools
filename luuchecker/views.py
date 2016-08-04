@@ -82,25 +82,49 @@ def upload_subbasin_shapefile_zip(request):
     # If user is submitting a zipped SWAT Model
     if request.method == 'POST':
         if 'subbasin_shapefile_zip' in request.FILES:
-            # Get the uploaded file and store the name of the zip
-            file = request.FILES['subbasin_shapefile_zip']
-            filename = file.name
-            subbasin_shapefile_file = os.path.splitext(filename)
-            subbasin_shapefile_filename = subbasin_shapefile_file[0]
-            subbasin_shapefile_file_ext = subbasin_shapefile_file[1]
+            try:
+                # Get the uploaded file and store the name of the zip
+                file = request.FILES['subbasin_shapefile_zip']
+                filename = file.name
+                subbasin_shapefile_file = os.path.splitext(filename)
+                subbasin_shapefile_filename = subbasin_shapefile_file[0]
+                subbasin_shapefile_file_ext = subbasin_shapefile_file[1]
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('luuchecker'))
 
-            # Set up the working directory
-            create_working_directory(request)
-            unique_path = request.session.get("directory")
+            try:
+                # Set up the working directory
+                create_working_directory(request)
+                unique_path = request.session.get("directory")
+            except:
+                request.session['error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('luuchecker'))
             
-            # If the shapefile directory already exists, remove it to make way for new upload
-            if os.path.exists(unique_path + '/input/' + subbasin_shapefile_filename):
-                shutil.rmtree(unique_path + '/input/' + subbasin_shapefile_filename)
+            try:
+                # If the shapefile directory already exists, remove it to make way for new upload
+                if os.path.exists(unique_path + '/input/' + subbasin_shapefile_filename):
+                    shutil.rmtree(unique_path + '/input/' + subbasin_shapefile_filename)
+            except:
+                request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
+                                           'to reset the tool. If the issue persists please use the Contact Us ' + \
+                                           'form to request further assistance from the site admins.'
+                return HttpResponseRedirect(resolve_url('luuchecker'))
             
-            # Copy compressed data to the working directory
-            with open(unique_path + '/input/' + filename, 'wb+') as destination:
-                for chunk in file.chunks():
-                    destination.write(chunk)
+            try:
+                # Copy compressed data to the working directory
+                with open(unique_path + '/input/' + filename, 'wb+') as destination:
+                    for chunk in file.chunks():
+                        destination.write(chunk)
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('luuchecker'))
 
             # Uncompress the data
             try:
@@ -115,8 +139,9 @@ def upload_subbasin_shapefile_zip(request):
                 # Remove uploaded zip file
                 os.remove(unique_path + '/input/' + subbasin_shapefile_filename + subbasin_shapefile_file_ext)
             except:
-                request.session['error'] = 'Could not unzip the folder. ' + \
-                                           'Please contact administrator'
+                request.session['error'] = 'Unable to unzip the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('luuchecker'))
 
             if not os.path.exists(unique_path + '/input/' + subbasin_shapefile_filename):
@@ -160,22 +185,40 @@ def upload_landuse_folder_zip(request):
     # If user is submitting a zipped landuse folder
     if request.method == 'POST':
         if 'landuse_folder_zip' in request.FILES:
-            # Get uploaded file and store the name of the zip
-            file = request.FILES['landuse_folder_zip']
-            filename = file.name
-            landuse_filename = os.path.splitext(filename)[0]
+            try:
+                # Get uploaded file and store the name of the zip
+                file = request.FILES['landuse_folder_zip']
+                filename = file.name
+                landuse_filename = os.path.splitext(filename)[0]
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('luuchecker'))
     
             # Set up the working directory
             unique_path = request.session.get('directory')
     
-            # If an input directory already exists, remove it
-            if os.path.exists(unique_path + '/input/' + landuse_filename):
-                shutil.rmtree(unique_path + '/input/' + landuse_filename)
-    
-            # Copy the data to the path
-            with open(unique_path + '/input/' + filename, 'wb+') as destination:
-                for chunk in file.chunks():
-                    destination.write(chunk)
+            try:
+                # If an input directory already exists, remove it
+                if os.path.exists(unique_path + '/input/' + landuse_filename):
+                    shutil.rmtree(unique_path + '/input/' + landuse_filename)
+            except:
+                request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
+                                           'to reset the tool. If the issue persists please use the Contact Us ' + \
+                                           'form to request further assistance from the site admins.'
+                return HttpResponseRedirect(resolve_url('luuchecker'))
+
+            try:
+                # Copy the data to the path
+                with open(unique_path + '/input/' + filename, 'wb+') as destination:
+                    for chunk in file.chunks():
+                        destination.write(chunk)
+            except:
+                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+                return HttpResponseRedirect(resolve_url('luuchecker'))
 
             # Uncompress the zip
             try:
@@ -191,7 +234,10 @@ def upload_landuse_folder_zip(request):
             except:
                 # Create error message if unzip failed
                 request.session['error'] = 'Could not unzip the folder. ' + \
-                                           'Please contact the administrator.'
+                                           'If the issue ' + \
+                                           'persists please use the Contact ' + \
+                                           'Us form to request further assistance ' + \
+                                           'from the site admins.'
                 return HttpResponseRedirect(resolve_url('luuchecker'))
     
             # Check if unzipped folder exists
@@ -234,7 +280,6 @@ def upload_base_landuse_raster_file(request):
             
             filename = base_landuse_raster.name
             base_landuse_raster_filename = os.path.splitext(filename)[0]
-
             base_landuse_raster_location = request.session.get('luuc_landuse_dir') + '/' + base_landuse_raster_filename + '/w001001.adf'
 
             request.session['progress_message'] = []
@@ -254,6 +299,11 @@ def upload_base_landuse_raster_file(request):
                                            'zipped landuse folder and upload ' + \
                                            'the zipped landuse folder again.'
                 return HttpResponseRedirect(resolve_url('luuchecker'))
+        else:
+            request.session['error'] = 'Unable to receive the dates, please try again. If the issue ' + \
+                                       'persists please use the Contact Us form to request further assistance ' + \
+                                       'from the site admins.'
+            return HttpResponseRedirect(resolve_url('luuchecker'))
     else:
         # Nothing was posted, reload main page
         return render(request, 'luuchecker/index.html')
@@ -317,18 +367,28 @@ def upload_selected_landuse_layers(request):
 
     # If user made a post request
     if request.method == 'POST':
-        landuse_layer_files = request.FILES.getlist('luuc_landuse_layers')
+        try:
+            landuse_layer_files = request.FILES.getlist('luuc_landuse_layers')
+        except:
+            request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                           'persists please use the Contact Us form to request further assistance ' + \
+                                           'from the site admins.'
+            return HttpResponseRedirect(resolve_url('luuchecker'))
 
         if request.session['luuc_landuse_layer_count'] != len(landuse_layer_files):
-            request.session['error'] = 'Please select all landuse files names as per the count given.'
-            return HttpResponseRedirect('luuchecker')
+            request.session['error'] = 'Please select ' + str(request.session['luuc_landuse_layer_count']) + \
+                                       ' landuse layers. If you would like to select a different number of ' + \
+                                       'new landuse layers, go back to the previous step and enter the number desired.'
+            return HttpResponseRedirect(resolve_url('luuchecker'))
 
         for landuse_layer in landuse_layer_files:
             if not landuse_layer:
-                request.session['error'] = 'Please select all landuse files names as per the count given.'
+                request.session['error'] = 'Please select ' + str(request.session['luuc_landuse_layer_count']) + \
+                                           ' landuse layers. If you would like to select a different number of ' + \
+                                           'new landuse layers, go back to the previous step and enter the number desired.'
                 request.session['luuc_landuse_layers_filenames'] = []
                 request.session['luuc_landuse_layers_filepaths'] = []
-                return HttpResponseRedirect('luuchecker')
+                return HttpResponseRedirect(resolve_url('luuchecker'))
             
             filename = landuse_layer.name
             landuse_layer_filename = os.path.splitext(filename)[0]
@@ -349,7 +409,7 @@ def upload_selected_landuse_layers(request):
                                            'in step 2. Please check if the folder exists ' + \
                                            'inside the landuse folder and upload ' + \
                                            'the zipped landuse folder again.'
-                return HttpResponseRedirect('luuchecker')
+                return HttpResponseRedirect(resolve_url('luuchecker'))
     return HttpResponseRedirect(resolve_url('luuchecker'))
 
 
@@ -362,18 +422,24 @@ def select_percentage(request):
     
     # If user made a post request
     if request.method == 'GET':
-        return HttpResponseRedirect('luuchecker')
+        return HttpResponseRedirect(resolve_url('luuchecker'))
 
     if request.method == 'POST':
-        landuse_percent = request.POST.get('luuc_landuse_percentage')
+        try:
+            landuse_percent = request.POST.get('luuc_landuse_percentage')
+        except:
+            request.session['error'] = 'Unable to retrieve submitted percentage value, please try again. If the issue ' + \
+                                       'persists please use the Contact Us form to request further assistance ' + \
+                                       'from the site admins.'
+            return HttpResponseRedirect(resolve_url('luuchecker'))
 
     if not landuse_percent:
         request.session['error'] = 'Please enter some percentage value.'
-        return HttpResponseRedirect('luuchecker')
+        return HttpResponseRedirect(resolve_url('luuchecker'))
 
     if not float(landuse_percent):
         request.session['error'] = 'Please enter some percentage value in decimal number.'
-        return HttpResponseRedirect('luuchecker')
+        return HttpResponseRedirect(resolve_url('luuchecker'))
 
     request.session['luuc_landuse_percentage'] = landuse_percent
     request.session['progress_message'].append('Percentage value taken.')
@@ -415,17 +481,20 @@ def request_process(request):
         'landuse_percent': request.session.get('luuc_landuse_percentage'),
     }
 
-    # run task
-    process_task.delay(data)
+    if not request.session['error']:
+        # run task
+        process_task.delay(data)
 
-    # add task id to database
-    add_task_id_to_database(data['user_id'], data['user_email'], data['task_id'])
+        # add task id to database
+        add_task_id_to_database(data['user_id'], data['user_email'], data['task_id'])
 
-    request.session['progress_message'].append(
-        'Job successfully added to queue. You will receive an email with ' + \
-        'a link to your files once the processing has completed.')
+        request.session['progress_message'].append(
+            'Job successfully added to queue. You will receive an email with ' + \
+            'a link to your files once the processing has completed.')
 
-    return render(request, 'luuchecker/index.html')
+        return render(request, 'luuchecker/index.html')
+    else:
+        return HttpResponseRedirect(resolve_url('luuchecker'))
 
 
 def add_task_id_to_database(user_id, user_email, task_id):

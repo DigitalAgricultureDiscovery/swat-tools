@@ -170,8 +170,10 @@ class LUUCheckerProcess(object):
         try:
             check_call(['gdal_translate', '-co', 'compress=lzw', '-a_nodata', '255', '-of', 'GTiff',
                         self.temp_output_directory + '/base_new1.tif', self.output_directory + '/base_new.tif'])
-        except:
+        except Exception:
             self.logger.exception('Error converting new base raster to geotiff.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Error converting new base raster to geotiff.')
 
 
     def start(self):
@@ -225,24 +227,40 @@ class LUUCheckerProcess(object):
                 output_filepath)
         except Exception:
             self.logger.exception('Unable to convert raster from .adf to .tif.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Unable to convert raster from .adf to .tif.')
 
         self.logger.info('Converting base raster geotiff into numpy array.')
-        # read base landuse raster (.tif) into numpy array
-        base_raster_array = geotools.read_raster(
-            self.temp_output_directory + '/' + \
-            self.base_landuse_raster_filename + '.tif')[0]
 
-        # construct shapefile layer information
-        rows = str(len(base_raster_array))
-        cols = str(len(base_raster_array[0]))
-        layer_info = {
-            "attribute_name": "Subbasin",
-            "extent": [cols, rows],
-            "layername": "subs1",
-        }
+        try:
+            # read base landuse raster (.tif) into numpy array
+            base_raster_array = geotools.read_raster(
+                self.temp_output_directory + '/' + \
+                self.base_landuse_raster_filename + '.tif')[0]
+
+            # construct shapefile layer information
+            rows = str(len(base_raster_array))
+            cols = str(len(base_raster_array[0]))
+            layer_info = {
+                "attribute_name": "Subbasin",
+                "extent": [cols, rows],
+                "layername": "subs1",
+            }
+        except Exception:
+            self.logger.exception('Unable to read the base landuse raster.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Unable to read the base landuse raster.')
+
         self.logger.info('Getting count of subbasins from the subbasin shapefile.')
-        # get number of subbasins in shapefile
-        total_subbasin_count = len(geotools.read_shapefile(self.subbasin_shapefile_filepath))
+        
+        try:
+            # get number of subbasins in shapefile
+            total_subbasin_count = len(geotools.read_shapefile(self.subbasin_shapefile_filepath))
+        except Exception:
+            self.logger.exception('Unable to read the subbasin shapefile.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Unable to read the subbasin shapefile.')
+
         # path and filename for the soon to be created subbasin geotiff
         output_tif_filepath = self.temp_output_directory + '/subbasin.tif'
         
@@ -254,10 +272,19 @@ class LUUCheckerProcess(object):
         except Exception:
             self.logger.exception('Error converting shapefile to raster. Please make ' + \
                                   'sure you uploaded file.shp.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Error converting shapefile to raster. Please make ' + \
+                            'sure you uploaded file.shp.')
 
         self.logger.info('Converting subbasin geotiff into numpy array.')
-        # read rasterized shapefile into numpy array
-        rasterized_shapefile = geotools.read_raster(self.temp_output_directory + '/subbasin.tif')[0]
+        
+        try:
+            # read rasterized shapefile into numpy array
+            rasterized_shapefile = geotools.read_raster(self.temp_output_directory + '/subbasin.tif')[0]
+        except Exception:
+            self.logger.exception('Unable to read the rasterized subbasin geotiff.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Unable to read the rasterized subbasin geotiff.')
 
         self.logger.info('Opening Emerging_LULC_Report for writing.')
         # remove emerging lulcs report if it already exists
@@ -267,58 +294,69 @@ class LUUCheckerProcess(object):
         emerging_lulc_report = open(self.output_directory + '/Emerging_LULC_Report.txt', 'w')
 
         self.logger.info('Begin looping through new landuse layers.\n\n')
-        # loop through each new landuse layer selected by the user 
-        for landuse_layer in self.new_landuse_raster_filepaths:
-            self.logger.info('LANDUSE LAYER:' + os.path.basename(landuse_layer))
-            # write the landuse layer name to report
-            emerging_lulc_report.write(landuse_layer + '\n')
+        
+        try:
+            # loop through each new landuse layer selected by the user 
+            for landuse_layer in self.new_landuse_raster_filepaths:
+                self.logger.info('LANDUSE LAYER:' + os.path.basename(landuse_layer))
+                # write the landuse layer name to report
+                emerging_lulc_report.write(landuse_layer + '\n')
 
-            # convert the new landuse layer raster to array
-            geotools.convert_adf_to_tif(landuse_layer, self.temp_output_directory + '/' + os.path.basename(landuse_layer) + '.tif')
-            self.logger.info('Converting new landuse geotiff into numpy array.')
-            self.logger.info(self.temp_output_directory + '/' + os.path.basename(landuse_layer) + '.tif')
-            # read new landuse raster (.tif) into numpy array
-            new_landuse_raster = geotools.read_raster(
-                self.temp_output_directory + '/' + \
-                os.path.basename(landuse_layer) + '.tif')[0]
+                # convert the new landuse layer raster to array
+                geotools.convert_adf_to_tif(landuse_layer, self.temp_output_directory + '/' + os.path.basename(landuse_layer) + '.tif')
+                self.logger.info('Converting new landuse geotiff into numpy array.')
+                self.logger.info(self.temp_output_directory + '/' + os.path.basename(landuse_layer) + '.tif')
+                # read new landuse raster (.tif) into numpy array
+                new_landuse_raster = geotools.read_raster(
+                    self.temp_output_directory + '/' + \
+                    os.path.basename(landuse_layer) + '.tif')[0]
+                self.logger.info('Begin looping through subbasins.')
+                # create feature layers based off the FID field & then use as mask 
+                # to extract subbasin landuse information
+                for i in range(0, total_subbasin_count):
+                    self.logger.info('SUBBASIN #' + str(i + 1) + ':')
 
-            self.logger.info('Begin looping through subbasins.')
-            # create feature layers based off the FID field & then use as mask 
-            # to extract subbasin landuse information
-            for i in range(0, total_subbasin_count):
-                self.logger.info('SUBBASIN #' + str(i + 1) + ':')
+                    # write the subbasin number to report
+                    emerging_lulc_report.write('Subbasin ' + str(i + 1) + '\n')
 
-                # write the subbasin number to report
-                emerging_lulc_report.write('Subbasin ' + str(i + 1) + '\n')
+                    self.logger.info('Finding indicies in base raster array ' +
+                                 'that correspond with current subbasin.')
+                    # find indicies where the value < 255 (remove the NoData)
+                    idx = np.nonzero(rasterized_shapefile == i + 1)
+                    
+                    # find lulc codes in the new layer that aren't in the base layer
+                    new_lulc_codes = self.find_unique_lulc_codes(
+                        idx,
+                        base_raster_array,
+                        new_landuse_raster)
 
-                self.logger.info('Finding indicies in base raster array ' +
-                             'that correspond with current subbasin.')
-                # find indicies where the value < 255 (remove the NoData)
-                idx = np.nonzero(rasterized_shapefile == i + 1)
-                
-                # find lulc codes in the new layer that aren't in the base layer
-                new_lulc_codes = self.find_unique_lulc_codes(
-                    idx,
-                    base_raster_array,
-                    new_landuse_raster)
+                    # write the emerging lulc to report
+                    emerging_lulc_report.write(str(new_lulc_codes) + '\n\n')
 
-                # write the emerging lulc to report
-                emerging_lulc_report.write(str(new_lulc_codes) + '\n\n')
+                    # inject new lulc codes into the base raster array
+                    base_raster_array = self.inject_new_lulc_codes(
+                        idx,
+                        new_lulc_codes,
+                        base_raster_array)
 
-                # inject new lulc codes into the base raster array
-                base_raster_array = self.inject_new_lulc_codes(
-                    idx,
-                    new_lulc_codes,
-                    base_raster_array)
-
-            self.logger.info('End looping through subbasins.')
+                self.logger.info('End looping through subbasins.')
+        except:
+            self.logger.exception('An error occurred while creating the emerging lulc report.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while creating the emerging lulc report.')
 
         self.logger.info('End looping through new landuse layers.\n\n')
-        # convert the updated base raster array (composite) to geotiff
-        self.create_composite_raster(
-            base_raster_array,
-            self.base_landuse_raster_adf_filepath,
-            self.temp_output_directory + '/base_new1.tif')
+        
+        try:
+            # convert the updated base raster array (composite) to geotiff
+            self.create_composite_raster(
+                base_raster_array,
+                self.base_landuse_raster_adf_filepath,
+                self.temp_output_directory + '/base_new1.tif')
+        except:
+            self.logger.exception('An error occurred while creating the composite raster.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('An error occurred while creating the composite raster.')
 
         self.logger.info('Closing Emerging_LULC_Report for writing.')
         # close emerging lulc report
@@ -377,18 +415,17 @@ class LUUCheckerProcess(object):
         message += 'The link will expire on ' + self.get_expiration_date() 
         message += ' (48 hours).<br><br>Sincerely,<br>SWAT Tools'
         try:
-            send_mail_status = send_mail(
+            send_mail(
                 subject,
                 "",
                 'LUU Checker User',
                 [self.user_email],
                 fail_silently=False,
                 html_message=message)
-            if send_mail_status == 0:
-                pass
-
-        except:
-            pass
+        except Exception:
+            self.logger.exception('Unable to convert raster from .adf to .tif.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Unable to convert raster from .adf to .tif.')
 
 
     def get_expiration_date(self):
