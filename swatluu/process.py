@@ -288,7 +288,7 @@ class SWATLUUProcess(object):
         except Exception:
             self.logger.exception('Unable to open shapefile hrus1.shp.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise Exception('Unable to open shapefile hrus1.shp'.)
+            raise Exception('Unable to open shapefile hrus1.shp.')
 
         self.logger.info('Sorting and merging the non-dominant and dominant hrus.')
         # retrieve dominant hru values - these are the hrus that remained
