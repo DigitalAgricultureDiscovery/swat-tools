@@ -106,6 +106,7 @@ def register_user(request):
         )
 
 
+@login_required
 def contact_us(request):
     """ Renders Contact Us page which enables user to email administrator """
     # only allow users not signed in to view the registration page
