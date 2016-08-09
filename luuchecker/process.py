@@ -43,7 +43,7 @@ class LUUCheckerProcess(object):
             self.base_raster_mask = []
             self.status = [0, "Everything checks out."]
             self.new_landuse_layer = ""
-
+            self.tool_name = 'LUU Checker'
 
     def setup_logger(self):
         # Initialize logger for requested process and set header
@@ -58,7 +58,6 @@ class LUUCheckerProcess(object):
         self.logger.info('User: ' + self.user_email)
         self.logger.info('Task started.')
         self.logger.info('Initializing variables.')
-
 
     def create_output_dir(self):
         """
@@ -76,7 +75,6 @@ class LUUCheckerProcess(object):
             shutil.rmtree(self.temp_output_directory)
         if not os.path.exists(self.temp_output_directory):
             os.makedirs(self.temp_output_directory)
-
 
     def find_unique_lulc_codes(self, idx, base_raster_array, new_landuse_raster):
         """
@@ -114,7 +112,6 @@ class LUUCheckerProcess(object):
         new_lulc_codes = np.setdiff1d(new_raster_lulc_codes, base_raster_lulc_codes)
 
         return new_lulc_codes
-
 
     def inject_new_lulc_codes(self, idx, new_lulc_codes, base_raster_array):
         """
@@ -162,7 +159,6 @@ class LUUCheckerProcess(object):
 
         return base_raster_array
 
-
     def create_composite_raster(self, base_raster_array, base_landuse_raster_adf_filepath, composite_raster_filepath):
         self.logger.info('Creating composite landuse raster.')
         
@@ -173,8 +169,8 @@ class LUUCheckerProcess(object):
         except Exception:
             self.logger.exception('Error converting new base raster to geotiff.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Error converting new base raster to geotiff.')
-
 
     def start(self):
         """
@@ -228,6 +224,7 @@ class LUUCheckerProcess(object):
         except Exception:
             self.logger.exception('Unable to convert raster from .adf to .tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Unable to convert raster from .adf to .tif.')
 
         self.logger.info('Converting base raster geotiff into numpy array.')
@@ -249,6 +246,7 @@ class LUUCheckerProcess(object):
         except Exception:
             self.logger.exception('Unable to read the base landuse raster.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Unable to read the base landuse raster.')
 
         self.logger.info('Getting count of subbasins from the subbasin shapefile.')
@@ -259,6 +257,7 @@ class LUUCheckerProcess(object):
         except Exception:
             self.logger.exception('Unable to read the subbasin shapefile.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Unable to read the subbasin shapefile.')
 
         # path and filename for the soon to be created subbasin geotiff
@@ -273,6 +272,7 @@ class LUUCheckerProcess(object):
             self.logger.exception('Error converting shapefile to raster. Please make ' + \
                                   'sure you uploaded file.shp.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Error converting shapefile to raster. Please make ' + \
                             'sure you uploaded file.shp.')
 
@@ -284,6 +284,7 @@ class LUUCheckerProcess(object):
         except Exception:
             self.logger.exception('Unable to read the rasterized subbasin geotiff.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Unable to read the rasterized subbasin geotiff.')
 
         self.logger.info('Opening Emerging_LULC_Report for writing.')
@@ -343,6 +344,7 @@ class LUUCheckerProcess(object):
         except:
             self.logger.exception('An error occurred while creating the emerging lulc report.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while creating the emerging lulc report.')
 
         self.logger.info('End looping through new landuse layers.\n\n')
@@ -356,6 +358,7 @@ class LUUCheckerProcess(object):
         except:
             self.logger.exception('An error occurred while creating the composite raster.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while creating the composite raster.')
 
         self.logger.info('Closing Emerging_LULC_Report for writing.')
@@ -368,7 +371,6 @@ class LUUCheckerProcess(object):
             shutil.rmtree(self.temp_output_directory)
 
         self.logger.info('Processing completed.\n\n')
-
 
     def copy_results_to_depot(self):
         """
@@ -383,12 +385,10 @@ class LUUCheckerProcess(object):
         # Copy output over to web directory
         shutil.copytree(self.output_directory, self.output_dir)
 
-
     def clean_up_input_data(self):
         """ Removes input data from tmp directory. """
         self.logger.info('Removing input files from tmp.')
         shutil.rmtree(self.process_root_dir)
-
 
     def email_user_link_to_results(self):
         """
@@ -405,7 +405,7 @@ class LUUCheckerProcess(object):
         None
         """
         self.logger.info('Sending user email with link to their data.')
-        subject = 'LUU Checker data is ready'
+        subject = self.tool_name + ' data is ready'
         message = 'Hi ' + self.user_first_name + ',<br><br>'
         message += 'Your data has finished processing. Please sign in to '
         message += 'the SWAT Tools website and go to the '
@@ -418,15 +418,50 @@ class LUUCheckerProcess(object):
             send_mail(
                 subject,
                 "",
-                'LUU Checker User',
+                'SWAT Tools User',
                 [self.user_email],
                 fail_silently=False,
                 html_message=message)
         except Exception:
             self.logger.exception('Unable to convert raster from .adf to .tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Unable to convert raster from .adf to .tif.')
 
+    def email_error_alert_to_user(self):
+        """
+            Emails the user when an error occurs that prevents their data from
+            being processed.
+            Parameters
+            ----------
+            None
+
+            Returns
+            -------
+            None
+            """
+        self.logger.info('Sending user email informing them an error has occurred.')
+        subject = self.tool_name + ' error'
+        message = 'An error has occurred within ' + self.tool_name + ' while processing your data. '
+        message += 'Please verify your inputs are not missing any required files. '
+        message += 'If the problem persists, please sign in to SWAT Tools and use '
+        message += 'the Contact Us form to request assistance from the SWAT Tools '
+        message += 'Admins.'
+        message += '<br><br>Sincerely,<br>SWAT Tools'
+        try:
+            send_mail(
+                subject,
+                "",
+                'SWAT Tools User',
+                [self.user_email],
+                fail_silently=False,
+                html_message=message)
+        except Exception:
+            self.logger.exception('Error sending the user the email informing ' +
+                                  'them of an error occurrence while processing their data.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Error sending the user the email informing ' +
+                            'them of an error occurrence while processing their data.')
 
     def get_expiration_date(self):
         """
@@ -443,7 +478,6 @@ class LUUCheckerProcess(object):
         """
         self.logger.info('Calculating the date three days from now.')
         return (datetime.datetime.now() + datetime.timedelta(hours=48)).strftime("%m-%d-%Y %H:%M:%S")
-
 
     def update_task_status_in_database(self):
         """

@@ -54,6 +54,7 @@ class UncertaintyProcess(object):
         self.hru_indexes = ''
         self.old_hru_areas = ''
         self.unique_subbasin_ids = ''
+        self.tool_name = 'LUU Uncertainty'
 
     def start(self):
         """
@@ -67,7 +68,8 @@ class UncertaintyProcess(object):
         except Exception:
             self.logger.exception('Create output directory structures.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise Exception('Create output directory structures.')    
+            self.email_error_alert_to_user()
+            raise Exception('Create output directory structures.')
 
         # convert hrus1 grid to tif
         try:
@@ -77,6 +79,7 @@ class UncertaintyProcess(object):
         except Exception:
             self.logger.exception('Unable to convert raster from .adf to .tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Unable to convert raster from .adf to .tif.')
 
         try:
@@ -84,6 +87,7 @@ class UncertaintyProcess(object):
         except Exception:
             self.logger.exception('An error occurred while creating the lup dat files.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while creating the lup dat files.')
 
         try:
@@ -91,6 +95,7 @@ class UncertaintyProcess(object):
         except Exception:
             self.logger.exception('An error occurred while extracting lookup info.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while extracting lookup info.')
 
         try:
@@ -98,6 +103,7 @@ class UncertaintyProcess(object):
         except Exception:
             self.logger.exception('An error occurred while merging thresholds.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while merging thresholds.')
 
         try:
@@ -105,6 +111,7 @@ class UncertaintyProcess(object):
         except Exception:
             self.logger.exception('An error occurred while creating fractional values.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while creating fractional values.')
 
         try:
@@ -112,6 +119,7 @@ class UncertaintyProcess(object):
         except Exception:
             self.logger.exception('An error occurred while extracting hru files data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while extracting hru files data.')
 
         try:
@@ -119,6 +127,7 @@ class UncertaintyProcess(object):
         except Exception:
             self.logger.exception('An error occurred while applying realization.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while applying realization.')
 
     def setup_logger(self):
@@ -193,7 +202,6 @@ class UncertaintyProcess(object):
         except IOError:
             self.logger.exception('Unable to open the lup.dat file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise Exception('Unable to open the lup.dat file.')
 
         self.logger.info('Extracting information about landuse layers\' dates.')
         # loop through landuse layers and pull out date information provided by user
@@ -213,7 +221,6 @@ class UncertaintyProcess(object):
             except Exception:
                 self.logger.exception('Unable to convert raster from .adf to .tif.')
                 UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-                raise Exception('Unable to convert raster from .adf to .tif.')
 
             # write the date and file into lup.dat
             self.logger.info('Adding landuse layer, ' + layer_name + ', to lup.dat.')
@@ -251,7 +258,6 @@ class UncertaintyProcess(object):
         except:
             self.logger.exception('Unable to open the lookup file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise Exception('Unable to open the lookup file.')
 
         # append lookup codes and values to list, throw error if 0 is used
         lookup_info = []
@@ -295,7 +301,6 @@ class UncertaintyProcess(object):
         except Exception:
             self.logger.exception('Unable to read hrus1.tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise Exception('Unable to read hrus1.tif.')
 
         self.logger.info('Reading hru1.shp into numpy array.')
         try:
@@ -311,7 +316,6 @@ class UncertaintyProcess(object):
         except Exception:
             self.logger.exception('Unable to open shapefile hrus1.shp')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise Exception('Unable to open shapefile hrus1.shp.')
 
         self.logger.info('Sorting and merging the non-dominant and dominant hrus.')
         # retrieve dominant hru values - these are the hrus that remained
@@ -335,7 +339,6 @@ class UncertaintyProcess(object):
         except Exception:
             self.logger.info('Failed to create final_HRU.tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise Exception('Failed to create final HRU.tif.')
 
         self.hrus = hrus
         self.dominant_hrus = dominant_hrus
@@ -488,7 +491,6 @@ class UncertaintyProcess(object):
         except Exception:
             self.logger.info('Unable to read the hru files in TxtInOut.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise Exception('Unable to read the hru files in TxtInOut.')
 
         # verify the length (count) of the list matches our dominant hrus
         if len(hru_ids_from_hru_files) != len(self.dominant_hrus):
@@ -497,7 +499,6 @@ class UncertaintyProcess(object):
                 len(hru_ids_from_hru_files)) + ') found in *.hru files does not match number of dominant HRUs (' + str(
                 len(self.dominant_hrus)) + ').')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise Exception('Number of HRU ids do not match.')
 
         self.logger.info('Collecting subbasin ids, landuse codes, soil codes, slope ranges, and subbasin ids.')
         # get each hru's landuse code
@@ -651,7 +652,6 @@ class UncertaintyProcess(object):
                     # close the file
                     hru_fa_file.close()
 
-
     def copy_results_to_depot(self):
         """
         Copies output from process over to web directory for user's consumption.
@@ -665,12 +665,10 @@ class UncertaintyProcess(object):
         # Copy output over to web directory
         shutil.copytree(self.results_dir, self.output_dir)
 
-
     def clean_up_input_data(self):
         """ Removes input data from tmp directory. """
         self.logger.info('Removing input files from tmp.')
         shutil.rmtree(self.process_root_dir)
-
 
     def email_user_link_to_results(self):
         """
@@ -687,7 +685,7 @@ class UncertaintyProcess(object):
         None
         """
         self.logger.info('Sending user email with link to their data.')
-        subject = 'LUU Uncertainty data is ready'
+        subject = self.tool_name + ' data is ready'
         message = 'Hi ' + self.user_first_name + ',<br><br>'
         message += 'Your data has finished processing. Please sign in to '
         message += 'the SWAT Tools website and go to the '
@@ -697,17 +695,53 @@ class UncertaintyProcess(object):
         message += 'The link will expire on ' + self.get_expiration_date() 
         message += ' (48 hours).<br><br>Sincerely,<br>SWAT Tools'
         try:
-            send_mail_status = send_mail(
+            send_mail(
                 subject,
                 "",
-                'LUU Uncertainty User',
+                'SWAT Tools User',
                 [self.user_email],
                 fail_silently=False,
                 html_message=message)
         except Exception:
             self.logger.exception('Error sending the user the email to their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Error sending the user the email to their data.')
+
+    def email_error_alert_to_user(self):
+        """
+            Emails the user when an error occurs that prevents their data from
+            being processed.
+            Parameters
+            ----------
+            None
+
+            Returns
+            -------
+            None
+            """
+        self.logger.info('Sending user email informing them an error has occurred.')
+        subject = self.tool_name + ' error'
+        message = 'An error has occurred within ' + self.tool_name + ' while processing your data. '
+        message += 'Please verify your inputs are not missing any required files. '
+        message += 'If the problem persists, please sign in to SWAT Tools and use '
+        message += 'the Contact Us form to request assistance from the SWAT Tools '
+        message += 'Admins.'
+        message += '<br><br>Sincerely,<br>SWAT Tools'
+        try:
+            send_mail(
+                subject,
+                "",
+                'SWAT Tools User',
+                [self.user_email],
+                fail_silently=False,
+                html_message=message)
+        except Exception:
+            self.logger.exception('Error sending the user the email informing ' +
+                                  'them of an error occurrence while processing their data.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Error sending the user the email informing ' +
+                            'them of an error occurrence while processing their data.')
 
     def get_expiration_date(self):
         """

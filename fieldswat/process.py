@@ -43,6 +43,7 @@ class FieldSWATProcess(object):
         self.hrus = ''
         self.dominant_hrus = ''
         self.hrus_info = ''
+        self.tool_name = 'Field SWAT'
 
     def setup_logger(self):
         # Initialize logger for requested process and set header
@@ -71,6 +72,7 @@ class FieldSWATProcess(object):
         except Exception:
             self.logger.exception('Create output directory structures.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Create output directory structures.')
 
         # convert hrus1 grid to tif
@@ -81,6 +83,7 @@ class FieldSWATProcess(object):
         except Exception:
             self.logger.exception('Unable to convert raster from .adf to .tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Unable to convert raster from .adf to .tif.')
 
         # copy hru1 and fields shapefiles to output directory
@@ -89,6 +92,7 @@ class FieldSWATProcess(object):
         except Exception:
             self.logger.exception('An error occurred while copying hru1 and fields shapefiles to output directory.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while copying hru1 and fields shapefiles to output directory.')
 
         # merge hru thresholds
@@ -97,6 +101,7 @@ class FieldSWATProcess(object):
         except Exception:
             self.logger.exception('An error occurred while merging hru thresholds.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while merging hru thresholds.')
 
         try:
@@ -105,6 +110,7 @@ class FieldSWATProcess(object):
         except Exception:
             self.logger.exception('An error occurred while fetching the hrus1 raster details.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while fetching the hrus1 raster details.')
 
         try:
@@ -112,6 +118,7 @@ class FieldSWATProcess(object):
         except Exception:
             self.logger.exception('An error occurred while setting the gridx and gridy matrices.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while setting the gridx and gridy matrices.')
 
         try:
@@ -119,6 +126,7 @@ class FieldSWATProcess(object):
         except Exception:
             self.logger.exception('An error occurred while creating the hru field workbook.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while creating the hru field workbook.')
 
         try:
@@ -126,6 +134,7 @@ class FieldSWATProcess(object):
         except Exception:
             self.logger.exception('An error occurred while updating field info.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while updating field info.')
 
         try:
@@ -133,6 +142,7 @@ class FieldSWATProcess(object):
         except Exception:
             self.logger.exception('An error occurred while creating the new shapefile.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while creating the new shapefile.')
 
         hru_shapefile = self.results_dir + '/Output/HRU_Response.shp'
@@ -142,6 +152,7 @@ class FieldSWATProcess(object):
         except Exception:
             self.logger.exception('An error occurred while updating the hru shapefile.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('An error occurred while updating the hru shapefile.')
 
     def create_output_dir(self):
@@ -560,7 +571,6 @@ class FieldSWATProcess(object):
             lyr.SetFeature(feature)
             feature = lyr.GetNextFeature()
 
-
     def copy_results_to_depot(self):
         """
         Copies output from process over to web directory for user's consumption.
@@ -574,12 +584,10 @@ class FieldSWATProcess(object):
         # Copy output over to web directory
         shutil.copytree(self.results_dir, self.output_dir)
 
-
     def clean_up_input_data(self):
         """ Removes input data from tmp directory. """
         self.logger.info('Removing input files from tmp.')
         shutil.rmtree(self.process_root_dir)
-
 
     def email_user_link_to_results(self):
         """
@@ -596,7 +604,7 @@ class FieldSWATProcess(object):
         None
         """
         self.logger.info('Sending user email with link to their data.')
-        subject = 'FieldSWAT data is ready'
+        subject = self.tool_name + ' data is ready'
         message = 'Hi ' + self.user_first_name + ',<br><br>'
         message += 'Your data has finished processing. Please sign in to '
         message += 'the SWAT Tools website and go to the '
@@ -609,14 +617,50 @@ class FieldSWATProcess(object):
             send_mail(
                 subject,
                 "",
-                'FieldSWAT User',
+                'SWAT Tools User',
                 [self.user_email],
                 fail_silently=False,
                 html_message=message)
         except Exception:
             self.logger.exception('Error sending the user the email to their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Error sending the user the email to their data.')
+
+    def email_error_alert_to_user(self):
+        """
+            Emails the user when an error occurs that prevents their data from
+            being processed.
+            Parameters
+            ----------
+            None
+
+            Returns
+            -------
+            None
+            """
+        self.logger.info('Sending user email informing them an error has occurred.')
+        subject = self.tool_name + ' error'
+        message = 'An error has occurred within ' + self.tool_name + ' while processing your data. '
+        message += 'Please verify your inputs are not missing any required files. '
+        message += 'If the problem persists, please sign in to SWAT Tools and use '
+        message += 'the Contact Us form to request assistance from the SWAT Tools '
+        message += 'Admins.'
+        message += '<br><br>Sincerely,<br>SWAT Tools'
+        try:
+            send_mail(
+                subject,
+                "",
+                'SWAT Tools User',
+                [self.user_email],
+                fail_silently=False,
+                html_message=message)
+        except Exception:
+            self.logger.exception('Error sending the user the email informing ' +
+                                  'them of an error occurrence while processing their data.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Error sending the user the email informing ' +
+                            'them of an error occurrence while processing their data.')
 
     def get_expiration_date(self):
         """

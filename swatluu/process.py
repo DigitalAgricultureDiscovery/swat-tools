@@ -64,6 +64,7 @@ class SWATLUUProcess(object):
         self.old_hru_areas = []
         self.hru_files_data = []
         self.unique_subbasin_ids = []
+        self.tool_name = 'SWAT LUU'
 
     def setup_logger(self):
         # Initialize logger for requested process and set header
@@ -101,6 +102,7 @@ class SWATLUUProcess(object):
         except Exception:
             self.logger.exception('Unable to convert raster from .adf to .tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Unable to convert raster from .adf to .tif.')
 
         # merge non-dominant hrus into nearby dominant hrus
@@ -170,6 +172,7 @@ class SWATLUUProcess(object):
         except IOError:
             self.logger.exception('Unable to open the lup.dat file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Unable to open the lup.dat file.')
 
         self.logger.info('Extracting information about landuse layers\' dates.')
@@ -190,6 +193,7 @@ class SWATLUUProcess(object):
             except Exception:
                 self.logger.exception('Unable to convert raster from .adf to .tif.')
                 UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+                self.email_error_alert_to_user()
                 raise Exception('Unable to convert raster from .adf to .tif.')
 
             # write the date and file into lup.dat
@@ -228,6 +232,7 @@ class SWATLUUProcess(object):
         except:
             self.logger.exception('Unable to open the lookup file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Unable to open the lookup file.')
 
         # append lookup codes and values to list, throw error if 0 is used
@@ -272,6 +277,7 @@ class SWATLUUProcess(object):
         except Exception:
             self.logger.exception('Unable to read hrus1.tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Unable to read hrus1.tif.')
 
         self.logger.info('Reading hru1.shp into numpy array.')
@@ -288,6 +294,7 @@ class SWATLUUProcess(object):
         except Exception:
             self.logger.exception('Unable to open shapefile hrus1.shp.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Unable to open shapefile hrus1.shp.')
 
         self.logger.info('Sorting and merging the non-dominant and dominant hrus.')
@@ -312,6 +319,7 @@ class SWATLUUProcess(object):
         except Exception:
             self.logger.info('Failed to create final_HRU.tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Failed to create final_HRU.tif.')
 
         self.hrus = hrus
@@ -465,6 +473,7 @@ class SWATLUUProcess(object):
         except Exception:
             self.logger.info('Unable to read the hru files in TxtInOut.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Unable to read the hru files in TxtInOut.')
 
         # verify the length (count) of the list matches our dominant hrus
@@ -474,6 +483,7 @@ class SWATLUUProcess(object):
                 len(hru_ids_from_hru_files)) + ') found in *.hru files does not match number of dominant HRUs (' + str(
                 len(self.dominant_hrus)) + ').')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Number of HRU ids do not match.')
 
         self.logger.info('Collecting subbasin ids, landuse codes, soil codes, slope ranges, and subbasin ids.')
@@ -572,6 +582,7 @@ class SWATLUUProcess(object):
             except Exception:
                 self.logger.exception('Unable to read landuse layer.')
                 UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+                self.email_error_alert_to_user()
                 raise Exception('Unable to read landuse layer.')
 
             # get indexes for the parts of the current landuse layer inside the watershed
@@ -681,7 +692,7 @@ class SWATLUUProcess(object):
         None
         """
         self.logger.info('Sending user email with link to their data.')
-        subject = 'SWAT LUU data is ready'
+        subject = self.tool_name + ' data is ready'
         message = 'Hi ' + self.user_first_name + ',<br><br>'
         message += 'Your data has finished processing. Please sign in to '
         message += 'the SWAT Tools website and go to the '
@@ -694,14 +705,50 @@ class SWATLUUProcess(object):
             send_mail(
                 subject,
                 "",
-                'SWAT LUU User',
+                'SWAT Tools User',
                 [self.user_email],
                 fail_silently=False,
                 html_message=message)
         except Exception:
             self.logger.exception('Error sending the user the email to their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
             raise Exception('Error sending the user the email to their data.')
+
+    def email_error_alert_to_user(self):
+        """
+            Emails the user when an error occurs that prevents their data from
+            being processed.
+            Parameters
+            ----------
+            None
+
+            Returns
+            -------
+            None
+            """
+        self.logger.info('Sending user email informing them an error has occurred.')
+        subject = self.tool_name + ' error'
+        message = 'An error has occurred within ' + self.tool_name + ' while processing your data. '
+        message += 'Please verify your inputs are not missing any required files. '
+        message += 'If the problem persists, please sign in to SWAT Tools and use '
+        message += 'the Contact Us form to request assistance from the SWAT Tools '
+        message += 'Admins.'
+        message += '<br><br>Sincerely,<br>SWAT Tools'
+        try:
+            send_mail(
+                subject,
+                "",
+                'SWAT Tools User',
+                [self.user_email],
+                fail_silently=False,
+                html_message=message)
+        except Exception:
+            self.logger.exception('Error sending the user the email informing ' +
+                                  'them of an error occurrence while processing their data.')
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Error sending the user the email informing ' +
+                            'them of an error occurrence while processing their data.')
 
     def get_expiration_date(self):
         """
