@@ -31,7 +31,6 @@ def authenticate_user(request):
             if form.is_valid():
                 email = request.POST['email']
                 password = request.POST['password']
-
                 user = authenticate(email=email, password=password)
 
                 # If successfully authenticated, login user and redirect to index
@@ -57,6 +56,12 @@ def authenticate_user(request):
                         request,
                         'registration/login.html',
                         {'form': LoginForm})
+            else:
+                request.session['dberror'] = 'Unable to login, make sure you are entering your full email address.'
+                return render(
+                    request,
+                    'registration/login.html',
+                    {'form': LoginForm})
         else:
             return render(
                 request,
