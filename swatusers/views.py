@@ -57,7 +57,7 @@ def authenticate_user(request):
                         'registration/login.html',
                         {'form': LoginForm})
             else:
-                request.session['dberror'] = 'Unable to login, make sure you are entering your full email address.'
+                request.session['dberror'] = 'Unable to login. Make sure you are entering your full email address.'
                 return render(
                     request,
                     'registration/login.html',
