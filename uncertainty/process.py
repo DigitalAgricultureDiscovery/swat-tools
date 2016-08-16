@@ -59,8 +59,13 @@ class UncertaintyProcess(object):
     def start(self):
         """
         """
-        self.setup_logger()
-        self.logger.info('Processing started.')
+        try:
+            self.setup_logger()
+            self.logger.info('Processing started.')
+        except Exception:
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
+            raise Exception('Unable to initialize logger.')
 
         # create output directory structure
         try:

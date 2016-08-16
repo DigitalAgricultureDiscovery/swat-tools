@@ -21,7 +21,25 @@ class FieldSWATProcess(object):
 
     def __init__(self, data=""):
         # set initial paths for the input data
-        if data != "":
+        if data == '':
+            self.user_id = ''
+            self.user_email = ''
+            self.user_first_name = ''
+            self.task_id = ''
+            self.results_dir = ''
+            self.output_dir = ''
+            self.process_root_dir = ''
+            self.hrus1_dir = ''
+            self.fieldswat_swat_model_dir = ''
+            self.fieldswat_fields_shapefile_filename = ''
+            self.fieldswat_fields_shapefile_filepath = ''
+            self.fieldswat_output_type = ''
+            self.fieldswat_aggregation_method = ''
+            self.swatoutput_years = ''
+            self.swatoutput_runoff = ''
+            self.swatoutput_sediment = ''
+            self.fieldswat_selected_year = ''
+        else:
             self.user_id = data['user_id']
             self.user_email = data['user_email']
             self.user_first_name = data['user_first_name']
@@ -60,11 +78,14 @@ class FieldSWATProcess(object):
         self.logger.info('Initializing variables.')
 
     def start(self):
-        """
-        """
-        # start the logging
-        self.setup_logger()
-        self.logger.info('Processing started.')
+        try:
+            # start the logging
+            self.setup_logger()
+            self.logger.info('Processing started.')
+        except Exception:
+            UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            self.email_error_alert_to_user()
+            raise Exception('Unable to initialize logger.')
 
         try:
             # create output directory structure
