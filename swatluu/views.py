@@ -222,6 +222,10 @@ def upload_swat_model_zip(request):
                                            ' Please check for files in folder ' + \
                                            'and re-upload the zip file.'
                 return HttpResponseRedirect(resolve_url('swatluu'))
+        else:
+            # Couldn't find a required SWAT Model folder, return error msg
+            request.session['error'] = 'Please select your zipped SWAT Model before clicking the Upload button.'
+            return HttpResponseRedirect(resolve_url('swatluu'))
     else:
         # Nothing was posted, reload main page
         return render(request, 'swatluu/index.html')
