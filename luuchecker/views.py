@@ -176,6 +176,10 @@ def upload_subbasin_shapefile_zip(request):
 
             # Render the main page
             return render(request, 'luuchecker/index.html')
+        else:
+            # Couldn't find a required subbasin shapefile, return error msg
+            request.session['error'] = 'Please select your zipped subbasin shapefile before clicking the Upload button.'
+            return HttpResponseRedirect(resolve_url('luuchecker'))
     else:
         # Nothing was posted, reload main page
         return render(request, 'luuchecker/index.html')
@@ -200,7 +204,7 @@ def upload_landuse_folder_zip(request):
                 request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('luuchecker'))
+                return render(request, 'luuchecker/index.html')
     
             # Set up the working directory
             unique_path = request.session.get('directory')
@@ -213,7 +217,7 @@ def upload_landuse_folder_zip(request):
                 request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
                                            'to reset the tool. If the issue persists please use the Contact Us ' + \
                                            'form to request further assistance from the site admins.'
-                return HttpResponseRedirect(resolve_url('luuchecker'))
+                return render(request, 'luuchecker/index.html')
 
             try:
                 # Copy the data to the path
@@ -224,7 +228,7 @@ def upload_landuse_folder_zip(request):
                 request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('luuchecker'))
+                return render(request, 'luuchecker/index.html')
 
             # Uncompress the zip
             try:
@@ -244,7 +248,7 @@ def upload_landuse_folder_zip(request):
                                            'persists please use the Contact ' + \
                                            'Us form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('luuchecker'))
+                return render(request, 'luuchecker/index.html')
     
             # Check if unzipped folder exists
             if not os.path.exists(unique_path + '/input/' + landuse_filename):
@@ -256,7 +260,7 @@ def upload_landuse_folder_zip(request):
                                            'persists please use the Contact Us ' + \
                                            'form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('luuchecker'))
+                return render(request, 'luuchecker/index.html')
 
             # Update relevant session variables
             request.session['luuc_landuse_filename'] = filename
@@ -264,6 +268,10 @@ def upload_landuse_folder_zip(request):
                 landuse_filename
             request.session['progress_message'].append(
                 'Landuse zip folder uploaded.')
+            return render(request, 'luuchecker/index.html')
+        else:
+            # Couldn't find the required zipped landuse folder, return error msg
+            request.session['error'] = 'Please select your zipped landuse folder before clicking the Upload button.'
             return render(request, 'luuchecker/index.html')
     else:
         # Nothing was posted, reload main page
@@ -285,7 +293,7 @@ def upload_base_landuse_raster_file(request):
 
             if not base_landuse_raster:
                 request.session['error'] = 'Please select the base raster.'
-                return HttpResponseRedirect(resolve_url('luuchecker'))
+                return render(request, 'luuchecker/index.html')
             
             filename = base_landuse_raster.name
             base_landuse_raster_filename = os.path.splitext(filename)[0]
@@ -307,12 +315,11 @@ def upload_base_landuse_raster_file(request):
                                            'check if the folder exists inside the ' + \
                                            'zipped landuse folder and upload ' + \
                                            'the zipped landuse folder again.'
-                return HttpResponseRedirect(resolve_url('luuchecker'))
+                return render(request, 'luuchecker/index.html')
         else:
-            request.session['error'] = 'Unable to receive the dates, please try again. If the issue ' + \
-                                       'persists please use the Contact Us form to request further assistance ' + \
-                                       'from the site admins.'
-            return HttpResponseRedirect(resolve_url('luuchecker'))
+            # Couldn't find the required base landuse layer, return error msg
+            request.session['error'] = 'Please select your base landuse layer before clicking the Upload button.'
+            return render(request, 'luuchecker/index.html')
     else:
         # Nothing was posted, reload main page
         return render(request, 'luuchecker/index.html')
@@ -335,17 +342,17 @@ def select_number_of_landuse_layers(request):
         except ValueError:
             # If it fails, display error
             request.session['error'] = 'Please enter a number.'
-            return HttpResponseRedirect(resolve_url('luuchecker'))
+            return render(request, 'luuchecker/index.html')
     
         # If no value was posted, display error
         if not landuse_layer_count:
             request.session['error'] = 'Please enter a value greater than 0.'
-            return HttpResponseRedirect(resolve_url('luuchecker'))
+            return render(request, 'luuchecker/index.html')
     
         # If value posted, but less than 1, display error
         if landuse_layer_count < 1:
             request.session['error'] = 'Please enter a value greater than 0.'
-            return HttpResponseRedirect(resolve_url('luuchecker'))
+            return render(request, 'luuchecker/index.html')
     
         # Update relevant session variable
         request.session['luuc_landuse_layer_count'] = landuse_layer_count
@@ -372,7 +379,7 @@ def upload_selected_landuse_layers(request):
     request.session['error'] = []
 
     if request.method == 'GET':
-        return HttpResponseRedirect(resolve_url('luuchecker'))
+        return render(request, 'luuchecker/index.html')
 
     # If user made a post request
     if request.method == 'POST':
@@ -382,13 +389,13 @@ def upload_selected_landuse_layers(request):
             request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
-            return HttpResponseRedirect(resolve_url('luuchecker'))
+            return render(request, 'luuchecker/index.html')
 
         if request.session['luuc_landuse_layer_count'] != len(landuse_layer_files):
             request.session['error'] = 'Please select ' + str(request.session['luuc_landuse_layer_count']) + \
                                        ' landuse layers. If you would like to select a different number of ' + \
                                        'new landuse layers, go back to the previous step and enter the number desired.'
-            return HttpResponseRedirect(resolve_url('luuchecker'))
+            return render(request, 'luuchecker/index.html')
 
         for landuse_layer in landuse_layer_files:
             if not landuse_layer:
@@ -397,7 +404,7 @@ def upload_selected_landuse_layers(request):
                                            'new landuse layers, go back to the previous step and enter the number desired.'
                 request.session['luuc_landuse_layers_filenames'] = []
                 request.session['luuc_landuse_layers_filepaths'] = []
-                return HttpResponseRedirect(resolve_url('luuchecker'))
+                return render(request, 'luuchecker/index.html')
             
             filename = landuse_layer.name
             landuse_layer_filename = os.path.splitext(filename)[0]
@@ -418,8 +425,8 @@ def upload_selected_landuse_layers(request):
                                            'in step 2. Please check if the folder exists ' + \
                                            'inside the landuse folder and upload ' + \
                                            'the zipped landuse folder again.'
-                return HttpResponseRedirect(resolve_url('luuchecker'))
-    return HttpResponseRedirect(resolve_url('luuchecker'))
+                return render(request, 'luuchecker/index.html')
+    return render(request, 'luuchecker/index.html')
 
 
 def select_percentage(request):
@@ -431,7 +438,7 @@ def select_percentage(request):
     
     # If user made a post request
     if request.method == 'GET':
-        return HttpResponseRedirect(resolve_url('luuchecker'))
+        return render(request, 'luuchecker/index.html')
 
     if request.method == 'POST':
         try:
@@ -440,15 +447,15 @@ def select_percentage(request):
             request.session['error'] = 'Unable to retrieve submitted percentage value, please try again. If the issue ' + \
                                        'persists please use the Contact Us form to request further assistance ' + \
                                        'from the site admins.'
-            return HttpResponseRedirect(resolve_url('luuchecker'))
+            return render(request, 'luuchecker/index.html')
 
     if not landuse_percent:
         request.session['error'] = 'Please enter some percentage value.'
-        return HttpResponseRedirect(resolve_url('luuchecker'))
+        return render(request, 'luuchecker/index.html')
 
     if not float(landuse_percent):
         request.session['error'] = 'Please enter some percentage value in decimal number.'
-        return HttpResponseRedirect(resolve_url('luuchecker'))
+        return render(request, 'luuchecker/index.html')
 
     request.session['luuc_landuse_percentage'] = landuse_percent
     request.session['progress_message'].append('Percentage value taken.')
@@ -501,9 +508,7 @@ def request_process(request):
             'Job successfully added to queue. You will receive an email with ' + \
             'a link to your files once the processing has completed.')
 
-        return render(request, 'luuchecker/index.html')
-    else:
-        return HttpResponseRedirect(resolve_url('luuchecker'))
+    return render(request, 'luuchecker/index.html')
 
 
 def add_task_id_to_database(user_id, user_email, task_id):

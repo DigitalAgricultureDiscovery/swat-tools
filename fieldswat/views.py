@@ -96,7 +96,7 @@ def upload_swat_model_zip(request):
                 request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
 
             try:
                 # Set up the working directory
@@ -106,7 +106,7 @@ def upload_swat_model_zip(request):
                 request.session['error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
             
             try:
                 # If the shapefile directory already exists, remove it to make way for new upload
@@ -116,7 +116,7 @@ def upload_swat_model_zip(request):
                 request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
                                            'to reset the tool. If the issue persists please use the Contact Us ' + \
                                            'form to request further assistance from the site admins.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
 
             try:
                 # Copy compressed data to the working directory
@@ -127,7 +127,7 @@ def upload_swat_model_zip(request):
                 request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
 
             # Uncompress the data
             try:
@@ -144,7 +144,7 @@ def upload_swat_model_zip(request):
                 request.session['error'] = 'Unable to unzip the uploaded file, please try again. If the issue ' + \
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
 
             # Check if decompression completed or failed (no folder if failed)
             if not os.path.exists(unique_path + '/input/' + swat_model_filename):
@@ -157,7 +157,7 @@ def upload_swat_model_zip(request):
                                            'persists please use the Contact Us ' + \
                                            'form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
 
             # Check if the required files/folders exist
             loc = unique_path + '/input/' + swat_model_filename + \
@@ -179,7 +179,7 @@ def upload_swat_model_zip(request):
                                            'persists please use the Contact Us ' + \
                                            'form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
 
             # Check if hru files were found
             if not (glob.glob(scenarioloc)):
@@ -193,7 +193,7 @@ def upload_swat_model_zip(request):
                                            'persists please use the Contact Us ' + \
                                            'form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
 
             # Check if watershed folder was found
             if not os.path.exists(shapeloc):
@@ -205,7 +205,7 @@ def upload_swat_model_zip(request):
                                            'persists please use the Contact Us ' + \
                                            'form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
             if not glob.glob(swatoutputdbloc):
                 request.session['error'] = 'Could not find the folder or ' + \
                                            'SWATOutput.mdb access file in ' + \
@@ -216,7 +216,7 @@ def upload_swat_model_zip(request):
                                            'persists please use the Contact Us ' + \
                                            'form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
 
             # If there were no issues finding the required SWAT Model paths
             if os.path.exists(loc):
@@ -244,7 +244,7 @@ def upload_swat_model_zip(request):
                                                'persists please use the Contact Us ' + \
                                                'form to request further assistance ' + \
                                                'from the site admins.'
-                    return HttpResponseRedirect(resolve_url('fieldswat'))
+                    return render(request, 'fieldswat/index.html')
 
                 request.session['swatoutput_unique_years'] = unique_years
 
@@ -266,7 +266,11 @@ def upload_swat_model_zip(request):
                                            'persists please use the Contact Us ' + \
                                            'form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
+        else:
+            # Couldn't find a required SWAT Model folder, return error msg
+            request.session['error'] = 'Please select your zipped SWAT Model before clicking the Upload button.'
+            return render(request, 'fieldswat/index.html')
     else:
         # Nothing was posted, reload main page
         return render(request, 'fieldswat/index.html')
@@ -335,11 +339,11 @@ def select_year(request):
             fieldswat_selected_year = int(request.POST.get('fieldswat_year'))
         except ValueError:
             request.session['error'] = 'Please select one of the year radio buttons.'
-            return HttpResponseRedirect(resolve_url('fieldswat'))
+            return render(request, 'fieldswat/index.html')
 
         if fieldswat_selected_year not in request.session['swatoutput_unique_years']:
             request.session['error'] = 'Please select one of the year radio buttons.'
-            return HttpResponseRedirect(resolve_url('fieldswat'))
+            return render(request, 'fieldswat/index.html')
         else:
             request.session['fieldswat_selected_year'] = fieldswat_selected_year
             # Render the main page
@@ -366,7 +370,7 @@ def upload_fields_shapefile_zip(request):
                 request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
 
             # Set up the working directory
             unique_path = request.session.get("directory")
@@ -379,7 +383,7 @@ def upload_fields_shapefile_zip(request):
                 request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
                                            'to reset the tool. If the issue persists please use the Contact Us ' + \
                                            'form to request further assistance from the site admins.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
 
             try:
                 # Copy compressed data to the working directory
@@ -390,7 +394,7 @@ def upload_fields_shapefile_zip(request):
                 request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
             
             # Uncompress the data
             try:
@@ -406,7 +410,7 @@ def upload_fields_shapefile_zip(request):
             except:
                 request.session['error'] = 'Could not unzip the folder. ' + \
                                            'Please contact administrator'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
 
             if not os.path.exists(unique_path + '/input/' + fields_shapefile_foldername):
                 request.session['error'] = 'Could not extract the folder "' + \
@@ -415,7 +419,7 @@ def upload_fields_shapefile_zip(request):
                                            'compressed in zip format and ' + \
                                            'has the same name as ' + \
                                            'compressed folder.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
 
             # directory path for the unzipped shapefile folder
             fields_shapefile_filepath = unique_path + '/input/' + fields_shapefile_foldername
@@ -430,13 +434,13 @@ def upload_fields_shapefile_zip(request):
                 request.session['error'] = 'More than one shapefile found ' + \
                                            'in the zipped folder. Please ' + \
                                            're-upload with only one shapefile.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
             # no .shp present
             elif len(shapefiles) < 1:
                 request.session['error'] = 'No shapefiles found in the ' + \
                                            'zipped folder. Please ' + \
                                            're-upload with a single shapefile.'
-                return HttpResponseRedirect(resolve_url('fieldswat'))
+                return render(request, 'fieldswat/index.html')
             # single .shp present
             else:
                 fields_shapefile_filename = shapefiles[0]
@@ -452,7 +456,7 @@ def upload_fields_shapefile_zip(request):
             request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                        'persists please use the Contact Us form to request further assistance ' + \
                                        'from the site admins.'
-            return HttpResponseRedirect(resolve_url('fieldswat'))
+            return render(request, 'fieldswat/index.html')
     else:
         # Nothing was posted, reload main page
         return render(request, 'fieldswat/index.html')
@@ -478,14 +482,14 @@ def confirm_output_and_agg(request):
             request.session['error'] = 'Unable to find selected output and aggregation methods. ' + \
                                        'Please make sure you have selected an option for both of these ' + \
                                        'methods and then try again.'
-            return HttpResponseRedirect(resolve_url('fieldswat'))
+            return render(request, 'fieldswat/index.html')
 
         # verify the value matches what we would expect
         if output_type != u'runoff' and output_type != u'sediment':
             request.session['error'] = 'Output type is not recognized. ' + \
                                        'Please make sure a radio button ' + \
                                        'is selected under Output.'
-            return HttpResponseRedirect(resolve_url('fieldswat'))
+            return render(request, 'fieldswat/index.html')
         
         # verify the value matches what we would expect
         if aggregation_method != 'mean' and aggregation_method != 'mode' and \
@@ -493,7 +497,7 @@ def confirm_output_and_agg(request):
             request.session['error'] = 'Aggregation method is not recognized. ' + \
                                        'Please make sure a radio button ' + \
                                        'is selected under Aggregation method.'
-            return HttpResponseRedirect(resolve_url('fieldswat'))
+            return render(request, 'fieldswat/index.html')
 
         # add selected values to session variables
         request.session['fieldswat_output_type'] = output_type
@@ -547,9 +551,7 @@ def request_process(request):
             'Job successfully added to queue. You will receive an email with ' + \
             'a link to your files once the processing has completed.')
 
-        return render(request, 'fieldswat/index.html')
-    else:
-        return HttpResponseRedirect(resolve_url('fieldswat'))
+    return render(request, 'fieldswat/index.html')
 
 
 def add_task_id_to_database(user_id, user_email, task_id):
