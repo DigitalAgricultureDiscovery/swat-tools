@@ -1,3 +1,4 @@
+from osgeo import gdal
 from scipy import ndimage
 from numpy.core.fromnumeric import nonzero
 import glob
@@ -147,3 +148,67 @@ def read_hru_files(txt_in_out_dir):
     ]
 
     return hru_files_attribute_values
+
+def validate_raster_properties(hrus1_path, lu_path, lu_layers):
+    """
+    Checks whether the hrus1 raster and landuse rasters have the
+    same resolution and same extent (row/cols). If the landuse rasters
+    have a larger extent than hrus1 a warning will be issued. If the
+    landuse rasters have a smaller extent than hrus1, an error is issued.
+
+    Parameters
+    ----------
+    hrus1_path: string
+        path to the hrus1 raster (swatmodel/Watershed/Grid/hrus1)
+    lu_path: string
+        path to the landuse directory
+    lu_layers: list of strings
+        list of landuse layer names
+
+    Returns
+    -------
+    validated: dictionary
+        status key either 'pass', 'warn', 'error'
+    """
+    # open hrus1 raster with gdal
+    hrus1 = gdal.Open(hrus1_path)
+
+    # get hrus1 geoproperties
+    hrus1_gt = hrus1.GetGeoTransform()
+
+    # get hrus1 pixel resolution
+    hrus1_pres = hrus1_gt[1]
+
+    # get hrus1 (rows,cols) extent
+    hrus1_extent = hrus1.RasterYSize, hrus1.RasterXSize
+
+    # validation flag
+    validated = {
+        'status': 'pass',
+        'msg': 'Passed all tests.'
+    }
+
+    # repeat above steps for each landuse layer
+    for layer_name in lu_layers:
+        lu = gdal.Open(lu_path + '/' + layer_name)
+        lu_pres = lu.GetGeoTransform()[1]
+        lu_extent = lu.RasterYSize, lu.RasterXSize
+
+        # test if pixel resolution matches hrus1
+        if hrus1_pres != lu_pres:
+            validated['status'] = 'error'
+            validated['msg'] = 'Resolution of hrus1 and landuse rasters do not match.'
+            raise Exception('Hrus1 and landuse resolutions do not match.')
+
+        # test if rows,cols matches hrus1
+        if hrus1_extent != lu_extent:
+            if hrus1_extent[0] < lu_extent[0] and \
+                    hrus1_extent[1] < lu_extent[1]:
+                validated['status'] = 'warning'
+                validated['msg'] = 'Extents do not match, ' + layer_name + '\'s extent larger than hrus1.'
+            else:
+                validated['status'] = 'error'
+                validated['msg'] = 'Extents do not match, ' + layer_name + '\'s extent smaller than hrus1.'
+                raise Exception('Hrus1 has larger extent than landuse layers.')
+
+    return validated
