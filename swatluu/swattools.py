@@ -197,7 +197,8 @@ def validate_raster_properties(hrus1_path, lu_path, lu_layers):
         # test if pixel resolution matches hrus1
         if hrus1_pres != lu_pres:
             validated['status'] = 'error'
-            validated['msg'] = 'Resolution of hrus1 and landuse rasters do not match.'
+            validated['msg'] = 'Resolution of hrus1 and landuse rasters do not match. ' + \
+                               'Please refer to the manual for more information on this error.'
             raise Exception('Hrus1 and landuse resolutions do not match.')
 
         # test if rows,cols matches hrus1
@@ -205,10 +206,12 @@ def validate_raster_properties(hrus1_path, lu_path, lu_layers):
             if hrus1_extent[0] < lu_extent[0] and \
                     hrus1_extent[1] < lu_extent[1]:
                 validated['status'] = 'warning'
-                validated['msg'] = 'Extents do not match, ' + layer_name + '\'s extent larger than hrus1.'
+                validated['msg'] = 'Extents do not match, ' + layer_name + '\'s extent larger than hrus1. ' + \
+                                   'Please refer to the manual for more information on this error.'
             else:
                 validated['status'] = 'error'
-                validated['msg'] = 'Extents do not match, ' + layer_name + '\'s extent smaller than hrus1.'
+                validated['msg'] = 'Extents do not match, ' + layer_name + '\'s extent smaller than hrus1. ' + \
+                                   'Please refer to the manual for more information on this error.'
                 raise Exception('Hrus1 has larger extent than landuse layers.')
 
     return validated
