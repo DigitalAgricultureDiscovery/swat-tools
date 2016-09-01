@@ -612,7 +612,8 @@ class SWATLUUProcess(object):
             # read current landuse layer's raster file
             self.logger.info('Reading landuse layer into numpy array.')
             try:
-                landuse_layer_raster, layer_info = geotools.read_raster(
+                landuse_layer_raster, layer_info = geotools.create_raster_array(
+                    self.results_dir + '/Raster/hrus1',
                     self.results_dir + '/Raster/' + landuse_layer[3] + '.tif')
                 # get the nodata value
                 landuse_layer_nodata = layer_info[1]

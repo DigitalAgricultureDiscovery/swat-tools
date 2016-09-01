@@ -1,7 +1,121 @@
 from osgeo import gdal, ogr
 from subprocess import check_call
-import multiprocessing
+
+import numpy as np
 import shapefile
+
+
+def get_raster_coords(raster_filepath):
+    """
+    Opens a raster file, extracts the x,y coordinates at the
+    centroid of each cell, and returns the coordinates.
+
+    Parameters
+    ----------
+    raster_filepath: string
+        Filepath to raster file
+
+    Returns
+    -------
+    raster_data: dictionary containing raster data
+    """
+    # open raster with gdal
+    rst = gdal.Open(raster_filepath)
+
+    # extract columns and row sizes
+    cols = rst.RasterXSize
+    rows = rst.RasterYSize
+
+    # get geotransform properties
+    gt = rst.GetGeoTransform()
+
+    # get raster origins
+    xmin = gt[0]
+    ymax = gt[3]
+
+    # get raster cell size
+    cell_size = gt[1]
+
+    # create empty lists that will hold the x, y coordinates
+    x_coords = [[None]] * rows
+    y_coords = [[None]] * rows
+
+    # starting with the xmin, generate the first row of x coords by
+    # adding the cell size to the previous x coord. repeat this for
+    # the number of columns in the raster. after the first row is
+    # completed, shift to the next row and repeat the process until
+    # all the rows have been completed.
+    for i in range(0, rows):
+        x_coords[i] = np.arange(xmin, xmin + (cols * cell_size), cell_size)
+
+    # starting with the ymin, generate the first row of y coords by
+    # adding the cell size to the previous Y coord. do this for the
+    # number of columns in the raster. after the first row is completed,
+    # shift to the next row and repeat the process until all the rows
+    # have been completed.
+    for i in range(0, rows):
+        y_coords[i] = [ymax] * cols
+        ymax -= cell_size
+
+    raster_data = {
+        'array': rst.ReadAsArray(),
+        'cell_size': cell_size,
+        'coords': (x_coords, y_coords),
+        'nodata': rst.GetRasterBand(1).GetNoDataValue(),
+    }
+
+    return raster_data
+
+
+def create_raster_array(hrus1_filepath, landuse_filepath):
+    """
+    Use the hrus1 coordinates to extract landuse values from the landuse
+    raster and then create landuse numpy array with same extent as hrus1.
+
+    Parameters
+    ----------
+    hrus1_filepath: string
+        Filepath to hrus1 raster
+    landuse_filepath: string
+        Filepath to landuse raster
+
+    Returns
+    -------
+    landuse_array: tuple of array and tuple
+        Numpy array containing landuse values and tuple with
+        cell size and no data value
+    """
+    # get gdal info from hrus1 raster
+    hrus1_data = get_raster_coords(hrus1_filepath)
+
+    # open landuse raster
+    lulc = gdal.Open(landuse_filepath)
+
+    # get landuse band
+    lulc_band = lulc.GetRasterBand(1)
+
+    # get geotransform info for landuse layer
+    lulc_gt = lulc.GetGeoTransform()
+
+    # get x and y origins for the landuse layer
+    x_origin, y_origin = lulc_gt[0], lulc_gt[3]
+
+    # initialize landuse array
+    landuse_array = np.empty((len(hrus1_data['coords'][0]), len(hrus1_data['coords'][0][0])))
+
+    # use landuse x, y origins to find landuse values at hrus1 coordinates
+    for i in range(0, len(hrus1_data['coords'][0])):
+        for j in range(0, len(hrus1_data['coords'][0][0])):
+            x = hrus1_data['coords'][0][i][j]
+            y = hrus1_data['coords'][1][i][j]
+            x_offset = int((x - x_origin) / hrus1_data['cell_size'])
+            y_offset = abs(int((y - y_origin) / hrus1_data['cell_size']))
+            if hrus1_data['array'][i][j] != hrus1_data['nodata']:
+                landuse_array[i][j] = lulc_band.ReadAsArray(x_offset, y_offset, 1, 1)[0, 0]
+            else:
+                landuse_array[i][j] = hrus1_data['nodata']
+
+    return landuse_array, (hrus1_data['cell_size'], hrus1_data['nodata'])
 
 
 def read_raster(raster_filepath):

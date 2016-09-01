@@ -149,6 +149,7 @@ def read_hru_files(txt_in_out_dir):
 
     return hru_files_attribute_values
 
+
 def validate_raster_properties(hrus1_path, lu_path, lu_layers):
     """
     Checks whether the hrus1 raster and landuse rasters have the
@@ -197,21 +198,16 @@ def validate_raster_properties(hrus1_path, lu_path, lu_layers):
         # test if pixel resolution matches hrus1
         if hrus1_pres != lu_pres:
             validated['status'] = 'error'
-            validated['msg'] = 'Resolution of hrus1 and landuse rasters do not match. ' + \
-                               'Please refer to the manual for more information on this error.'
-            raise Exception('Hrus1 and landuse resolutions do not match.')
+            validated['msg'] = 'The resolution of hrus1 and ' + layer_name + ' do not match. ' + \
+                               'Your landuse layers must have the same resolution as hrus1. ' + \
+                               'Please refer to the manual for more information on this subject.'
 
         # test if rows,cols matches hrus1
         if hrus1_extent != lu_extent:
-            if hrus1_extent[0] < lu_extent[0] and \
-                    hrus1_extent[1] < lu_extent[1]:
-                validated['status'] = 'warning'
-                validated['msg'] = 'Extents do not match, ' + layer_name + '\'s extent larger than hrus1. ' + \
-                                   'Please refer to the manual for more information on this error.'
-            else:
+            if hrus1_extent[0] > lu_extent[0] and hrus1_extent[1] > lu_extent[1]:
                 validated['status'] = 'error'
-                validated['msg'] = 'Extents do not match, ' + layer_name + '\'s extent smaller than hrus1. ' + \
-                                   'Please refer to the manual for more information on this error.'
-                raise Exception('Hrus1 has larger extent than landuse layers.')
+                validated['msg'] = layer_name + '\'s extent is smaller than hrus1\'s extent. ' + \
+                                   'Your landuse layers must have an extent equal to or greater than that of hrus1. ' + \
+                                   'Please refer to the manual for more information on this subject.'
 
     return validated
