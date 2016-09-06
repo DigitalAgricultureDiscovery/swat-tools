@@ -542,11 +542,12 @@ class UncertaintyProcess(object):
     def apply_realization(self):
         # read the landuse raster into a numpy array
         landuse_lyr_name = self.landuse_layers_data[0][3]
-        landuse_array, landuse_info = geotools.read_raster(
-            self.results_dir + '/Raster/' + landuse_lyr_name + '.tif')
 
-        # no data value for raster
-        landuse_nodata = landuse_info[1]
+        landuse_array, layer_info = geotools.create_raster_array(
+            self.results_dir + '/Raster/hrus1',
+            self.results_dir + '/Raster/' + landuse_lyr_name + '.tif')
+        # get the nodata value
+        landuse_nodata = layer_info[1]
 
         # get non-zero array indexes for landuse raster - exclude the nodata
         landuse_indexes = np.nonzero(landuse_array != landuse_nodata)

@@ -7,6 +7,7 @@ from django.template.response import TemplateResponse
 
 from tasks import process_task
 from swatusers.models import UserTask
+from swatluu import swattools
 
 import csv
 import datetime
@@ -401,6 +402,17 @@ def upload_landuse_layer(request):
                                            'and upload the zipped landuse ' + \
                                            'folder again.'
                 return render(request, 'uncertainty/index.html')
+
+            # Compare landuse layers resolutions and extents to hrus1
+            validated = swattools.validate_raster_properties(
+                request.session.get('uncertainty_swat_model_dir') + '/Watershed/Grid/hrus1',
+                request.session.get('uncertainty_landuse_dir'),
+                request.session.get('uncertainty_landuse_layer_filename'))
+
+            if validated['status'] == 'error':
+                request.session['error'] = validated['msg']
+                return render(request, 'uncertainty/index.html')
+
             # Update progres message and re-render main page
             request.session['progress_message'].append(
                 'Landuse layers selected.')
