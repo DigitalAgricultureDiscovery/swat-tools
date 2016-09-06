@@ -221,7 +221,7 @@ def get_expiration_date(start_datetime):
         Date and time (mm-dd-YYYY HH:MM:SS) 48 hours from the
         start_datetime in string format.
     """
-    return (start_datetime + datetime.timedelta(hours=48)).strftime("%m-%d-%Y %H:%M:%S")
+    return (start_datetime + datetime.timedelta(hours=48)).strftime("%m-%d-%Y %H:%M %z %Z")
 
 
 @login_required
@@ -268,8 +268,8 @@ def task_status(request):
 
             user_tasks.append({
                 'name': task_name,
-                'stime': task.time_started.strftime("%m-%d-%Y %H:%M:%S"),
-                'etime': task.time_completed.strftime("%m-%d-%Y %H:%M:%S"),
+                'stime': task.time_started.strftime("%m-%d-%Y %H:%M %z %Z"),
+                'etime': task.time_completed.strftime("%m-%d-%Y %H:%M %z %Z"),
                 'status': task_status,
                 'download': task_download_url,
                 'expiration': get_expiration_date(task.time_completed)
