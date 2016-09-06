@@ -512,7 +512,7 @@ class LUUCheckerProcess(object):
             Date (mm-dd-YYYY) three days from the present in string format.
         """
         self.logger.info('Calculating the date three days from now.')
-        return (datetime.datetime.now() + datetime.timedelta(hours=48)).strftime("%m-%d-%Y %H:%M:%S")
+        return (datetime.datetime.now() + datetime.timedelta(hours=48)).strftime("%m-%d-%Y %H:%M:%S %Z")
 
     def update_task_status_in_database(self):
         """
