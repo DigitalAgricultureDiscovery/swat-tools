@@ -668,15 +668,14 @@ def download_data(request):
                 dir_to_zip = settings.BASE_DIR + '/user_data/' + request.user.email + \
                              '/' + task_id + '/output/Output'
 
-                # make sure dist folder doesn't already exist, if so remove it
-                if os.path.exists(dir_to_zip + '/dist'):
-                    shutil.rmtree(dir_to_zip + '/dist')
+                # if the folder already exists, that means the user has already used the download link
+                # no need to copy the post processing files over again
+                if not os.path.exists(dir_to_zip + '/dist'):
+                    # copy the post processing distribution folder over
+                    shutil.copytree(settings.BASE_DIR + '/uncertainty/post_processing_script/dist', dir_to_zip + '/dist')
 
-                # copy the post processing distribution folder over
-                shutil.copytree(settings.BASE_DIR + '/uncertainty/post_processing_script/dist', dir_to_zip + '/dist')
-
-                # copy post processing script README.txt
-                shutil.copy(settings.BASE_DIR + '/uncertainty/post_processing_script/README.txt', dir_to_zip)
+                    # copy post processing script README.txt
+                    shutil.copy(settings.BASE_DIR + '/uncertainty/post_processing_script/README.txt', dir_to_zip)
 
                 dir_to_zip_len = len(dir_to_zip.rstrip(os.sep)) + 1
 
