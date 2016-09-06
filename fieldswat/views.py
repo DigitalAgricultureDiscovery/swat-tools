@@ -16,6 +16,7 @@ import zipfile
 
 
 # Create your views here.
+@login_required
 def index(request):
     # Check whether or not user is authenticated, if not return to login page
     if not request.user.is_authenticated():
@@ -74,6 +75,7 @@ def create_working_directory(request):
     fix_file_permissions(unique_path)
 
 
+@login_required
 def upload_swat_model_zip(request):
     """
     This view uploads and extracts the SWAT model zip 
@@ -325,6 +327,7 @@ def get_unique_years_from_mdb(swat_model_dir):
     return swat_mdb_data
 
 
+@login_required
 def select_year(request):
     # Clear any previous progress or error messages
     request.session['progress_complete'] = []
@@ -352,6 +355,7 @@ def select_year(request):
     return render(request, 'fieldswat/index.html')
 
 
+@login_required
 def upload_fields_shapefile_zip(request):
     # Clear any previous progress or error messages
     request.session['progress_complete'] = []
@@ -461,6 +465,8 @@ def upload_fields_shapefile_zip(request):
         # Nothing was posted, reload main page
         return render(request, 'fieldswat/index.html')
 
+
+@login_required
 def confirm_output_and_agg(request):
     """
     Confirms which Output and Aggregation Method radio buttons were selected
@@ -505,6 +511,8 @@ def confirm_output_and_agg(request):
 
     return render(request, 'fieldswat/index.html')
 
+
+@login_required
 def request_process(request):
     """
     This view is the heart of LUU_CHECKER
@@ -569,6 +577,8 @@ def add_task_id_to_database(user_id, user_email, task_id):
     )
     user_task.save()
 
+
+@login_required
 def reset(request):
     """
     This view clears the session, deletes all existing data and
@@ -593,6 +603,7 @@ def reset(request):
             del request.session[key]
 
     return HttpResponseRedirect(resolve_url('fieldswat'))
+
 
 @login_required
 def download_data(request):

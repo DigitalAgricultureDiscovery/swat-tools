@@ -16,6 +16,7 @@ import shutil
 import zipfile
 
 
+@login_required
 def index(request):
     # Check whether or not user is authenticated, if not return to login page
     if not request.user.is_authenticated():
@@ -73,6 +74,7 @@ def create_working_directory(request):
     fix_file_permissions(unique_path)
 
 
+@login_required
 def upload_subbasin_shapefile_zip(request):
     # Clear any previous progress or error messages
     request.session['progress_complete'] = []
@@ -185,6 +187,7 @@ def upload_subbasin_shapefile_zip(request):
         return render(request, 'luuchecker/index.html')
 
 
+@login_required
 def upload_landuse_folder_zip(request):
     """ This view uploads all landuse info to the input directory. """
     # Clear progression and error session keys
@@ -278,6 +281,7 @@ def upload_landuse_folder_zip(request):
         return render(request, 'luuchecker/index.html')
 
 
+@login_required
 def upload_base_landuse_raster_file(request):
     """ This view uploads all landuse info to the input directory. """
     # Clear progression and error session keys
@@ -325,6 +329,7 @@ def upload_base_landuse_raster_file(request):
         return render(request, 'luuchecker/index.html')
 
 
+@login_required
 def select_number_of_landuse_layers(request):
     """ This view gets the number of landuse layers in the landuse zip other than the base layer """
     # Clear any existing progress messages
@@ -369,6 +374,7 @@ def select_number_of_landuse_layers(request):
         return render(request, 'luuchecker/index.html')
 
 
+@login_required
 def upload_selected_landuse_layers(request):
     """ This view gets the names of the selected landuse layers and validates
         whether or not the layers are in the uploaded landuse folder """
@@ -429,6 +435,7 @@ def upload_selected_landuse_layers(request):
     return render(request, 'luuchecker/index.html')
 
 
+@login_required
 def select_percentage(request):
     """ This view uploads the percentage information """
     # Clear any existing progress messages
@@ -463,6 +470,7 @@ def select_percentage(request):
     return render(request, 'luuchecker/index.html')
 
 
+@login_required
 def request_process(request):
     """
     This view is the heart of LUU_CHECKER
@@ -585,6 +593,7 @@ def delete_user_data(request):
             shutil.rmtree(unique_path + '/output')
 
 
+@login_required
 def reset(request):
     """ This view clears the session, deletes all existing data and
         refreshes the LUU Checker home page. """

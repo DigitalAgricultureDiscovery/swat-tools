@@ -17,6 +17,7 @@ import swattools
 import zipfile
 
 
+@login_required
 def index(request):
     """ Renders view for main SWAT LUU page. """
     # Check whether or not user is authenticated, if not return to login page
@@ -77,6 +78,7 @@ def create_working_directory(request):
     fix_file_permissions(unique_path)
 
 
+@login_required
 def upload_swat_model_zip(request):
     """ This view uploads the SWAT model zip in to the input directory. """
     # Clear any previous progress or error messages
@@ -232,6 +234,7 @@ def upload_swat_model_zip(request):
         return render(request, 'swatluu/index.html')
 
 
+@login_required
 def upload_landuse_zip(request):
     """ This view uploads all landuse info to the input directory. """
     # Clear progression and error session keys
@@ -325,6 +328,7 @@ def upload_landuse_zip(request):
         return render(request, 'swatluu/index.html')
 
 
+@login_required
 def select_number_of_landuse_layers(request):
     """ This view gets the number of landuse layers in the landuse zip """
     # Clear any existing progress messages
@@ -372,6 +376,7 @@ def select_number_of_landuse_layers(request):
         return render(request, 'swatluu/index.html')
 
 
+@login_required
 def validate_selected_landuse_layers(request):
     """ This view gets the names of the selected landuse layers and validates
         whether or not the layers are in the uploaded landuse folder """
@@ -490,6 +495,7 @@ def validate_selected_landuse_layers(request):
         return render(request, 'swatluu/index.html')
 
 
+@login_required
 def upload_lookup_file(request):
     """ This view gets the contents of the uploaded landuse lookup file """
     # Clear any existing progress messages
@@ -594,6 +600,7 @@ def upload_lookup_file(request):
         return render(request, 'swatluu/index.html')
 
 
+@login_required
 def runit(request):
     """ This view is executed after all input information is uploaded 
     successfully. This is the heart of the SWAT tool. It creates the output 
@@ -723,6 +730,7 @@ def delete_user_data(request):
             shutil.rmtree(unique_path + '/output')
 
 
+@login_required
 def reset(request):
     """ This view clears the session, deletes all existing data and
         refreshes the SWAT LUU home page. """

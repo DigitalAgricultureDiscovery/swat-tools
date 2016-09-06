@@ -18,6 +18,7 @@ import zipfile
 
 
 # Create your views here.
+@login_required
 def index(request):
     # Check whether or not user is authenticated, if not return to login page
     if not request.user.is_authenticated():
@@ -76,6 +77,7 @@ def create_working_directory(request):
     fix_file_permissions(unique_path)
 
 
+@login_required
 def upload_swat_model_zip(request):
     """ This view uploads the SWAT model zip in to the input directory. """
     # Clear any previous progress or error messages
@@ -230,6 +232,7 @@ def upload_swat_model_zip(request):
         return render(request, 'uncertainty/index.html')
 
 
+@login_required
 def upload_landuse_zip(request):
     """
     This view uploads all landuse info to the input directory.
@@ -331,6 +334,7 @@ def upload_landuse_zip(request):
         return render(request, 'uncertainty/index.html')
 
 
+@login_required
 def upload_landuse_layer(request):
     """ This view gets the names of the selected landuse layers and validates
         whether or not the layers are in the uploaded landuse folder """
@@ -409,6 +413,7 @@ def upload_landuse_layer(request):
         return render(request, 'uncertainty/index.html')
 
 
+@login_required
 def upload_lookup_file(request):
     """ This view gets the contents of the uploaded landuse lookup file """
     # Clear any existing progress messages
@@ -525,6 +530,7 @@ def upload_lookup_file(request):
         return render(request, 'uncertainty/index.html')
 
 
+@login_required
 def update_error_percentage(request):
     """
     Collects the updated error and realization percentages from the
@@ -568,43 +574,8 @@ def update_error_percentage(request):
 
     return render(request, 'uncertainty/index.html', context)
 
-# We no longer run the swat executable with the uncertainty tool 
-# def upload_swatexe_file(request):
 
-#     # Clear any existing progress messages
-#     request.session['progress_complete'] = []
-#     request.session['progress_message'] = []
-#     request.session['error'] = []
-
-#     if request.method == 'GET':
-#         return HttpResponseRedirect(resolve_url('uncertainty'))
-
-#     if request.method == 'POST':
-#         swatexe_filepath = request.session.get('uncertainty_swat_model_dir')
-
-#         if 'swatexe_file' in request.FILES:
-#             swatexe_file = request.FILES['swatexe_file']
-#         else:
-#             request.session['error'] = 'Please select a file.'
-#             return HttpResponseRedirect(resolve_url('uncertainty'))
-
-#         swatexe_filename = swatexe_file.name
-#         swatexe_filename, swatexe_ext = os.path.splitext(swatexe_filename)
-
-#         if swatexe_ext != '.exe':
-#             request.session['error'] = 'Please select an exe file.'
-#             return HttpResponseRedirect(resolve_url('uncertainty'))
-
-#         if not os.path.exists(swatexe_filepath + '/Scenarios/Default/TxtInOut/' + swatexe_filename + swatexe_ext):
-#             request.session['error'] = 'Selected executable file is not available in location <swat_model_folder>/Scenarios/Default/TxtInOut.'
-#             return HttpResponseRedirect(resolve_url('uncertainty'))
-
-#         request.session['progress_message'].append('SWAT executable selected.')
-#         request.session['uncertainty_swatexe_filepath'] = swatexe_filename
-
-#     return render(request, 'uncertainty/index.html')
-
-
+@login_required
 def request_process(request):
     # clear previous progress message
     request.session['progress_message'] = []
@@ -658,6 +629,7 @@ def add_task_id_to_database(user_id, user_email, task_id):
     user_task.save()
 
 
+@login_required
 def reset(request):
     """
     This view clears the session, deletes all existing data and
@@ -696,9 +668,9 @@ def download_data(request):
                 dir_to_zip = settings.BASE_DIR + '/user_data/' + request.user.email + \
                              '/' + task_id + '/output/Output'
 
-		# make sure dist folder doesn't already exist, if so remove it
-		if os.path.exists(dir_to_zip + '/dist'):
-		    shutil.rmtree(dir_to_zip + '/dist')
+                # make sure dist folder doesn't already exist, if so remove it
+                if os.path.exists(dir_to_zip + '/dist'):
+                    shutil.rmtree(dir_to_zip + '/dist')
 
                 # copy the post processing distribution folder over
                 shutil.copytree(settings.BASE_DIR + '/uncertainty/post_processing_script/dist', dir_to_zip + '/dist')
