@@ -3,12 +3,12 @@
 
 body { 
     color: #4b4538;
-	font: Roboto, Arial, Verdana, Helvetica, sans-serif;
+	font: 1em DejaVu Sans Mono, Arial, Verdana, Helvetica, sans-serif;
 }
 
 body.registration {
     background: #e4e4cc;
-    font: .8em/1em Roboto, Verdana, Arial, Helvetica, sans-serif;
+    font: 1em DejaVu Sans Mono, Verdana, Arial, Helvetica, sans-serif;
     letter-spacing: 1pt;
     color: #57011E;
 }
