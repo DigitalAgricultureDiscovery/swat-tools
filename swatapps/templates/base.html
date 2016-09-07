@@ -8,12 +8,11 @@
         <meta name="description" content="" />
         <title>SWAT Tools</title>
         {% load staticfiles %}
-        <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-        <script src="https://code.jquery.com/ui/1.11.3/jquery-ui.min.js"></script>
-        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.3/themes/cupertino/jquery-ui.css">
+        <script async defer src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+        <script async defer src="{% static 'js/jquery-ui-1.12.0.min.js' %}"></script>
+        <link rel="stylesheet" href="{% static 'css/jquery-ui-1.12.0.min.css' %}">
         <link rel="stylesheet" href="{% static 'css/fa/css/font-awesome.min.css' %}">
         <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
-        <link href='https://fonts.googleapis.com/css?family=Archivo+Narrow:400,700italic,700,400italic' rel='stylesheet' type='text/css'>
         {# Load the tag library #}
         {% load bootstrap3 %}
 
@@ -23,7 +22,7 @@
 
         {# Display django.contrib.messages as Bootstrap alerts #}
         {% bootstrap_messages %}
-        <link href="{% static "css/purdue.css"%}" rel="stylesheet" type="text/css" />
+        <link href="{% static "css/purdue.min.css"%}" rel="stylesheet" type="text/css" />
         <link href="{% static "css/swat_css.css"%}" rel="stylesheet" type="text/css" />
 
         {# Google Analytics #}
@@ -35,9 +34,7 @@
 
           ga('create', 'UA-78284792-1', 'auto');
           ga('send', 'pageview');
-
         </script>
-
 
     </head>
 
