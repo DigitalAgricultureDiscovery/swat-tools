@@ -1,14 +1,15 @@
 @charset "utf-8";
 /* CSS Document */
 
-body { 
-    color: #4b4538;
-	font: 1em DejaVu Sans Mono, Arial, Verdana, Helvetica, sans-serif;
+body {
+    background-color: #f5f5f5;
+    color: #57011E;
+	font: 1em FreeSans, Arial, Verdana, Helvetica, sans-serif;
 }
 
 body.registration {
     background: #e4e4cc;
-    font: 1em DejaVu Sans Mono, Verdana, Arial, Helvetica, sans-serif;
+    font: 1em FreeSans, Arial, Verdana, Helvetica, sans-serif;
     letter-spacing: 1pt;
     color: #57011E;
 }
