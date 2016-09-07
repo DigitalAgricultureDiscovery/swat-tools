@@ -8,7 +8,7 @@
         <meta name="description" content="" />
         <title>SWAT Tools</title>
         {% load staticfiles %}
-        <script async defer src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+        <script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
         <script async defer src="{% static 'js/jquery-ui-1.12.0.min.js' %}"></script>
         <link rel="stylesheet" href="{% static 'css/jquery-ui-1.12.0.min.css' %}">
         <link rel="stylesheet" href="{% static 'css/fa/css/font-awesome.min.css' %}">
@@ -23,7 +23,7 @@
         {# Display django.contrib.messages as Bootstrap alerts #}
         {% bootstrap_messages %}
         <link href="{% static "css/purdue.min.css"%}" rel="stylesheet" type="text/css" />
-        <link href="{% static "css/swat_css.css"%}" rel="stylesheet" type="text/css" />
+        <link href="{% static "css/main.css"%}" rel="stylesheet" type="text/css" />
 
         {# Google Analytics #}
         <script>
