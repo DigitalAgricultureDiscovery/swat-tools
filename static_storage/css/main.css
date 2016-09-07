@@ -180,6 +180,17 @@ footer, #content:after {
     padding-top: 5px;
     text-decoration: none;
 }
+.alertify-notifier .ajs-message.ajs-warning {
+    border: 4px solid #b1810b;
+    border-radius: 15px;
+    font-weight: 800;
+}
+
+.alertify-notifier .ajs-message.ajs-error {
+    border: 4px solid #a94442;
+    border-radius: 15px;
+    font-weight: 800;
+}
 
 @media (max-width: 767px) {
 

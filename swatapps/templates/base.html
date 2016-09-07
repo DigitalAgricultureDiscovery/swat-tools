@@ -7,6 +7,7 @@
         <meta name="keywords" content="" />
         <meta name="description" content="" />
         <title>SWAT Tools</title>
+
         {% load staticfiles %}
         <script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
         <script async defer src="{% static 'js/jquery-ui-1.12.0.min.js' %}"></script>
@@ -19,6 +20,10 @@
         {# Load CSS and JavaScript #}
         {% bootstrap_css %}
         {% bootstrap_javascript %}
+
+        {# Alertifyjs #}
+        <script src="{% static 'js/alertify.min.js' %}"></script>
+        <link href="{% static 'css/alertify.min.css' %}" rel="stylesheet" type="text/css" />
 
         {# Display django.contrib.messages as Bootstrap alerts #}
         {% bootstrap_messages %}
@@ -35,7 +40,6 @@
           ga('create', 'UA-78284792-1', 'auto');
           ga('send', 'pageview');
         </script>
-
     </head>
 
     <body style="color: #57011E; background-color: #f5f5f5; font-family: Roboto, Arial, Verdana, Helvetica, sans-serif;">
@@ -171,6 +175,27 @@
             {% block content %}
             {% endblock content %}
         </div>
+
+        <script>
+            function alertSessionExpire() {
+                // error notification
+                // Shorthand for:
+                // alertify.notify( message, 'error', [wait, callback]);
+                alertify.set('notifier', 'delay', 0);
+                alertify.error('Session expired!');
+            }
+
+            function warnSessionExpire() {
+                // warning notification
+                // Shorthand for:
+                // alertify.notify( message, 'warning', [wait, callback]);
+                alertify.set('notifier', 'delay', 0);
+                alertify.warning('Session will expire in one minute. Please refresh the page to remain active.');
+            }
+
+            setTimeout(warnSessionExpire, ({{ request.session.get_expiry_age }} * 1000) - 60000);
+            setTimeout(alertSessionExpire, {{ request.session.get_expiry_age }} * 1000)
+        </script>
 
         <footer>
             <div id="acknowledgements">
