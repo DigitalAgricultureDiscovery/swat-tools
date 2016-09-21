@@ -478,10 +478,17 @@ def validate_selected_landuse_layers(request):
                     return render(request, 'swatluu/index.html')
 
             # Compare landuse layers resolutions and extents to hrus1
-            validated = swattools.validate_raster_properties(
-                request.session.get('swat_model_filepath') + '/Watershed/Grid/hrus1',
-                request.session.get('landuse_filepath'),
-                request.session.get('landuse_layers_names'))
+            try:
+                validated = swattools.validate_raster_properties(
+                    request.session.get('swat_model_filepath') + '/Watershed/Grid/hrus1',
+                    request.session.get('landuse_filepath'),
+                    request.session.get('landuse_layers_names'))
+            except:
+                validated = {
+                    'status': 'error',
+                    'msg': 'Unable to validate landuse layers. Refer to the manual for help with this issue. ' +
+                           'If the problem persists, please contact us so we may offer further assistance.'
+                }
 
             if validated['status'] == 'error':
                 request.session['error'] = validated['msg']
