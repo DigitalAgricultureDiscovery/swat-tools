@@ -204,7 +204,7 @@ def validate_raster_properties(hrus1_path, lu_path, lu_layers):
 
         # test if rows,cols matches hrus1
         if hrus1_extent != lu_extent:
-            if hrus1_extent[0] > lu_extent[0] and hrus1_extent[1] > lu_extent[1]:
+            if hrus1_extent[0] > lu_extent[0] or hrus1_extent[1] > lu_extent[1]:
                 validated['status'] = 'error'
                 validated['msg'] = layer_name + '\'s extent is smaller than hrus1\'s extent. ' + \
                                    'Your landuse layers must have an extent equal to or greater than that of hrus1. ' + \
