@@ -15,6 +15,14 @@ import os
 import shutil
 
 
+def index(request):
+    context = {'title': ('SWAT Tools Home')}
+    return TemplateResponse(
+        request,
+        'swatusers/index.html',
+        context)
+
+
 def authenticate_user(request):
     """ Validates user signing in """
     # Reset session values
@@ -199,7 +207,7 @@ def register_complete(request):
 
 @login_required
 def tool_selection(request):
-    context = {'title': ('SWAT Tool Selection')}
+    context = {'title': ('SWAT Tools Selection')}
     return TemplateResponse(
         request,
         'swatusers/tool_selection.html',

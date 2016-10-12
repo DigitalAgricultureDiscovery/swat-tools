@@ -25,7 +25,7 @@ from fieldswat import views as fieldswat_views
 
 
 urlpatterns = [
-    url(r'^$', swatusers_views.tool_selection, name='tool_selection'),
+    url(r'^$', swatusers_views.index, name='index'),
 
     url(r'^admin/', include(admin.site.urls)),
 
