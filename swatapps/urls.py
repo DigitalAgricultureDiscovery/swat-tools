@@ -27,8 +27,6 @@ from fieldswat import views as fieldswat_views
 urlpatterns = [
     url(r'^$', swatusers_views.index, name='index'),
 
-    url(r'^admin/', include(admin.site.urls)),
-
     # Registration view from swatusers views
     url(r'^register$', swatusers_views.register_user, name='register'),
     url(r'^register_complete$', swatusers_views.register_complete, name='register_complete'),

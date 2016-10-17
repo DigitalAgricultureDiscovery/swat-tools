@@ -26,13 +26,21 @@ class RegistrationForm(forms.ModelForm):
         fields = ('email', 'password1', 'password2', 'first_name', 'last_name', 'organization', 'country', 'state')
 
     def clean(self):
-        """ Cleans data and verifies passwords match. """
+        """ Cleans data and validates. """
         cleaned_data = super(RegistrationForm, self).clean()
-        if 'password1' in self.cleaned_data and 'password2' in self.cleaned_data:
-            if self.cleaned_data['password1'] != self.cleaned_data['password2']:
+
+        # Check if password and re-typed password match
+        if 'password1' in cleaned_data and 'password2' in cleaned_data:
+            if cleaned_data['password1'] != cleaned_data['password2']:
                 raise forms.ValidationError("Passwords don't match. Please enter both fields again.")
-        
-        return self.cleaned_data
+
+        # Check if email available
+        query_email = SwatUser.objects.filter(email=cleaned_data["email"])
+
+        if query_email:
+            raise forms.ValidationError("Sorry, this email address is already in use.")
+
+        return cleaned_data
 
     def save(self, commit=True):
         user = super(RegistrationForm, self).save(commit=False)
