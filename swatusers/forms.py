@@ -1,4 +1,4 @@
-from captcha.fields import ReCaptchaField
+from nocaptcha_recaptcha.fields import NoReCaptchaField
 from django import forms
 from swatusers.models import SwatUser
 from django.conf import settings
@@ -18,8 +18,8 @@ class RegistrationForm(forms.ModelForm):
         label='Country'
     )
     state = forms.CharField(widget=forms.widgets.TextInput, label='State')
-
-    captcha = ReCaptchaField()
+    captcha = forms.CharField(widget=forms.HiddenInput(), label='g-recaptcha-response')
+    captcha = NoReCaptchaField()
 
     class Meta:
         model = SwatUser

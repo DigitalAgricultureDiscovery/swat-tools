@@ -26,13 +26,8 @@ TMP_DIR = '/tmp'
 SECRET_KEY = settings_secret.get_secret_key()
 
 # Google recaptcha public/private keys
-RECAPTCHA_PUBLIC_KEY = settings_secret.get_norecaptcha_site_key()
-RECAPTCHA_PRIVATE_KEY = settings_secret.get_norecaptcha_secret_key()
-
-NOCAPTCHA = True
-
-# Run recaptcha over ssl
-#RECAPTCHA_USE_SSL = True
+NORECAPTCHA_SITE_KEY = settings_secret.get_norecaptcha_site_key()
+NORECAPTCHA_SECRET_KEY = settings_secret.get_norecaptcha_secret_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
@@ -63,7 +58,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bootstrap3',
-    'captcha',
+    'nocaptcha_recaptcha',
     'swatusers',
     'swatluu',
     'luuchecker',

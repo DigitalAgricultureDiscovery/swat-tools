@@ -4,6 +4,7 @@ billiard==3.3.0.23
 celery==3.1.18
 Django==1.8.4
 django-bootstrap3==7.0.1
+django-nocaptcha-recaptcha==0.0.19
 GDAL==1.10.1
 kombu==3.0.35
 matplotlib==1.4.2
