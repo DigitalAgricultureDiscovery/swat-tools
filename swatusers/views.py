@@ -8,11 +8,14 @@ from django.template.response import TemplateResponse
 from django.template import RequestContext
 from forms import ContactUsForm, LoginForm, RegistrationForm
 from models import UserTask
-from swatapps.settings import ADMINS
+from swatapps.settings import ADMINS, NORECAPTCHA_SITE_KEY, NORECAPTCHA_SECRET_KEY
 
 import datetime
+import json
 import os
 import shutil
+import urllib
+import urllib2
 
 
 def index(request):
@@ -80,6 +83,29 @@ def authenticate_user(request):
         return HttpResponseRedirect(resolve_url('tool_selection'))
 
 
+def validate_recaptcha_response(recaptcha_response):
+    """ Verifies the g-recaptcha-response payload with Google. """
+
+    # Google's verification url
+    verification_url = "https://www.google.com/recaptcha/api/siteverify"
+
+    # Parameters required for verification
+    verification_data = {
+        "secret": NORECAPTCHA_SECRET_KEY,
+        "response": recaptcha_response
+    }
+    
+    # Post verification data to verification url
+    response = urllib2.urlopen(
+        verification_url,
+        urllib.urlencode(verification_data))
+
+    # Read response from verification post
+    content = json.loads(response.read())
+
+    return content["success"]
+
+
 def register_user(request):
     """ This view takes all information Registration html page and
         save into the database """
@@ -92,9 +118,15 @@ def register_user(request):
         if request.method == 'POST':
             
             form = RegistrationForm(data=request.POST)
-            
+
+            # Capture the Google recaptcha response            
+            recaptcha_response = request.POST.get("g-recaptcha-response")
+
+            # Pass response to verification method
+            recaptcha_is_valid = validate_recaptcha_response(recaptcha_response)
+
             # Check if forms validate
-            if form.is_valid():
+            if form.is_valid() and recaptcha_is_valid:
                 # Save new user and create/save profile
                 new_user = form.save()
 
@@ -106,6 +138,8 @@ def register_user(request):
                     'registration/register.html',
                     {
                         'form': form,
+                        'sitekey': NORECAPTCHA_SITE_KEY,
+                        'recaptcha_failed': True
                     }
                 )
         else:
@@ -115,6 +149,7 @@ def register_user(request):
             "registration/register.html",
             {
                 'form': form,
+                'sitekey': NORECAPTCHA_SITE_KEY
             }
         )
 
@@ -258,7 +293,6 @@ def task_status(request):
             task_download_url = False
 
             # Set appropriate task status message
-            print "task_status: task.task_status"
             if int(task.task_status) == 0:
                 task_status = 'processing'
             elif int(task.task_status) == 1:

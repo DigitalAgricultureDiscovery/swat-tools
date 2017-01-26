@@ -16,6 +16,10 @@
                     {% csrf_token %}
                     {% bootstrap_form form layout='inline' %}
                     {% bootstrap_form_errors form layout='inline' %}
+                    <div class="g-recaptcha" data-sitekey="{{ sitekey }}"></div>
+                    {% if recaptcha_failed %}
+                    <span class="label label-danger">reCAPTCHA verification failed. Please try again.</span>
+                    {% endif %}
                     {% buttons %}
                         <div align="center">
                             <button type="submit" class="btn btn-primary" style="width: 100">

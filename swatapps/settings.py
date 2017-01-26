@@ -58,7 +58,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bootstrap3',
-    'nocaptcha_recaptcha',
     'swatusers',
     'swatluu',
     'luuchecker',
