@@ -275,7 +275,7 @@ def generate_user_activity_report(request):
             # Create query of data for new users this month
             query = "SELECT id FROM `swatusers_swatuser` "
             query += "WHERE date_joined BETWEEN "
-            query += "'%s' AND '%s';" % (todays_date_formatted, month_date)
+            query += "'%s' AND '%s';" % (month_date, todays_date_formatted)
 
             # Make query on database
             query_results = db.query_database(query)
@@ -290,7 +290,7 @@ def generate_user_activity_report(request):
             # Create query of data for new users this year
             query = "SELECT id FROM `swatusers_swatuser` "
             query += "WHERE date_joined BETWEEN "
-            query += "'%s' AND '%s';" % (todays_date_formatted, year_date)
+            query += "'%s' AND '%s';" % (year_date, todays_date_formatted)
 
             # Make query on database
             query_results = db.query_database(query)
