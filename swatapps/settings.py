@@ -160,3 +160,6 @@ EMAIL_HOST_USER = settings_secret.get_email_user()
 EMAIL_HOST_PASSWORD = settings_secret.get_email_password()
 EMAIL_PORT = settings_secret.get_email_port()
 DEFAULT_FROM_EMAIL = settings_secret.get_email_user()
+
+# API Key
+APIKEY = settings_secret.get_apikey()

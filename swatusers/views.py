@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, resolve_url
 from django.template.response import TemplateResponse
 from django.template import RequestContext
@@ -10,12 +10,14 @@ from forms import ContactUsForm, LoginForm, RegistrationForm
 from models import UserTask
 from swatapps.settings import ADMINS, NORECAPTCHA_SITE_KEY, NORECAPTCHA_SECRET_KEY
 
-import datetime
+from datetime import datetime, timedelta
 import json
 import os
 import shutil
 import urllib
 import urllib2
+
+from mytools import mydatabase
 
 
 def index(request):
@@ -216,6 +218,114 @@ def delete_user_data(request):
 
     # Delete any processes this user might have in the database
     #CurrentProcesses.objects.filter(user_id=request.user.id).delete()
+
+
+def generate_user_activity_report(request):
+    """ Creates and emails a summary of user activity to ADMINS. """
+
+    # Default response
+    response = {"success": False}
+
+    # If hidden api token available in header
+    if "HTTP_APITOKEN" in request.META:
+        apikey = request.META["HTTP_APITOKEN"]
+
+        if apikey == settings.APIKEY:
+            # Will hold results
+            all_results = {
+                "week": {},
+                "month": {},
+                "year": {}
+            }
+
+            # Establish connection to the database
+            db = mydatabase.MyDatabase(mycnf=settings.BASE_DIR + "/swatapps/my.cnf")
+
+            # Connect to database
+            db.connect_to_database()
+
+            # Get start and end for query (today plus 1 day minus 7 days)
+            # Get start and end date for query (today plus 1 day minus 7 days)
+            todays_date = datetime.today()
+            start_date = datetime.today() - timedelta(days=7)
+            end_date = datetime.today() + timedelta(days=1)
+
+            todays_date_formatted = "%s-%s-%s" % (
+            str(todays_date.year), str(todays_date.month).zfill(2), str(todays_date.day).zfill(2))
+            start_date_formatted = "%s-%s-%s" % (
+            str(start_date.year), str(start_date.month).zfill(2), str(start_date.day).zfill(2))
+            end_date_formatted = "%s-%s-%s" % (
+            str(end_date.year), str(end_date.month).zfill(2), str(end_date.day).zfill(2))
+
+            # Create query of database for new users in last 7 days
+            query = "SELECT id FROM `swatusers_swatuser` "
+            query += "WHERE date_joined BETWEEN "
+            query += "'%s' AND '%s';" % (start_date_formatted, end_date_formatted)
+
+            # Make query on database
+            query_results = db.query_database(query)
+
+            # Fetch records for query to get total of new users this week
+            new_users_this_week = len(db.fetch_records(query_results, "all"))
+            all_results["week"]["new_users"] = new_users_this_week
+
+            # Get date for start of current month
+            month_date = "%s-%s-01" % (str(todays_date.year), str(start_date.month).zfill(2))
+
+            # Create query of data for new users this month
+            query = "SELECT id FROM `swatusers_swatuser` "
+            query += "WHERE date_joined BETWEEN "
+            query += "'%s' AND '%s';" % (todays_date_formatted, month_date)
+
+            # Make query on database
+            query_results = db.query_database(query)
+
+            # Fetch records for query to get total of new users this month
+            new_users_this_month = len(db.fetch_records(query_results, "all"))
+            all_results["month"]["new_users"] = new_users_this_month
+
+            # Get date for start of year
+            year_date = "%s-01-01" % (str(todays_date.year))
+
+            # Create query of data for new users this year
+            query = "SELECT id FROM `swatusers_swatuser` "
+            query += "WHERE date_joined BETWEEN "
+            query += "'%s' AND '%s';" % (todays_date_formatted, year_date)
+
+            # Make query on database
+            query_results = db.query_database(query)
+
+            # Fetch records for query to get total of new users this year
+            new_users_this_year = len(db.fetch_records(query_results, "all"))
+            all_results["year"]["new_users"] = new_users_this_year
+
+            # Email summary
+            email_summary_msg = "-" * 47
+            email_summary_msg += "<br />"
+            email_summary_msg += "<strong>SWAT Tools new user summary</strong>"
+            email_summary_msg += "<br />"
+            email_summary_msg += "-" * 47
+            email_summary_msg += "<br />Last Week (%s - %s):&nbsp;%s" % (
+                start_date_formatted, todays_date_formatted, str(all_results["week"]["new_users"]))
+            email_summary_msg += "<br />Current Month (%s-%s): %s" % (
+                str(todays_date.year), str(todays_date.month).zfill(2), str(all_results["month"]["new_users"]))
+            email_summary_msg += "<br />Current Year (%s): %s" % (str(todays_date.year), str(all_results["year"]["new_users"]))
+            email_summary_msg += "<br />"
+            email_summary_msg += "-" * 47
+
+            # Send mail
+            send_mail_status = send_mail(
+                subject="SWAT Tools User Activity Summary",
+                message="",
+                from_email="SWAT Tools",
+                recipient_list=[i[1] for i in ADMINS],
+                fail_silently=True,
+                html_message=email_summary_msg
+            )
+            if send_mail_status != 0:
+                response = {"success": True}
+
+    return JsonResponse(response)
 
 
 def contact_us_done(request):

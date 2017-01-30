@@ -56,6 +56,9 @@ urlpatterns = [
     # Task status
     url(r'^task_status$', swatusers_views.task_status, name='task_status'),
 
+    # User summary
+    url(r'^user_activity_report$', swatusers_views.generate_user_activity_report, name='user_activity_report'),
+
     # SWAT LUU urls
     url(r'^swatluu$', swatluu_views.index, name='swatluu'),
     url(r'^swatluu/upload_swat_model_zip$', swatluu_views.upload_swat_model_zip, name='swatluu/upload_swat_model_zip'),
