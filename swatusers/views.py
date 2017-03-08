@@ -374,7 +374,7 @@ def get_expiration_date(start_datetime):
         Date and time (mm-dd-YYYY HH:MM:SS) 48 hours from the
         start_datetime in string format.
     """
-    return (start_datetime + datetime.timedelta(hours=48)).strftime("%m-%d-%Y %H:%M:%S %Z")
+    return (start_datetime + timedelta(hours=48)).strftime("%m-%d-%Y %H:%M:%S %Z")
 
 
 @login_required
