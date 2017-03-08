@@ -78,7 +78,7 @@ def create_working_directory(request):
 @login_required
 def upload_swat_model_zip(request):
     """
-    This view uploads and extracts the SWAT model zip 
+    This view uploads and extracts the SWAT model zip
     in to the input directory.
     """
     # Clear any previous progress or error messages
@@ -109,7 +109,7 @@ def upload_swat_model_zip(request):
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
                 return render(request, 'fieldswat/index.html')
-            
+
             try:
                 # If the shapefile directory already exists, remove it to make way for new upload
                 if os.path.exists(unique_path + '/input/' + swat_model_filename):
@@ -136,7 +136,7 @@ def upload_swat_model_zip(request):
                 unzip_command = 'unzip -qq ' + unique_path + '/input/' + \
                                 swat_model_filename + ' -d ' + unique_path + '/input/'
                 os.system(unzip_command)
-                
+
                 # Set permissions for unzipped data
                 fix_file_permissions(unique_path + '/input/' + swat_model_filename)
 
@@ -340,7 +340,7 @@ def select_year(request):
         # Get the year
         try:
             fieldswat_selected_year = int(request.POST.get('fieldswat_year'))
-        except ValueError:
+        except:
             request.session['error'] = 'Please select one of the year radio buttons.'
             return render(request, 'fieldswat/index.html')
 
@@ -399,7 +399,7 @@ def upload_fields_shapefile_zip(request):
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
                 return render(request, 'fieldswat/index.html')
-            
+
             # Uncompress the data
             try:
                 unzip_command = 'unzip -qq ' + unique_path + '/input/' + \
@@ -432,7 +432,7 @@ def upload_fields_shapefile_zip(request):
             shapefiles = []
             for shapefile in glob.glob(fields_shapefile_filepath + '/*.shp'):
                 shapefiles.append(shapefile)
-                
+
             # too many .shp present
             if len(shapefiles) > 1:
                 request.session['error'] = 'More than one shapefile found ' + \
@@ -470,7 +470,7 @@ def upload_fields_shapefile_zip(request):
 def confirm_output_and_agg(request):
     """
     Confirms which Output and Aggregation Method radio buttons were selected
-    by the user in Step 3. After validating the radio button value, the 
+    by the user in Step 3. After validating the radio button value, the
     selected values are added to their own session variables.
     """
     # clear any previous progress or error messages
@@ -496,7 +496,7 @@ def confirm_output_and_agg(request):
                                        'Please make sure a radio button ' + \
                                        'is selected under Output.'
             return render(request, 'fieldswat/index.html')
-        
+
         # verify the value matches what we would expect
         if aggregation_method != 'mean' and aggregation_method != 'mode' and \
                 aggregation_method != 'geomean' and aggregation_method != 'area_weighted_mean':
@@ -521,7 +521,7 @@ def request_process(request):
     2) Get all directory and uploaded information through session
     3) Convert subbasin file and adf files to tiff files
     4) Check for landuses available in layers that are not present in base layer. Print this information in EMERGING_LULC.txt file
-    5) modify and update that information in base layer 
+    5) modify and update that information in base layer
     6) convert and copy the updated base layer into the output.
     """
     request.session['error'] = []
@@ -626,7 +626,7 @@ def download_data(request):
                             path = os.path.join(dirname, filename)
                             entry = path[dir_to_zip_len:]
                             zf.write(path, entry)
-                zf.close()            
+                zf.close()
 
                 response = HttpResponse(file.getvalue(), content_type="application/zip")
                 response['Content-Disposition'] = 'attachment; filename=' + task_id + '.zip'

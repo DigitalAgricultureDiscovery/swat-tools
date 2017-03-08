@@ -18,9 +18,9 @@
         function showProcess() {
             document.getElementById(
                 'message_process')
-                    .innerHTML = 
+                    .innerHTML =
                         'Processing may take several minutes. ' +
-                        'Please wait. Do not refresh or close tab'; 
+                        'Please wait. Do not refresh or close tab';
         }
 
         function executeQuery() {
@@ -46,7 +46,7 @@
                 $("#help1div").append(
                     "<p id='message1'>The input should be a zip folder with " +
                     "name same as the Swat folder that is compressed. The " +
-                    "input folder should contain all required data.</p>");    
+                    "input folder should contain all required data.</p>");
             });
             $("#Help1").mouseout(function() {
                 $("#help1div").hide();
@@ -72,7 +72,7 @@
             });
             $("#Help3").mouseout(function() {
                 $("#help3div").hide();
-                $("#message3").remove(); 
+                $("#message3").remove();
             });
         });
 
@@ -126,7 +126,7 @@
                     <br><br>
                     {% buttons %}
                         <div align="left">
-                            <button id="upload1" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading4').show();" {% if not request.session.fieldswat_swat_model_dir %}disabled{% endif %}>Select Year</button>
+                            <button id="upload1" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading4').show();" {% if not fieldswat_unique_years %}disabled{% endif %}>Select Year</button>
                             {% if request.session.fieldswat_selected_year %}
                                 <span class="icon" style="color: #33CC33; margin-left: 15px">
                                     <i class="glyphicon glyphicon glyphicon-ok"></i>
@@ -167,7 +167,7 @@
             </div>
         </div>
     </div>
-   
+
     <div class="row" style="padding-top: 15px;">
         <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
             <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%; text-align: left;">
@@ -229,7 +229,7 @@
                 <button id="reset" type="submit" class="btn btn-warning" value="Reset">Reset</button>
             {% endbuttons %}
         </form>
-    
+
         <form id="form7" role="form" method="post" action="{% url 'fieldswat/process' %}" enctype="multipart/form-data" style="display: inline-block">
         {% csrf_token %}
             {% buttons %}
