@@ -241,7 +241,7 @@ def upload_swat_model_zip(request):
                     unique_years = list(set(swatoutput_mdb_data[0]))
                     unique_years.sort()
                 except:
-                    request.session['error'] = '"Either you are missing .hru ' + \
+                    request.session['error'] = 'Either you are missing .hru ' + \
                                                'file or unique year in your ' + \
                                                'database. Please compare your ' + \
                                                'database with the example data '+ \
@@ -250,7 +250,7 @@ def upload_swat_model_zip(request):
                                                'the issue persists then use ' + \
                                                'the "Contact Us" option to ' + \
                                                'report your issue to the Site ' + \
-                                               'Administrator."'
+                                               'Administrator.'
                     return render(request, 'fieldswat/index.html')
 
                 request.session['swatoutput_unique_years'] = unique_years
