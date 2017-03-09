@@ -45,8 +45,7 @@
           ga('send', 'pageview');
         </script>
 
-        {# Google ReCaptcha #}
-        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        {% block javascript %}{% endblock %}
     </head>
 
     <body>
@@ -65,7 +64,7 @@
                         <li class="dropdown">
                             <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                                 <i class="fa fa-search fa-lg"></i>
-                            </a> 
+                            </a>
                             <ul class="dropdown-menu">
                                 <li>
                                     <form role="search">
@@ -95,11 +94,11 @@
                         </li>
                     </ul>
                 </div>
-            
+
                 <div class="collapse navbar-collapse gold">
                     <ul class="nav navbar-nav information">
                         <li class="dropdown">
-                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Find Info For <b class="caret"></b></a> 
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Find Info For <b class="caret"></b></a>
                             <ul class="dropdown-menu">
                                 <p class="hide">Find Info For</p>
                                 <li><a href="//purdue.edu/purdue/academics/index.html">Academics</a></li>
@@ -135,7 +134,7 @@
                             <img id="purdue_logo" alt="Purdue University" src="https://www.purdue.edu/purdue/images/logo.png"/>
                         </a>
                     </div>
-                    
+
                     <div id="tool_title_col" class="department col-lg-10 col-md-10 col-sm-10 col-xs-12">
                         <a id="tool_title_link" class="tool-title" href="{% url 'index' %}">SWAT Tools</a>
                     </div>
