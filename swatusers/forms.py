@@ -11,14 +11,13 @@ class RegistrationForm(forms.ModelForm):
     password2 = forms.CharField(widget=forms.PasswordInput(), label='Password (again)')
     first_name = forms.CharField(widget=forms.widgets.TextInput, label="First name")
     last_name = forms.CharField(widget=forms.widgets.TextInput, label="Last name")
-    organization = forms.CharField(widget=forms.widgets.TextInput, label='Organization')
+    organization = forms.CharField(widget=forms.widgets.TextInput, label='Organization (optional)', required=False)
     country = forms.ChoiceField(
         choices=pickle.load(open(settings.BASE_DIR + '/swatusers/countries.p', 'rb')),
         label='Country',
         initial='United States of America'
     )
     state = forms.CharField(widget=forms.widgets.TextInput, label='State')
-
 
     class Meta:
         model = SwatUser
