@@ -14,7 +14,8 @@ class RegistrationForm(forms.ModelForm):
     organization = forms.CharField(widget=forms.widgets.TextInput, label='Organization')
     country = forms.ChoiceField(
         choices=pickle.load(open(settings.BASE_DIR + '/swatusers/countries.p', 'rb')),
-        label='Country'
+        label='Country',
+        initial='United States of America'
     )
     state = forms.CharField(widget=forms.widgets.TextInput, label='State')
 
