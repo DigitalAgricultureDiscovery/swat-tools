@@ -33,10 +33,11 @@ class RegistrationForm(forms.ModelForm):
                 raise forms.ValidationError("Passwords don't match. Please enter both fields again.")
 
         # Check if email available
-        query_email = SwatUser.objects.filter(email=cleaned_data["email"])
+        if 'email' in cleaned_data:
+            query_email = SwatUser.objects.filter(email=cleaned_data["email"])
 
-        if query_email:
-            raise forms.ValidationError("Sorry, this email address is already in use.")
+            if query_email:
+                raise forms.ValidationError("Sorry, this email address is already in use.")
 
         return cleaned_data
 

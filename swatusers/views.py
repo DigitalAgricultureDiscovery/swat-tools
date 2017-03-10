@@ -126,7 +126,7 @@ def register_user(request):
 
             # Pass response to verification method
             recaptcha_is_valid = validate_recaptcha_response(recaptcha_response)
-
+            print(request.POST)
             # Check if forms validate
             if form.is_valid() and recaptcha_is_valid:
                 # Save new user and create/save profile
