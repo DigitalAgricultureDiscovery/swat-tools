@@ -2,11 +2,10 @@ from swatluu import geotools
 from swatluu import swattools
 from django.conf import settings
 from django.core.mail import send_mail
-from datetime import date, timedelta
+from django.utils import timezone
 from swatusers.models import UserTask
 
 import csv
-import datetime
 import logging
 import numpy as np
 import os
@@ -14,7 +13,6 @@ import shutil
 
 
 class UncertaintyProcess(object):
-
     def __init__(self, data=''):
 
         if data == '':
@@ -90,15 +88,18 @@ class UncertaintyProcess(object):
         try:
             self.create_lupdat_file()
         except Exception:
-            self.logger.exception('An error occurred while creating the lup dat files.')
+            self.logger.exception(
+                'An error occurred while creating the lup dat files.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
-            raise Exception('An error occurred while creating the lup dat files.')
+            raise Exception(
+                'An error occurred while creating the lup dat files.')
 
         try:
             self.extract_lookup_info()
         except Exception:
-            self.logger.exception('An error occurred while extracting lookup info.')
+            self.logger.exception(
+                'An error occurred while extracting lookup info.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('An error occurred while extracting lookup info.')
@@ -114,23 +115,28 @@ class UncertaintyProcess(object):
         try:
             self.create_fractional_values()
         except Exception:
-            self.logger.exception('An error occurred while creating fractional values.')
+            self.logger.exception(
+                'An error occurred while creating fractional values.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
-            raise Exception('An error occurred while creating fractional values.')
+            raise Exception(
+                'An error occurred while creating fractional values.')
 
         try:
             self.extract_hru_files_data()
         except Exception:
-            self.logger.exception('An error occurred while extracting hru files data.')
+            self.logger.exception(
+                'An error occurred while extracting hru files data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
-            raise Exception('An error occurred while extracting hru files data.')
+            raise Exception(
+                'An error occurred while extracting hru files data.')
 
         try:
             self.apply_realization()
         except Exception:
-            self.logger.exception('An error occurred while applying realization.')
+            self.logger.exception(
+                'An error occurred while applying realization.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('An error occurred while applying realization.')
@@ -139,9 +145,11 @@ class UncertaintyProcess(object):
         # Initialize logger for requested process and set header
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(settings.BASE_DIR + '/swatapps/log/tasks/uncertainty/' + self.task_id + '.log')
+        handler = logging.FileHandler(
+            settings.BASE_DIR + '/swatapps/log/tasks/uncertainty/' + self.task_id + '.log')
         handler.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
         self.logger.info('Task ID: ' + self.task_id)
@@ -177,7 +185,7 @@ class UncertaintyProcess(object):
 
         # Needs extra group permissions to copy post_processing files over
         os.chmod(results_dir + '/Output', 0o775)
-        
+
         shutil.copytree(self.hrus1_dir, results_dir + '/Raster/hrus1')
 
     def create_lupdat_file(self):
@@ -224,18 +232,23 @@ class UncertaintyProcess(object):
             try:
                 geotools.convert_adf_to_tif(layer_path, converted_layer_path)
             except Exception:
-                self.logger.exception('Unable to convert raster from .adf to .tif.')
-                UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+                self.logger.exception(
+                    'Unable to convert raster from .adf to .tif.')
+                UserTask.objects.filter(task_id=self.task_id).update(
+                    task_status=2)
 
             # write the date and file into lup.dat
-            self.logger.info('Adding landuse layer, ' + layer_name + ', to lup.dat.')
+            self.logger.info(
+                'Adding landuse layer, ' + layer_name + ', to lup.dat.')
             lup_file.write(
                 '{0} {1} {2} {3} {4} {5}\n'.format(
                     ''.ljust(4 - len(str(layer_index + 1))),
-                    str(layer_index + 1).ljust(5 - len(str(month)) + len(str(layer_index + 1)) - 1),
+                    str(layer_index + 1).ljust(
+                        5 - len(str(month)) + len(str(layer_index + 1)) - 1),
                     str(month).ljust(5 - len(str(day)) + len(str(month)) - 1),
                     str(day).ljust(5 - len(str(year)) + len(str(day)) - 1),
-                    str(year).ljust(13 - len(str('file' + str(layer_index + 1) + '.dat'))),
+                    str(year).ljust(
+                        13 - len(str('file' + str(layer_index + 1) + '.dat'))),
                     ('file' + str(layer_index + 1) + '.dat')))
         self.logger.info('Closing lup.dat.')
         lup_file.close()
@@ -257,9 +270,11 @@ class UncertaintyProcess(object):
         lookup_info: list
             List containing lookup codes and values
         """
-        self.logger.info('Extracting loopup information from uploaded lookup file.')
+        self.logger.info(
+            'Extracting loopup information from uploaded lookup file.')
         try:
-            lookup_file = csv.reader(open(self.lookup_filepath, 'r'), delimiter=',')
+            lookup_file = csv.reader(open(self.lookup_filepath, 'r'),
+                                     delimiter=',')
         except:
             self.logger.exception('Unable to open the lookup file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -302,14 +317,16 @@ class UncertaintyProcess(object):
         """
         self.logger.info('Reading hrus1.tif into numpy array.')
         try:
-            hrus, hru_info = geotools.read_raster(self.results_dir + '/Raster/hrus1/hrus1.tif')
+            hrus, hru_info = geotools.read_raster(
+                self.results_dir + '/Raster/hrus1/hrus1.tif')
         except Exception:
             self.logger.exception('Unable to read hrus1.tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
         self.logger.info('Reading hru1.shp into numpy array.')
         try:
-            merged_hru = geotools.read_shapefile(self.swat_dir + '/Watershed/Shapes/hru1.shp')
+            merged_hru = geotools.read_shapefile(
+                self.swat_dir + '/Watershed/Shapes/hru1.shp')
             merged_hru = np.array(merged_hru, dtype=int)
             # sort HRU_ID column (second column) into ascending order
             # and keep respective positions of other columns
@@ -322,12 +339,13 @@ class UncertaintyProcess(object):
             self.logger.exception('Unable to open shapefile hrus1.shp')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
-        self.logger.info('Sorting and merging the non-dominant and dominant hrus.')
+        self.logger.info(
+            'Sorting and merging the non-dominant and dominant hrus.')
         # retrieve dominant hru values - these are the hrus that remained
         # after the threshold was applied (OBJECTID in hru1.shp)
         dominant_hrus = sorted_hru[:, 0]
 
-        # retrieve new hru values - each dominant hru is assigned a 
+        # retrieve new hru values - each dominant hru is assigned a
         # new hru value starting at 1 (HRU_ID in hru1.shp);
         # for example, dominant hru 5838 (OBJECTID) may become hru 10 (HRU_ID)
         new_hrus = sorted_hru[:, 1]
@@ -385,7 +403,8 @@ class UncertaintyProcess(object):
         old_hru_areas: list
             Each element represents the fractional area for a hru
         """
-        self.logger.info('Calculating fractional areas for each hru inside the watershed.')
+        self.logger.info(
+            'Calculating fractional areas for each hru inside the watershed.')
         pixel_size = self.hru_info[0]
         # isolate the pixels with hru values from the nodata pixels
         inside_watershed_indexes = np.nonzero(self.hrus != self.hru_info[1])
@@ -413,21 +432,25 @@ class UncertaintyProcess(object):
         # for the dominant hrus (keys)
         for hru_index, hru_val in enumerate(inside_watershed_hrus):
             if hru_val in dominant_hrus_set:
-                dominant_hrus_inside_watershed_indexes[hru_val].append(hru_index)
+                dominant_hrus_inside_watershed_indexes[hru_val].append(
+                    hru_index)
 
         old_hru_areas = np.zeros(len(self.dominant_hrus))
 
         # loop through dominant hrus and calculate fractional area
         hru_indexes = []
-        for dominant_hru_index, dominant_hru_value in enumerate(self.dominant_hrus):
+        for dominant_hru_index, dominant_hru_value in enumerate(
+                self.dominant_hrus):
             # i don't understand why the next two lines are necessary....
-            hru_index = np.array(dominant_hrus_inside_watershed_indexes[dominant_hru_value])
+            hru_index = np.array(
+                dominant_hrus_inside_watershed_indexes[dominant_hru_value])
             hru_indexes.append(hru_index)
 
             # number of instances of the hru
-            hru_count = len(dominant_hrus_inside_watershed_indexes[dominant_hru_value])
+            hru_count = len(
+                dominant_hrus_inside_watershed_indexes[dominant_hru_value])
             # convert area from square meter to acres and multiply by count
-            hru_area = (pixel_size**2 * 10**-6) * hru_count
+            hru_area = (pixel_size ** 2 * 10 ** -6) * hru_count
             # store area in array
             old_hru_areas[dominant_hru_index] = hru_area
 
@@ -501,27 +524,35 @@ class UncertaintyProcess(object):
         if len(hru_ids_from_hru_files) != len(self.dominant_hrus):
             # halt function
             self.logger.info('Number of HRU ids (' + str(
-                len(hru_ids_from_hru_files)) + ') found in *.hru files does not match number of dominant HRUs (' + str(
+                len(
+                    hru_ids_from_hru_files)) + ') found in *.hru files does not match number of dominant HRUs (' + str(
                 len(self.dominant_hrus)) + ').')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
-        self.logger.info('Collecting subbasin ids, landuse codes, soil codes, slope ranges, and subbasin ids.')
+        self.logger.info(
+            'Collecting subbasin ids, landuse codes, soil codes, slope ranges, and subbasin ids.')
         # get each hru's landuse code
         landuse_codes = np.zeros(len(landuse_abbrevs_from_hru_files), int)
         for code_index in range(0, len(self.lookup_info) - 1):
-            landuse_codes[np.nonzero(np.array(landuse_abbrevs_from_hru_files) == self.lookup_info[code_index + 1][1])] = self.lookup_info[code_index + 1][0]
+            landuse_codes[np.nonzero(np.array(landuse_abbrevs_from_hru_files) ==
+                                     self.lookup_info[code_index + 1][1])] = \
+            self.lookup_info[code_index + 1][0]
 
         # get each hru's soil code
         unique_soil_codes = list(set(soil_codes_from_hru_files))
         soil_codes = np.zeros(len(soil_codes_from_hru_files), int)
         for i in range(0, len(unique_soil_codes)):
-            soil_codes[np.nonzero(np.array(soil_codes_from_hru_files) == unique_soil_codes[i])] = i
+            soil_codes[np.nonzero(
+                np.array(soil_codes_from_hru_files) == unique_soil_codes[
+                    i])] = i
 
         # get each hru's slope range
         unique_slope_ranges = list(set(slope_ranges_from_hru_files))
         slope_ranges = np.zeros(len(slope_ranges_from_hru_files), int)
         for i in range(0, len(unique_slope_ranges)):
-            slope_ranges[np.nonzero(np.array(slope_ranges_from_hru_files) == unique_slope_ranges[i])] = i
+            slope_ranges[np.nonzero(
+                np.array(slope_ranges_from_hru_files) == unique_slope_ranges[
+                    i])] = i
 
         # get unique subbasin ids
         unique_subbasin_ids = list(set(subbasin_ids_from_hru_files))
@@ -565,7 +596,6 @@ class UncertaintyProcess(object):
 
         # loop through each subbasin
         for subbasin_id in self.unique_subbasin_ids:
-
             # find indexes in hru subbasins array matching the current subbasin
             hrus_in_sub_idx = np.nonzero(hru_subbasins == subbasin_id)
 
@@ -592,55 +622,77 @@ class UncertaintyProcess(object):
                 # we know error exists, distribute the error uniformly
                 # (handle division by 0 with try/except)
                 try:
-                    error_range = range(-error, error + 1, int((2 * error) / (realization - 1)))
+                    error_range = range(-error, error + 1,
+                                        int((2 * error) / (realization - 1)))
                 except ZeroDivisionError:
                     error_range = range(-error, error + 1, int(2 * error))
-                
+
                 # loop through number of realization range
                 for j in range(0, realization):
 
                     # loop through subbasins
                     for k in range(0, len(self.unique_subbasin_ids)):
-
                         # identify HRUs that are in subbasin k
-                        hrus_in_sub = self.hru_files_data[np.where(self.hru_files_data[:, 2] == self.unique_subbasin_ids[k])]
+                        hrus_in_sub = self.hru_files_data[np.where(
+                            self.hru_files_data[:, 2] ==
+                            self.unique_subbasin_ids[k])]
 
                         # identify HRUs that have landuse i AND are located in subbasin k
-                        hrus_in_sub_with_lulc = hrus_in_sub[np.where(hrus_in_sub[:, 3] == int(self.lookup_info[i + 1][0]))]
+                        hrus_in_sub_with_lulc = hrus_in_sub[np.where(
+                            hrus_in_sub[:, 3] == int(
+                                self.lookup_info[i + 1][0]))]
 
                         # fetch fractional areas for HRUs in sub with the current lulc
-                        matching_hrus_fractional_areas = hru_subbasin_fractional_areas[hrus_in_sub_with_lulc[:, 1]]
+                        matching_hrus_fractional_areas = \
+                        hru_subbasin_fractional_areas[
+                            hrus_in_sub_with_lulc[:, 1]]
 
                         # calculate cumulative fractional area
-                        matching_hrus_cumulative_fractional_area = sum(matching_hrus_fractional_areas)
+                        matching_hrus_cumulative_fractional_area = sum(
+                            matching_hrus_fractional_areas)
 
                         # calculate portion of cumulative area subject to error
-                        error_area = (error_range[j] / 100.0) * matching_hrus_cumulative_fractional_area
+                        error_area = (error_range[
+                                          j] / 100.0) * matching_hrus_cumulative_fractional_area
 
                         # calculate each HRUs area percentage
                         matching_hrus_percentage_area = matching_hrus_fractional_areas / matching_hrus_cumulative_fractional_area
 
-                        # increase/decrease the area of affected HRUs based on error range 
-                        new_fractional_hru_areas[hrus_in_sub_with_lulc[:, 1]] = matching_hrus_fractional_areas + (error_area * matching_hrus_percentage_area)
+                        # increase/decrease the area of affected HRUs based on error range
+                        new_fractional_hru_areas[hrus_in_sub_with_lulc[:,
+                                                 1]] = matching_hrus_fractional_areas + (
+                        error_area * matching_hrus_percentage_area)
 
                         # identify the unaffected HRUs (i.e. those in subbasin
                         # k that do not have lulc i)
-                        hrus_in_sub_without_lulc = hrus_in_sub[np.where(hrus_in_sub[:, 3] != int(self.lookup_info[i + 1][0]))]
+                        hrus_in_sub_without_lulc = hrus_in_sub[np.where(
+                            hrus_in_sub[:, 3] != int(
+                                self.lookup_info[i + 1][0]))]
 
                         # fetch fractional areas for HRUs in sub with the current lulc
-                        matching_hrus_without_lulc_fractional_areas = hru_subbasin_fractional_areas[hrus_in_sub_without_lulc[:, 1]]
+                        matching_hrus_without_lulc_fractional_areas = \
+                        hru_subbasin_fractional_areas[
+                            hrus_in_sub_without_lulc[:, 1]]
 
                         # find how much area needs to be adjusted
-                        fractional_area_diff = sum(matching_hrus_fractional_areas) - sum(new_fractional_hru_areas[hrus_in_sub_with_lulc[:, 1]])
+                        fractional_area_diff = sum(
+                            matching_hrus_fractional_areas) - sum(
+                            new_fractional_hru_areas[
+                                hrus_in_sub_with_lulc[:, 1]])
 
                         # calculate each HRUs area percentage
-                        matching_hrus_without_lulc_percentage_area = matching_hrus_without_lulc_fractional_areas / sum(matching_hrus_without_lulc_fractional_areas)
+                        matching_hrus_without_lulc_percentage_area = matching_hrus_without_lulc_fractional_areas / sum(
+                            matching_hrus_without_lulc_fractional_areas)
 
                         # now adjust the non-affected HRUs based on error range
-                        new_fractional_hru_areas[hrus_in_sub_without_lulc[:, 1]] = matching_hrus_without_lulc_fractional_areas + (fractional_area_diff * matching_hrus_without_lulc_percentage_area)
+                        new_fractional_hru_areas[hrus_in_sub_without_lulc[:,
+                                                 1]] = matching_hrus_without_lulc_fractional_areas + (
+                        fractional_area_diff * matching_hrus_without_lulc_percentage_area)
 
                     # once realization is processed, write to a suitable output file
-                    hru_fa_file = open(self.results_dir + '/Output/file' + str(self.lookup_info[i + 1][0]) + '_' + str(j + 1) + '_' + str(error_range[j]) + '_perc.dat', 'a')
+                    hru_fa_file = open(self.results_dir + '/Output/file' + str(
+                        self.lookup_info[i + 1][0]) + '_' + str(
+                        j + 1) + '_' + str(error_range[j]) + '_perc.dat', 'a')
 
                     # write header columns (HRU_ID are the new HRU ids assigned in hru1.shp
                     hru_fa_file.write('HRU_ID, HRU_AREA')
@@ -650,7 +702,8 @@ class UncertaintyProcess(object):
                         hru_fa_file.write('\n')
                         hru_fa_file.write(str(hru_idx + 1))
                         hru_fa_file.write(', ')
-                        hru_fa_file.write('{0:.6f}'.format(round(new_fractional_hru_areas[hru_idx], 6)))
+                        hru_fa_file.write('{0:.6f}'.format(
+                            round(new_fractional_hru_areas[hru_idx], 6)))
 
                     # add new line at end of file
                     hru_fa_file.write('\n')
@@ -698,7 +751,7 @@ class UncertaintyProcess(object):
         message += '<strong>Task Status</strong> page (found in the navigation menu). '
         message += 'There you will find a record of your completed '
         message += 'task and a link to download the results data. '
-        message += 'The link will expire on ' + self.get_expiration_date() 
+        message += 'The link will expire on ' + self.get_expiration_date()
         message += ' (48 hours).<br><br>Sincerely,<br>SWAT Tools'
         try:
             send_mail(
@@ -709,7 +762,8 @@ class UncertaintyProcess(object):
                 fail_silently=False,
                 html_message=message)
         except Exception:
-            self.logger.exception('Error sending the user the email to their data.')
+            self.logger.exception(
+                'Error sending the user the email to their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Error sending the user the email to their data.')
@@ -726,7 +780,8 @@ class UncertaintyProcess(object):
             -------
             None
             """
-        self.logger.info('Sending user email informing them an error has occurred.')
+        self.logger.info(
+            'Sending user email informing them an error has occurred.')
         subject = self.tool_name + ' error'
         message = 'An error has occurred within ' + self.tool_name + ' while processing your data. '
         message += 'Please verify your inputs are not missing any required files. '
@@ -743,8 +798,9 @@ class UncertaintyProcess(object):
                 fail_silently=False,
                 html_message=message)
         except Exception:
-            self.logger.exception('Error sending the user the email informing ' +
-                                  'them of an error occurrence while processing their data.')
+            self.logger.exception(
+                'Error sending the user the email informing ' +
+                'them of an error occurrence while processing their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             raise Exception('Error sending the user the email informing ' +
                             'them of an error occurrence while processing their data.')
@@ -763,7 +819,9 @@ class UncertaintyProcess(object):
             Date (mm-dd-YYYY) three days from the present in string format.
         """
         self.logger.info('Calculating the date three days from now.')
-        return (datetime.datetime.now() + datetime.timedelta(hours=48)).strftime("%m-%d-%Y %H:%M:%S %Z")
+        return (
+            timezone.datetime.now() + timezone.timedelta(hours=48)).strftime(
+            "%m-%d-%Y %H:%M:%S %Z")
 
     def update_task_status_in_database(self):
         """
@@ -779,4 +837,7 @@ class UncertaintyProcess(object):
         None
         """
         self.logger.info('Updating the user\'s task status.')
-        UserTask.objects.filter(task_id=self.task_id).update(task_status=1, time_completed=datetime.datetime.now())
+        UserTask.objects.filter(
+            task_id=self.task_id).update(
+            task_status=1,
+            time_completed=timezone.datetime.now())

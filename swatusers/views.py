@@ -5,19 +5,18 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, resolve_url
 from django.template.response import TemplateResponse
-from django.template import RequestContext
-from forms import ContactUsForm, LoginForm, RegistrationForm
-from models import UserTask
-from swatapps.settings import ADMINS, NORECAPTCHA_SITE_KEY, NORECAPTCHA_SECRET_KEY
+from .forms import ContactUsForm, LoginForm, RegistrationForm
+from .models import UserTask
+from swatapps.settings.local import ADMINS, NORECAPTCHA_SITE_KEY, \
+    NORECAPTCHA_SECRET_KEY
 
 from datetime import datetime, timedelta
 import json
 import os
 import shutil
 import urllib
-import urllib2
 
-from mytools import mydatabase
+from .mytools import mydatabase
 
 
 def index(request):
@@ -30,6 +29,7 @@ def index(request):
 
 def authenticate_user(request):
     """ Validates user signing in """
+
     # Reset session values
     request.session['dberror'] = []
     request.session['error'] = []
@@ -46,13 +46,14 @@ def authenticate_user(request):
                 password = request.POST['password']
                 user = authenticate(email=email, password=password)
 
-                # If successfully authenticated, login user and redirect to index
+                # If successfully authenticated, login user and redirect
                 if user is not None:
                     if user.is_active:
                         request.session['name'] = user.email
                         login(request, user)
                         if next == "":
-                            return HttpResponseRedirect(resolve_url('tool_selection'))
+                            return HttpResponseRedirect(
+                                resolve_url('tool_selection'))
                         else:
                             return HttpResponseRedirect(next)
                     else:
@@ -63,14 +64,17 @@ def authenticate_user(request):
                             'registration/login.html',
                             {'form': LoginForm})
                 else:
-                    request.session['dberror'] = 'Sorry, could not find match ' + \
-                                                 'for submitted credentials.'
+                    request.session[
+                        'dberror'] = 'Sorry, could not find match ' + \
+                                     'for submitted credentials.'
                     return render(
                         request,
                         'registration/login.html',
                         {'form': LoginForm})
             else:
-                request.session['dberror'] = 'Unable to login. Make sure you are entering a valid email address.'
+                request.session[
+                    'dberror'] = 'Unable to login. Make sure you are ' \
+                                 'entering a valid email address.'
                 return render(
                     request,
                     'registration/login.html',
@@ -96,11 +100,11 @@ def validate_recaptcha_response(recaptcha_response):
         "secret": NORECAPTCHA_SECRET_KEY,
         "response": recaptcha_response
     }
-    
+
     # Post verification data to verification url
-    response = urllib2.urlopen(
+    response = urllib.request.urlopen(
         verification_url,
-        urllib.urlencode(verification_data))
+        urllib.parse.urlencode(verification_data))
 
     # Read response from verification post
     content = json.loads(response.read())
@@ -118,15 +122,15 @@ def register_user(request):
         return HttpResponseRedirect(resolve_url('tool_selection'))
     else:
         if request.method == 'POST':
-            
+
             form = RegistrationForm(data=request.POST)
 
-            # Capture the Google recaptcha response            
+            # Capture the Google recaptcha response
             recaptcha_response = request.POST.get("g-recaptcha-response")
 
             # Pass response to verification method
             recaptcha_is_valid = validate_recaptcha_response(recaptcha_response)
-            print(request.POST)
+
             # Check if forms validate
             if form.is_valid() and recaptcha_is_valid:
                 # Save new user and create/save profile
@@ -159,6 +163,7 @@ def register_user(request):
 @login_required
 def contact_us(request):
     """ Renders Contact Us page which enables user to email administrator """
+
     # only allow users not signed in to view the registration page
     if request.user.is_authenticated():
         if request.method == 'POST':
@@ -172,7 +177,8 @@ def contact_us(request):
                         from_email='SWAT Tools',
                         recipient_list=[i[1] for i in ADMINS],
                         fail_silently=False,
-                        html_message=contact_form.cleaned_data['message'] + '<br><br>Sent by ' + request.user.get_full_name() + ' (<a href="mailto:' + request.user.email + '">' + request.user.email + '</a>).'
+                        html_message=contact_form.cleaned_data[
+                                         'message'] + '<br><br>Sent by ' + request.user.get_full_name() + ' (<a href="mailto:' + request.user.email + '">' + request.user.email + '</a>).'
                     )
                     if send_mail_status != 0:
                         return HttpResponseRedirect(
@@ -196,16 +202,19 @@ def contact_us(request):
 
 def delete_user_data_and_logout(request):
     """ Removes user data and logs them out """
+
     # Delete user data and flush current session
     delete_user_data(request)
     request.session.flush()
     # Sign user out and return to login page
     logout(request)
+
     return HttpResponseRedirect(resolve_url('login'))
 
 
 def delete_user_data(request):
     """ This view delete's the signed in user's data. """
+
     dir = settings.BASE_DIR + '/user_data/' + request.user.email + '/swatluu'
 
     if (dir is not None):
@@ -216,8 +225,8 @@ def delete_user_data(request):
         if os.path.exists(dir + '/output'):
             shutil.rmtree(dir + '/output')
 
-    # Delete any processes this user might have in the database
-    #CurrentProcesses.objects.filter(user_id=request.user.id).delete()
+            # Delete any processes this user might have in the database
+            # CurrentProcesses.objects.filter(user_id=request.user.id).delete()
 
 
 def generate_user_activity_report(request):
@@ -239,7 +248,8 @@ def generate_user_activity_report(request):
             }
 
             # Establish connection to the database
-            db = mydatabase.MyDatabase(mycnf=settings.BASE_DIR + "/swatapps/my.cnf")
+            db = mydatabase.MyDatabase(
+                mycnf=settings.BASE_DIR + "/swatapps/my.cnf")
 
             # Connect to database
             db.connect_to_database()
@@ -251,16 +261,20 @@ def generate_user_activity_report(request):
             end_date = datetime.today() + timedelta(days=1)
 
             todays_date_formatted = "%s-%s-%s" % (
-            str(todays_date.year), str(todays_date.month).zfill(2), str(todays_date.day).zfill(2))
+                str(todays_date.year), str(todays_date.month).zfill(2),
+                str(todays_date.day).zfill(2))
             start_date_formatted = "%s-%s-%s" % (
-            str(start_date.year), str(start_date.month).zfill(2), str(start_date.day).zfill(2))
+                str(start_date.year), str(start_date.month).zfill(2),
+                str(start_date.day).zfill(2))
             end_date_formatted = "%s-%s-%s" % (
-            str(end_date.year), str(end_date.month).zfill(2), str(end_date.day).zfill(2))
+                str(end_date.year), str(end_date.month).zfill(2),
+                str(end_date.day).zfill(2))
 
             # Create query of database for new users in last 7 days
             query = "SELECT id FROM `swatusers_swatuser` "
             query += "WHERE date_joined BETWEEN "
-            query += "'%s' AND '%s';" % (start_date_formatted, end_date_formatted)
+            query += "'%s' AND '%s';" % (
+            start_date_formatted, end_date_formatted)
 
             # Make query on database
             query_results = db.query_database(query)
@@ -270,7 +284,8 @@ def generate_user_activity_report(request):
             all_results["week"]["new_users"] = new_users_this_week
 
             # Get date for start of current month
-            month_date = "%s-%s-01" % (str(todays_date.year), str(start_date.month).zfill(2))
+            month_date = "%s-%s-01" % (
+            str(todays_date.year), str(start_date.month).zfill(2))
 
             # Create query of data for new users this month
             query = "SELECT id FROM `swatusers_swatuser` "
@@ -306,10 +321,13 @@ def generate_user_activity_report(request):
             email_summary_msg += "<br />"
             email_summary_msg += "-" * 47
             email_summary_msg += "<br />Last Week (%s - %s):&nbsp;%s" % (
-                start_date_formatted, todays_date_formatted, str(all_results["week"]["new_users"]))
+                start_date_formatted, todays_date_formatted,
+                str(all_results["week"]["new_users"]))
             email_summary_msg += "<br />Current Month (%s-%s): %s" % (
-                str(todays_date.year), str(todays_date.month).zfill(2), str(all_results["month"]["new_users"]))
-            email_summary_msg += "<br />Current Year (%s): %s" % (str(todays_date.year), str(all_results["year"]["new_users"]))
+                str(todays_date.year), str(todays_date.month).zfill(2),
+                str(all_results["month"]["new_users"]))
+            email_summary_msg += "<br />Current Year (%s): %s" % (
+            str(todays_date.year), str(all_results["year"]["new_users"]))
             email_summary_msg += "<br />"
             email_summary_msg += "-" * 47
 
@@ -330,14 +348,18 @@ def generate_user_activity_report(request):
 
 def contact_us_done(request):
     """ Renders page indicating the email has been sent successfully """
+
     context = {'title': ('Contact email successfully sent')}
+
     return TemplateResponse(request, 'swatusers/contact_us_done.html', context)
 
 
 def contact_us_error(request):
     """ Renders page indicating there was an error while sending 
         the contact email """
+
     context = {'title': ('Contact email failed to send')}
+
     return TemplateResponse(
         request,
         'swatusers/contact_us_error.html',
@@ -346,17 +368,23 @@ def contact_us_error(request):
 
 def register_complete(request):
     """ Renders page informing the user their registration was a success. """
+
     context = {'title': ('Registration completed')}
-    return TemplateResponse(request, 'swatusers/register_complete.html', context)
+
+    return TemplateResponse(request, 'swatusers/register_complete.html',
+                            context)
 
 
 @login_required
 def tool_selection(request):
+
     context = {'title': ('SWAT Tools Selection')}
+
     return TemplateResponse(
         request,
         'swatusers/tool_selection.html',
         context)
+
 
 def get_expiration_date(start_datetime):
     """
@@ -374,11 +402,14 @@ def get_expiration_date(start_datetime):
         Date and time (mm-dd-YYYY HH:MM:SS) 48 hours from the
         start_datetime in string format.
     """
-    return (start_datetime + timedelta(hours=48)).strftime("%m-%d-%Y %H:%M:%S %Z")
+
+    return (start_datetime + timedelta(hours=48)).strftime(
+        "%m-%d-%Y %H:%M:%S %Z")
 
 
 @login_required
 def task_status(request):
+
     # Query user tasks
     user_tasks_query = UserTask.objects.filter(email=request.user.email)
 
@@ -425,12 +456,11 @@ def task_status(request):
                 'status': task_status,
                 'download': task_download_url,
                 'expiration': get_expiration_date(task.time_completed)
-                })
+            })
 
         # Test data
-        context = RequestContext(request)
-        context.push({'task_items': user_tasks})
-    
+        context = {'task_items': user_tasks}
+
         return render(request, 'swatusers/task_status.html', context)
     else:
         return render(request, 'swatusers/task_status.html')

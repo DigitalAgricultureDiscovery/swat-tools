@@ -1,11 +1,10 @@
 from django.conf import settings
 from django.core.mail import send_mail
+from django.utils import timezone
 from swatusers.models import UserTask
-from osgeo import gdal
 from subprocess import check_call
 from swatluu import geotools
 
-import datetime
 import logging
 import numpy as np
 import os
@@ -13,7 +12,6 @@ import shutil
 
 
 class LUUCheckerProcess(object):
-
     def __init__(self, data=""):
         """
         A LUU Checker process requested by a user. It contains the core
@@ -44,13 +42,20 @@ class LUUCheckerProcess(object):
             self.status = [0, 'Everything checks out.']
             self.new_landuse_layer = ''
         else:
-            self.subbasin_shapefile_filepath = data['subbasin_shapefile_filepath']
-            self.subbasin_shapefile_filename = data['subbasin_shapefile_filename']
-            self.base_landuse_raster_filepath = data['base_landuse_raster_filepath']
-            self.base_landuse_raster_adf_filepath = data['base_landuse_raster_adf_filepath']
-            self.base_landuse_raster_filename = data['base_landuse_raster_filename']
-            self.new_landuse_raster_filepaths = data['new_landuse_raster_filepaths']
-            self.new_landuse_raster_filenames = data['new_landuse_raster_filenames']
+            self.subbasin_shapefile_filepath = data[
+                'subbasin_shapefile_filepath']
+            self.subbasin_shapefile_filename = data[
+                'subbasin_shapefile_filename']
+            self.base_landuse_raster_filepath = data[
+                'base_landuse_raster_filepath']
+            self.base_landuse_raster_adf_filepath = data[
+                'base_landuse_raster_adf_filepath']
+            self.base_landuse_raster_filename = data[
+                'base_landuse_raster_filename']
+            self.new_landuse_raster_filepaths = data[
+                'new_landuse_raster_filepaths']
+            self.new_landuse_raster_filenames = data[
+                'new_landuse_raster_filenames']
             self.landuse_percent = data['landuse_percent']
             self.process_root_dir = data['process_root_dir']
             self.output_dir = data['output_dir']
@@ -151,11 +156,13 @@ class LUUCheckerProcess(object):
             self.email_error_alert_to_user()
             raise Exception('Unable to read the base landuse raster.')
 
-        self.logger.info('Getting count of subbasins from the subbasin shapefile.')
+        self.logger.info(
+            'Getting count of subbasins from the subbasin shapefile.')
 
         try:
             # get number of subbasins in shapefile
-            total_subbasin_count = len(geotools.read_shapefile(self.subbasin_shapefile_filepath))
+            total_subbasin_count = len(
+                geotools.read_shapefile(self.subbasin_shapefile_filepath))
         except Exception:
             self.logger.exception('Unable to read the subbasin shapefile.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -169,22 +176,29 @@ class LUUCheckerProcess(object):
         self.logger.info('Converting subbasin .shp to .tif.')
         try:
             # convert shapefile to raster
-            geotools.rasterize_shapefile(layer_info, self.subbasin_shapefile_filepath, output_tif_filepath)
+            geotools.rasterize_shapefile(layer_info,
+                                         self.subbasin_shapefile_filepath,
+                                         output_tif_filepath)
         except Exception:
-            self.logger.exception('Error converting shapefile to raster. Please make ' + \
-                                  'sure you uploaded file.shp.')
+            self.logger.exception(
+                'Error converting shapefile to raster. Please make ' + \
+                'sure you uploaded file.shp.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
-            raise Exception('Error converting shapefile to raster. Please make ' + \
-                            'sure you uploaded file.shp.')
+            raise Exception(
+                'Error converting shapefile to raster. Please make ' + \
+                'sure you uploaded file.shp.')
 
         self.logger.info('Converting subbasin geotiff into numpy array.')
 
         try:
             # read rasterized shapefile into numpy array
-            rasterized_shapefile = geotools.read_raster(self.temp_output_directory + '/subbasin.tif')[0]
+            rasterized_shapefile = \
+            geotools.read_raster(self.temp_output_directory + '/subbasin.tif')[
+                0]
         except Exception:
-            self.logger.exception('Unable to read the rasterized subbasin geotiff.')
+            self.logger.exception(
+                'Unable to read the rasterized subbasin geotiff.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Unable to read the rasterized subbasin geotiff.')
@@ -196,27 +210,35 @@ class LUUCheckerProcess(object):
             if os.path.isfile(self.output_directory + '/Emerging_LULCs.txt'):
                 os.remove(self.output_directory + '/Emerging_LULCs.txt')
             # create emerging_lulcs text file to store new landuse information
-            emerging_lulc_report = open(self.output_directory + '/Emerging_LULC_Report.txt', 'w')
+            emerging_lulc_report = open(
+                self.output_directory + '/Emerging_LULC_Report.txt', 'w')
         except Exception:
-            self.logger.exception('Unable to create emerging_lulcs text file to store new landuse information.')
+            self.logger.exception(
+                'Unable to create emerging_lulcs text file to store new landuse information.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
-            raise Exception('Unable to create emerging_lulcs text file to store new landuse information.')
+            raise Exception(
+                'Unable to create emerging_lulcs text file to store new landuse information.')
 
         self.logger.info('Begin looping through new landuse layers.\n\n')
 
         try:
             # loop through each new landuse layer selected by the user
             for landuse_layer in self.new_landuse_raster_filepaths:
-                self.logger.info('LANDUSE LAYER:' + os.path.basename(landuse_layer))
+                self.logger.info(
+                    'LANDUSE LAYER:' + os.path.basename(landuse_layer))
                 # write the landuse layer name to report
                 emerging_lulc_report.write(landuse_layer + '\n')
 
                 # convert the new landuse layer raster to array
                 geotools.convert_adf_to_tif(landuse_layer,
-                                            self.temp_output_directory + '/' + os.path.basename(landuse_layer) + '.tif')
-                self.logger.info('Converting new landuse geotiff into numpy array.')
-                self.logger.info(self.temp_output_directory + '/' + os.path.basename(landuse_layer) + '.tif')
+                                            self.temp_output_directory + '/' + os.path.basename(
+                                                landuse_layer) + '.tif')
+                self.logger.info(
+                    'Converting new landuse geotiff into numpy array.')
+                self.logger.info(
+                    self.temp_output_directory + '/' + os.path.basename(
+                        landuse_layer) + '.tif')
                 # read new landuse raster (.tif) into numpy array
                 new_landuse_raster = geotools.read_raster(
                     self.temp_output_directory + '/' + \
@@ -252,10 +274,12 @@ class LUUCheckerProcess(object):
 
                 self.logger.info('End looping through subbasins.')
         except:
-            self.logger.exception('An error occurred while creating the emerging lulc report.')
+            self.logger.exception(
+                'An error occurred while creating the emerging lulc report.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
-            raise Exception('An error occurred while creating the emerging lulc report.')
+            raise Exception(
+                'An error occurred while creating the emerging lulc report.')
 
         self.logger.info('End looping through new landuse layers.\n\n')
 
@@ -266,10 +290,12 @@ class LUUCheckerProcess(object):
                 self.base_landuse_raster_adf_filepath,
                 self.temp_output_directory + '/base_new1.tif')
         except:
-            self.logger.exception('An error occurred while creating the composite raster.')
+            self.logger.exception(
+                'An error occurred while creating the composite raster.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
-            raise Exception('An error occurred while creating the composite raster.')
+            raise Exception(
+                'An error occurred while creating the composite raster.')
 
         self.logger.info('Closing Emerging_LULC_Report for writing.')
         # close emerging lulc report
@@ -286,9 +312,11 @@ class LUUCheckerProcess(object):
         # Initialize logger for requested process and set header
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(settings.BASE_DIR + '/swatapps/log/tasks/luuchecker/' + self.task_id + '.log')
+        handler = logging.FileHandler(
+            settings.BASE_DIR + '/swatapps/log/tasks/luuchecker/' + self.task_id + '.log')
         handler.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
         self.logger.info('Task ID: ' + self.task_id)
@@ -307,13 +335,14 @@ class LUUCheckerProcess(object):
             shutil.rmtree(self.output_directory)
         if not os.path.exists(self.output_directory):
             os.makedirs(self.output_directory)
-        
+
         if os.path.exists(self.temp_output_directory):
             shutil.rmtree(self.temp_output_directory)
         if not os.path.exists(self.temp_output_directory):
             os.makedirs(self.temp_output_directory)
 
-    def find_unique_lulc_codes(self, idx, base_raster_array, new_landuse_raster):
+    def find_unique_lulc_codes(self, idx, base_raster_array,
+                               new_landuse_raster):
         """
         Finds the unique landuse/landcover values in the base landuse raster
         array and the new landuse raster array. Then it identifies any
@@ -337,8 +366,9 @@ class LUUCheckerProcess(object):
             Single dimensional array containing landuse/landcover values
             completely unique to the new landuse raster array
         """
-        self.logger.info('Finding the landuse/landcover values unique to the new landuse raster.')
-        
+        self.logger.info(
+            'Finding the landuse/landcover values unique to the new landuse raster.')
+
         # parse the idx to separate variables
         row, col = idx
         # find unique LULC in base landuse array
@@ -346,7 +376,8 @@ class LUUCheckerProcess(object):
         # find unique LULC in new landuse array
         new_raster_lulc_codes = np.unique(new_landuse_raster[row, col])
         # now compare new landuse raster's lulc codes with base raster's lulc codes
-        new_lulc_codes = np.setdiff1d(new_raster_lulc_codes, base_raster_lulc_codes)
+        new_lulc_codes = np.setdiff1d(new_raster_lulc_codes,
+                                      base_raster_lulc_codes)
 
         return new_lulc_codes
 
@@ -374,7 +405,8 @@ class LUUCheckerProcess(object):
         base_raster_array: array
             Base landuse raster updated with emerging lulcs
         """
-        self.logger.info('Injecting emerging lulc codes into base raster array.')
+        self.logger.info(
+            'Injecting emerging lulc codes into base raster array.')
         # if newLULC > 0, this implies landuses are present in the new LULC
         if np.size(new_lulc_codes, axis=0) > 0:
             # this implies that an alternative LULC is required containing few cells with additional landuses
@@ -384,27 +416,38 @@ class LUUCheckerProcess(object):
             # it checks if the number of unique lulc codes in the updated base raster array
             # matches the sum of the original base raster array plus new_lulc_codes
             # if they don't match, that means we erased a landuse so we reshuffle and try again
-            #while len(valBase) + len(new_lulc_codes) != len(np.unique(base_raster_array[row, col])):
+            # while len(valBase) + len(new_lulc_codes) != len(np.unique(base_raster_array[row, col])):
             index_array = list(range(0, np.shape(idx)[1]))
             np.random.shuffle(index_array)
             previous_new_lulc_ending_index = 0
             for j in range(0, len(new_lulc_codes)):
-                number_of_new_lulc_cells = int(round((float(self.landuse_percent) / 100.0) * np.shape(idx)[1]))
-                newLULC_idx = index_array[previous_new_lulc_ending_index:number_of_new_lulc_cells + previous_new_lulc_ending_index]
+                number_of_new_lulc_cells = int(round(
+                    (float(self.landuse_percent) / 100.0) * np.shape(idx)[1]))
+                newLULC_idx = index_array[
+                              previous_new_lulc_ending_index:number_of_new_lulc_cells + previous_new_lulc_ending_index]
                 previous_new_lulc_ending_index = previous_new_lulc_ending_index + number_of_new_lulc_cells
-                base_raster_array[row[newLULC_idx], col[newLULC_idx]] = new_lulc_codes[j]
+                base_raster_array[row[newLULC_idx], col[newLULC_idx]] = \
+                new_lulc_codes[j]
 
         return base_raster_array
 
-    def create_composite_raster(self, base_raster_array, base_landuse_raster_adf_filepath, composite_raster_filepath):
+    def create_composite_raster(self, base_raster_array,
+                                base_landuse_raster_adf_filepath,
+                                composite_raster_filepath):
         self.logger.info('Creating composite landuse raster.')
-        
-        geotools.create_raster(base_raster_array, base_landuse_raster_adf_filepath, composite_raster_filepath)
+
+        geotools.create_raster(base_raster_array,
+                               base_landuse_raster_adf_filepath,
+                               composite_raster_filepath)
         try:
-            check_call(['gdal_translate', '-co', 'compress=lzw', '-a_nodata', '255', '-of', 'GTiff',
-                        self.temp_output_directory + '/base_new1.tif', self.output_directory + '/base_new.tif'])
+            check_call(
+                ['gdal_translate', '-co', 'compress=lzw', '-a_nodata', '255',
+                 '-of', 'GTiff',
+                 self.temp_output_directory + '/base_new1.tif',
+                 self.output_directory + '/base_new.tif'])
         except Exception:
-            self.logger.exception('Error converting new base raster to geotiff.')
+            self.logger.exception(
+                'Error converting new base raster to geotiff.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
     def copy_results_to_depot(self):
@@ -447,7 +490,7 @@ class LUUCheckerProcess(object):
         message += '<strong>Task Status</strong> page (found in the navigation menu). '
         message += 'There you will find a record of your completed '
         message += 'task and a link to download the results data. '
-        message += 'The link will expire on ' + self.get_expiration_date() 
+        message += 'The link will expire on ' + self.get_expiration_date()
         message += ' (48 hours).<br><br>Sincerely,<br>SWAT Tools'
         try:
             send_mail(
@@ -475,7 +518,8 @@ class LUUCheckerProcess(object):
             -------
             None
             """
-        self.logger.info('Sending user email informing them an error has occurred.')
+        self.logger.info(
+            'Sending user email informing them an error has occurred.')
         subject = self.tool_name + ' error'
         message = 'An error has occurred within ' + self.tool_name + ' while processing your data. '
         message += 'Please verify your inputs are not missing any required files. '
@@ -492,8 +536,9 @@ class LUUCheckerProcess(object):
                 fail_silently=False,
                 html_message=message)
         except Exception:
-            self.logger.exception('Error sending the user the email informing ' +
-                                  'them of an error occurrence while processing their data.')
+            self.logger.exception(
+                'Error sending the user the email informing ' +
+                'them of an error occurrence while processing their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             raise Exception('Error sending the user the email informing ' +
                             'them of an error occurrence while processing their data.')
@@ -512,7 +557,9 @@ class LUUCheckerProcess(object):
             Date (mm-dd-YYYY) three days from the present in string format.
         """
         self.logger.info('Calculating the date three days from now.')
-        return (datetime.datetime.now() + datetime.timedelta(hours=48)).strftime("%m-%d-%Y %H:%M:%S %Z")
+        return (
+            timezone.datetime.now() + timezone.timedelta(hours=48)).strftime(
+            "%m-%d-%Y %H:%M:%S %Z")
 
     def update_task_status_in_database(self):
         """
@@ -528,4 +575,7 @@ class LUUCheckerProcess(object):
         None
         """
         self.logger.info('Updating the user\'s task status.')
-        UserTask.objects.filter(task_id=self.task_id).update(task_status=1, time_completed=datetime.datetime.now())
+        UserTask.objects.filter(
+            task_id=self.task_id).update(
+            task_status=1,
+            time_completed=timezone.datetime.now())

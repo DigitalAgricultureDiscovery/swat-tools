@@ -15,7 +15,7 @@ def get_email_password():
 
 
 def get_email_port():
-    return 'EMAIL_PORT' # as integer
+    return 'EMAIL_PORT'  # as integer
 
 
 def get_norecaptcha_site_key():

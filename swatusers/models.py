@@ -1,12 +1,13 @@
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.mail import send_mail
 from django.db import models
 
 
 class SwatUserManager(BaseUserManager):
-    def create_user(self, email, first_name, last_name, country, state, is_active, is_superuser, is_staff, date_joined, password=None):
+    def create_user(self, email, first_name, last_name, country, state,
+                    is_active, is_superuser, is_staff, date_joined,
+                    password=None):
         user = self.model(
             email=email,
             first_name=first_name,
@@ -20,9 +21,12 @@ class SwatUserManager(BaseUserManager):
 
         return user
 
-    def create_superuser(self, email, first_name, last_name, country, state, is_active, is_superuser, is_staff, date_joined, password):
+    def create_superuser(self, email, first_name, last_name, country, state,
+                         is_active, is_superuser, is_staff, date_joined,
+                         password):
         user = self.create_user(
-            email, first_name, last_name, country, state, is_active, is_superuser, is_staff, date_joined, password=password)
+            email, first_name, last_name, country, state, is_active,
+            is_superuser, is_staff, date_joined, password=password)
 
         user.save()
         return user
@@ -41,7 +45,7 @@ class SwatUser(AbstractBaseUser):
     date_joined = models.DateTimeField(auto_now_add=True)
 
     USERNAME_FIELD = 'email'
-    
+
     def __unicode__(self):
         return self.email
 
@@ -49,17 +53,21 @@ class SwatUser(AbstractBaseUser):
         """
         Returns the first_name plus the last_name, with a space in between.
         """
+
         full_name = '%s %s' % (self.first_name, self.last_name)
+
         return full_name.strip()
 
     def get_short_name(self):
         "Returns the short name for the user."
+
         return self.first_name
 
     def email_user(self, subject, message, from_email=None, **kwargs):
         """
         Sends an email to this User.
         """
+
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
     objects = SwatUserManager()

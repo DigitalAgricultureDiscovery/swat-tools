@@ -1,16 +1,15 @@
-from django.conf import settings
-from django.contrib.auth.models import check_password
 from swatusers.models import SwatUser
 
+
 class EmailAuthBackend(object):
-    """
-    A custom authentication backend. Allows users to log in using their email address.
+    """ 
+    A custom authentication backend. Allows users to 
+    log in using their email address. 
     """
 
     def authenticate(self, email=None, password=None):
-        """
-        Authentication method
-        """
+        """ Authentication method """
+
         try:
             user = SwatUser.objects.get(email=email)
             if user.check_password(password):

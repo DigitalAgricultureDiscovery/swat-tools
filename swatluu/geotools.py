@@ -101,7 +101,8 @@ def create_raster_array(hrus1_filepath, landuse_filepath):
     x_origin, y_origin = lulc_gt[0], lulc_gt[3]
 
     # initialize landuse array
-    landuse_array = np.empty((len(hrus1_data['coords'][0]), len(hrus1_data['coords'][0][0])))
+    landuse_array = np.empty(
+        (len(hrus1_data['coords'][0]), len(hrus1_data['coords'][0][0])))
 
     # use landuse x, y origins to find landuse values at hrus1 coordinates
     for i in range(0, len(hrus1_data['coords'][0])):
@@ -111,7 +112,8 @@ def create_raster_array(hrus1_filepath, landuse_filepath):
             x_offset = int((x - x_origin) / hrus1_data['cell_size'])
             y_offset = abs(int((y - y_origin) / hrus1_data['cell_size']))
             if hrus1_data['array'][i][j] != hrus1_data['nodata']:
-                landuse_array[i][j] = lulc_band.ReadAsArray(x_offset, y_offset, 1, 1)[0, 0]
+                landuse_array[i][j] = \
+                lulc_band.ReadAsArray(x_offset, y_offset, 1, 1)[0, 0]
             else:
                 landuse_array[i][j] = hrus1_data['nodata']
 
@@ -199,10 +201,10 @@ def get_shapefile_extent(shapefile_filepath):
 
     # open the shapefile
     datasource = driver.Open(shapefile_filepath, 0)
-    
+
     # get layer from shapefile
     layer = datasource.GetLayer()
-    
+
     # get shapefile's extent
     extent = layer.GetExtent()
 
@@ -241,7 +243,7 @@ def create_raster(array_data, original_hrus_filepath, new_hrus_filepath):
     proj = original_hrus.GetProjection()
     # get raster values for first band
     band = original_hrus.GetRasterBand(1)
-    # get pixel datatype for the band 
+    # get pixel datatype for the band
     datatype = band.DataType
     # register geotiff driver
     driver = gdal.GetDriverByName("GTiff")
@@ -317,14 +319,14 @@ def rasterize_shapefile(layer_info, shp_filepath, new_tif_filepath):
 
     # use gdal_rasterize to convert shapefile into geotiff
     check_call([
-        'gdal_rasterize',                       # GDAL utility program
-        '-of', 'Gtiff',                         # format
-        '-a', layer_info['attribute_name'],     # attribute name
-        '-ts', cols, rows,                      # width height
-        '-ot', 'Byte',                          # type
-        '-co', 'COMPRESS=LZW',                  # compression
-        '-l', layer_info['layername'],          # layername
-        shp_filepath, new_tif_filepath])        # shapefile, new raster
+        'gdal_rasterize',  # GDAL utility program
+        '-of', 'Gtiff',  # format
+        '-a', layer_info['attribute_name'],  # attribute name
+        '-ts', cols, rows,  # width height
+        '-ot', 'Byte',  # type
+        '-co', 'COMPRESS=LZW',  # compression
+        '-l', layer_info['layername'],  # layername
+        shp_filepath, new_tif_filepath])  # shapefile, new raster
 
 
 def matplotlib_pip(points, polygon):

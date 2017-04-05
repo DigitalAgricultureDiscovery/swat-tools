@@ -20,7 +20,7 @@ def process_task(data):
     none
     """
     process = UncertaintyProcess(data)
-    
+
     process.start()
     process.copy_results_to_depot()
     process.clean_up_input_data()
