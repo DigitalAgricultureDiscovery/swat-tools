@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from swatapps.celery import app
-from fieldswat.process import FieldSWATProcess
+from .process import FieldSWATProcess
 
 
 @app.task

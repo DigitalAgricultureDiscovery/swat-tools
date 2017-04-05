@@ -6,6 +6,7 @@ import pickle
 
 class RegistrationForm(forms.ModelForm):
     """ Extend UserCreationForm to include email, first name, and last name """
+
     email = forms.EmailField(widget=forms.widgets.TextInput, label='Email')
     password1 = forms.CharField(widget=forms.PasswordInput(), label='Password')
     password2 = forms.CharField(widget=forms.PasswordInput(), label='Password (again)')
@@ -13,7 +14,7 @@ class RegistrationForm(forms.ModelForm):
     last_name = forms.CharField(widget=forms.widgets.TextInput, label="Last name")
     organization = forms.CharField(widget=forms.widgets.TextInput, label='Organization (optional)', required=False)
     country = forms.ChoiceField(
-        choices=pickle.load(open(settings.BASE_DIR + '/swatusers/countries.p', 'rb')),
+        choices=pickle.load(open(settings.PROJECT_DIR + '/swatusers/countries.p', 'rb')),
         label='Country',
         initial='United States of America'
     )
@@ -21,7 +22,8 @@ class RegistrationForm(forms.ModelForm):
 
     class Meta:
         model = SwatUser
-        fields = ('email', 'password1', 'password2', 'first_name', 'last_name', 'organization', 'country', 'state')
+        fields = ('email', 'password1', 'password2', 'first_name',
+                  'last_name', 'organization', 'country', 'state')
 
     def clean(self):
         """ Cleans data and validates. """
@@ -30,14 +32,16 @@ class RegistrationForm(forms.ModelForm):
         # Check if password and re-typed password match
         if 'password1' in cleaned_data and 'password2' in cleaned_data:
             if cleaned_data['password1'] != cleaned_data['password2']:
-                raise forms.ValidationError("Passwords don't match. Please enter both fields again.")
+                raise forms.ValidationError("Passwords don't match. Please "
+                                            "enter both fields again.")
 
         # Check if email available
         if 'email' in cleaned_data:
             query_email = SwatUser.objects.filter(email=cleaned_data["email"])
 
             if query_email:
-                raise forms.ValidationError("Sorry, this email address is already in use.")
+                raise forms.ValidationError("Sorry, this email address is "
+                                            "already in use.")
 
         return cleaned_data
 
@@ -51,6 +55,7 @@ class RegistrationForm(forms.ModelForm):
 
 class ContactUsForm(forms.Form):
     """ Form for the Contact Us page """
+
     # Create subject and message fields
     subject = forms.CharField(label='Subject')
     message = forms.CharField(widget=forms.Textarea, label='Message')
@@ -58,6 +63,7 @@ class ContactUsForm(forms.Form):
 
 class LoginForm(forms.Form):
     """Form for the user to login"""
+
     email = forms.EmailField(widget=forms.widgets.TextInput, label='Email')
     password = forms.CharField(widget=forms.PasswordInput(), label='Password')
 

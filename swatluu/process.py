@@ -1,20 +1,23 @@
 from django.conf import settings
 from django.core.mail import send_mail
+from django.utils import timezone
 from swatusers.models import UserTask
 
 import csv
-import datetime
-import geotools
 import logging
 import math
 import numpy as np
 import os
 import shutil
+import sys
+
+sys.path.insert(0, os.path.join(settings.PROJECT_DIR, "swatluu"))
+
+import geotools
 import swattools
 
 
 class SWATLUUProcess(object):
-
     def __init__(self, data=""):
         """
         Return a SWATLUUProcess object with all the input path's initialized
@@ -70,9 +73,11 @@ class SWATLUUProcess(object):
         # Initialize logger for requested process and set header
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(settings.BASE_DIR + '/swatapps/log/tasks/swatluu/' + self.task_id + '.log')
+        handler = logging.FileHandler(
+            settings.BASE_DIR + '/swatapps/log/tasks/swatluu/' + self.task_id + '.log')
         handler.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
         self.logger.info('Task ID: ' + self.task_id)
@@ -113,10 +118,12 @@ class SWATLUUProcess(object):
         try:
             self.extract_lookup_info()
         except Exception:
-            self.logger.exception('Unable to extract lookup information from uploaded lookup file.')
+            self.logger.exception(
+                'Unable to extract lookup information from uploaded lookup file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
-            raise Exception('Unable to extract lookup information from uploaded lookup file.')
+            raise Exception(
+                'Unable to extract lookup information from uploaded lookup file.')
 
         # convert hrus1 grid to tif
         try:
@@ -133,10 +140,12 @@ class SWATLUUProcess(object):
         try:
             self.merge_thresholds()
         except Exception:
-            self.logger.exception('Unable to merge non-dominant HRUs into nearby dominant hrus.')
+            self.logger.exception(
+                'Unable to merge non-dominant HRUs into nearby dominant hrus.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
-            raise Exception('Unable to merge non-dominant HRUs into nearby dominant hrus.')
+            raise Exception(
+                'Unable to merge non-dominant HRUs into nearby dominant hrus.')
 
         # create fractional area for each dominant hru
         try:
@@ -237,18 +246,23 @@ class SWATLUUProcess(object):
             try:
                 geotools.convert_adf_to_tif(layer_path, converted_layer_path)
             except Exception:
-                self.logger.exception('Unable to convert raster from .adf to .tif.')
-                UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+                self.logger.exception(
+                    'Unable to convert raster from .adf to .tif.')
+                UserTask.objects.filter(task_id=self.task_id).update(
+                    task_status=2)
 
             # write the date and file into lup.dat
-            self.logger.info('Adding landuse layer, ' + layer_name + ', to lup.dat.')
+            self.logger.info(
+                'Adding landuse layer, ' + layer_name + ', to lup.dat.')
             lup_file.write(
                 '{0} {1} {2} {3} {4} {5}\n'.format(
                     ''.ljust(4 - len(str(layer_index + 1))),
-                    str(layer_index + 1).ljust(5 - len(str(month)) + len(str(layer_index + 1)) - 1),
+                    str(layer_index + 1).ljust(
+                        5 - len(str(month)) + len(str(layer_index + 1)) - 1),
                     str(month).ljust(5 - len(str(day)) + len(str(month)) - 1),
                     str(day).ljust(5 - len(str(year)) + len(str(day)) - 1),
-                    str(year).ljust(13 - len(str('file' + str(layer_index + 1) + '.dat'))),
+                    str(year).ljust(
+                        13 - len(str('file' + str(layer_index + 1) + '.dat'))),
                     ('file' + str(layer_index + 1) + '.dat')))
         self.logger.info('Closing lup.dat.')
         lup_file.close()
@@ -270,9 +284,11 @@ class SWATLUUProcess(object):
         lookup_info: list
             List containing lookup codes and values
         """
-        self.logger.info('Extracting loopup information from uploaded lookup file.')
+        self.logger.info(
+            'Extracting loopup information from uploaded lookup file.')
         try:
-            lookup_file = csv.reader(open(self.lookup_filepath, 'r'), delimiter=',')
+            lookup_file = csv.reader(open(self.lookup_filepath, 'r'),
+                                     delimiter=',')
         except:
             self.logger.exception('Unable to open the lookup file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -315,14 +331,16 @@ class SWATLUUProcess(object):
         """
         self.logger.info('Reading hrus1.tif into numpy array.')
         try:
-            hrus, hru_info = geotools.read_raster(self.results_dir + '/Raster/hrus1/hrus1.tif')
+            hrus, hru_info = geotools.read_raster(
+                self.results_dir + '/Raster/hrus1/hrus1.tif')
         except Exception:
             self.logger.exception('Unable to read hrus1.tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
         self.logger.info('Reading hru1.shp into numpy array.')
         try:
-            merged_hru = geotools.read_shapefile(self.swat_dir + '/Watershed/Shapes/hru1.shp')
+            merged_hru = geotools.read_shapefile(
+                self.swat_dir + '/Watershed/Shapes/hru1.shp')
             merged_hru = np.array(merged_hru, dtype=int)
             # sort HRU_ID column (second column) into ascending order
             # and keep respective positions of other columns
@@ -335,7 +353,8 @@ class SWATLUUProcess(object):
             self.logger.exception('Unable to open shapefile hrus1.shp.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
-        self.logger.info('Sorting and merging the non-dominant and dominant hrus.')
+        self.logger.info(
+            'Sorting and merging the non-dominant and dominant hrus.')
 
         try:
             # retrieve dominant hru values - these are the hrus that remained
@@ -350,7 +369,8 @@ class SWATLUUProcess(object):
             # merge non-dominant hrus into nearby dominant hrus
             hrus = swattools.merge(hrus, dominant_hrus, hru_info[1])
         except Exception:
-            self.logger.exception('Unable to sort and merge the non-dominant and dominant hrus.')
+            self.logger.exception(
+                'Unable to sort and merge the non-dominant and dominant hrus.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
         self.logger.info('Creating final_HRU.tif from merged hrus array.')
@@ -403,7 +423,8 @@ class SWATLUUProcess(object):
         old_hru_areas: list
             Each element represents the fractional area for a hru
         """
-        self.logger.info('Calculating fractional areas for each hru inside the watershed.')
+        self.logger.info(
+            'Calculating fractional areas for each hru inside the watershed.')
         pixel_size = self.hru_info[0]
         # isolate the pixels with hru values from the nodata pixels
         inside_watershed_indexes = np.nonzero(self.hrus != self.hru_info[1])
@@ -431,21 +452,25 @@ class SWATLUUProcess(object):
         # for the dominant hrus (keys)
         for hru_index, hru_val in enumerate(inside_watershed_hrus):
             if hru_val in dominant_hrus_set:
-                dominant_hrus_inside_watershed_indexes[hru_val].append(hru_index)
+                dominant_hrus_inside_watershed_indexes[hru_val].append(
+                    hru_index)
 
         old_hru_areas = np.zeros(len(self.dominant_hrus))
 
         # loop through dominant hrus and calculate fractional area
         hru_indexes = []
-        for dominant_hru_index, dominant_hru_value in enumerate(self.dominant_hrus):
+        for dominant_hru_index, dominant_hru_value in enumerate(
+                self.dominant_hrus):
             # i don't understand why the next two lines are necessary....
-            hru_index = np.array(dominant_hrus_inside_watershed_indexes[dominant_hru_value])
+            hru_index = np.array(
+                dominant_hrus_inside_watershed_indexes[dominant_hru_value])
             hru_indexes.append(hru_index)
 
             # number of instances of the hru
-            hru_count = len(dominant_hrus_inside_watershed_indexes[dominant_hru_value])
+            hru_count = len(
+                dominant_hrus_inside_watershed_indexes[dominant_hru_value])
             # convert area from square meter to acres and multiply by count
-            hru_area = (pixel_size**2 * 10**-6) * hru_count
+            hru_area = (pixel_size ** 2 * 10 ** -6) * hru_count
             # store area in array
             old_hru_areas[dominant_hru_index] = hru_area
 
@@ -496,7 +521,7 @@ class SWATLUUProcess(object):
         hru_files_data: array
             Each row represents a hru and each column a attribute associated
             with the hru - see description for more information on the columns
-        
+
         unique_subbasin_ids: array
             Array of the watershed's unique subbasin ids
         """
@@ -519,27 +544,35 @@ class SWATLUUProcess(object):
         if len(hru_ids_from_hru_files) != len(self.dominant_hrus):
             # halt function
             self.logger.info('Number of HRU ids (' + str(
-                len(hru_ids_from_hru_files)) + ') found in *.hru files does not match number of dominant HRUs (' + str(
+                len(
+                    hru_ids_from_hru_files)) + ') found in *.hru files does not match number of dominant HRUs (' + str(
                 len(self.dominant_hrus)) + ').')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
-        self.logger.info('Collecting subbasin ids, landuse codes, soil codes, slope ranges, and subbasin ids.')
+        self.logger.info(
+            'Collecting subbasin ids, landuse codes, soil codes, slope ranges, and subbasin ids.')
         # get each hru's landuse code
         landuse_codes = np.zeros(len(landuse_abbrevs_from_hru_files), int)
         for code_index in range(0, len(self.lookup_info) - 1):
-            landuse_codes[np.nonzero(np.array(landuse_abbrevs_from_hru_files) == self.lookup_info[code_index + 1][1])] = self.lookup_info[code_index + 1][0]
+            landuse_codes[np.nonzero(np.array(landuse_abbrevs_from_hru_files) ==
+                                     self.lookup_info[code_index + 1][1])] = \
+            self.lookup_info[code_index + 1][0]
 
         # get each hru's soil code
         unique_soil_codes = list(set(soil_codes_from_hru_files))
         soil_codes = np.zeros(len(soil_codes_from_hru_files), int)
         for i in range(0, len(unique_soil_codes)):
-            soil_codes[np.nonzero(np.array(soil_codes_from_hru_files) == unique_soil_codes[i])] = i
+            soil_codes[np.nonzero(
+                np.array(soil_codes_from_hru_files) == unique_soil_codes[
+                    i])] = i
 
         # get each hru's slope range
         unique_slope_ranges = list(set(slope_ranges_from_hru_files))
         slope_ranges = np.zeros(len(slope_ranges_from_hru_files), int)
         for i in range(0, len(unique_slope_ranges)):
-            slope_ranges[np.nonzero(np.array(slope_ranges_from_hru_files) == unique_slope_ranges[i])] = i
+            slope_ranges[np.nonzero(
+                np.array(slope_ranges_from_hru_files) == unique_slope_ranges[
+                    i])] = i
 
         # get unique subbasin ids
         unique_subbasin_ids = list(set(subbasin_ids_from_hru_files))
@@ -607,7 +640,8 @@ class SWATLUUProcess(object):
         self.logger.info('Calculating the new fractional hru areas.')
         self.logger.info('Begin looping through landuse layers.\n\n')
         # loop through each selected landuse layer
-        for landuse_layer_index, landuse_layer in enumerate(self.landuse_layers_data):
+        for landuse_layer_index, landuse_layer in enumerate(
+                self.landuse_layers_data):
             self.logger.info('LANDUSE LAYER: ' + landuse_layer[3])
             # read current landuse layer's raster file
             self.logger.info('Reading landuse layer into numpy array.')
@@ -619,10 +653,12 @@ class SWATLUUProcess(object):
                 landuse_layer_nodata = layer_info[1]
             except Exception:
                 self.logger.exception('Unable to read landuse layer.')
-                UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+                UserTask.objects.filter(task_id=self.task_id).update(
+                    task_status=2)
 
             # get indexes for the parts of the current landuse layer inside the watershed
-            landuse_layer_values_inside_watershed = landuse_layer_raster[self.inside_watershed_indexes]
+            landuse_layer_values_inside_watershed = landuse_layer_raster[
+                self.inside_watershed_indexes]
 
             # loop through our hru indexes and get the landuse values at those indexes
             landuse_layer_values_in_relation_to_hrus = []
@@ -636,7 +672,8 @@ class SWATLUUProcess(object):
             # loop through each hru
             for hru in self.hru_files_data:
                 # find and sort unique landuse codes
-                unique_landuse_codes = list(set(landuse_layer_values_in_relation_to_hrus[hru[1]]))
+                unique_landuse_codes = list(
+                    set(landuse_layer_values_in_relation_to_hrus[hru[1]]))
                 unique_landuse_codes.sort()
 
                 donor_hru_info = hru[2:6]
@@ -646,51 +683,76 @@ class SWATLUUProcess(object):
                             (landuse_code != landuse_layer_nodata):
                         # get a count of the instances of the
                         # current landuse code in the current hru
-                        landuse_code_count = len((np.nonzero(landuse_layer_values_in_relation_to_hrus[hru[1]] == landuse_code)[0]))
+                        landuse_code_count = len((np.nonzero(
+                            landuse_layer_values_in_relation_to_hrus[
+                                hru[1]] == landuse_code)[0]))
 
                         # identify potential receiver hrus
-                        potential_receiver_hrus_one = self.hru_files_data[np.where(
-                            self.hru_files_data[:, 3] == landuse_code)]
+                        potential_receiver_hrus_one = self.hru_files_data[
+                            np.where(
+                                self.hru_files_data[:, 3] == landuse_code)]
 
-                        potential_receiver_hrus_two = potential_receiver_hrus_one[np.where(
-                            potential_receiver_hrus_one[:, 4] == donor_hru_info[2])]
+                        potential_receiver_hrus_two = \
+                        potential_receiver_hrus_one[np.where(
+                            potential_receiver_hrus_one[:, 4] == donor_hru_info[
+                                2])]
 
-                        potential_receiver_hrus_one = potential_receiver_hrus_two[np.where(
-                            potential_receiver_hrus_two[:, 2] == donor_hru_info[0])]
+                        potential_receiver_hrus_one = \
+                        potential_receiver_hrus_two[np.where(
+                            potential_receiver_hrus_two[:, 2] == donor_hru_info[
+                                0])]
 
                         if len(potential_receiver_hrus_one) != 0:
-                            receiver_hru = math.ceil(np.random.rand() * (len(potential_receiver_hrus_one)))
-                            new_hru_areas[potential_receiver_hrus_one[receiver_hru - 1][1]] = new_hru_areas[potential_receiver_hrus_one[receiver_hru - 1][1]] + (landuse_code_count * (pixel_size**2 * 10**-6))
+                            receiver_hru = math.ceil(np.random.rand() * (
+                            len(potential_receiver_hrus_one)))
+                            new_hru_areas[
+                                potential_receiver_hrus_one[receiver_hru - 1][
+                                    1]] = new_hru_areas[
+                                              potential_receiver_hrus_one[
+                                                  receiver_hru - 1][1]] + (
+                                          landuse_code_count * (
+                                          pixel_size ** 2 * 10 ** -6))
 
-                            if new_hru_areas[hru[1]] > (landuse_code_count * (pixel_size**2 * 10**-6)):
-                                new_hru_areas[hru[1]] = new_hru_areas[hru[1]] - (landuse_code_count * (pixel_size**2 * 10**-6))
+                            if new_hru_areas[hru[1]] > (landuse_code_count * (
+                                    pixel_size ** 2 * 10 ** -6)):
+                                new_hru_areas[hru[1]] = new_hru_areas[
+                                                            hru[1]] - (
+                                                        landuse_code_count * (
+                                                        pixel_size ** 2 * 10 ** -6))
                             else:
                                 new_hru_areas[hru[1]] = 0
                         else:
-                            #do something
+                            # do something
                             pass
 
             # initiate a variable to store hru fractional area
             fractional_hru_areas = np.zeros(len(new_hru_areas))
             hru_areas = np.array(new_hru_areas)
 
-            self.logger.info('Loop through each subbasin and update fractional areas.')
+            self.logger.info(
+                'Loop through each subbasin and update fractional areas.')
             for subbasin_id in self.unique_subbasin_ids:
                 # create array where each row is a hru and the column is the subbasin id
                 hru_subbasins = np.array(self.hru_files_data[:, -4])
                 # find indexes in hru subbasins array where the value matches the current subbasin id
-                hru_subbasins_matching_subbasin_id = np.nonzero(hru_subbasins == subbasin_id)
-                fractional_hru_areas[hru_subbasins_matching_subbasin_id] = hru_areas[hru_subbasins_matching_subbasin_id] / sum(hru_areas[hru_subbasins_matching_subbasin_id])
+                hru_subbasins_matching_subbasin_id = np.nonzero(
+                    hru_subbasins == subbasin_id)
+                fractional_hru_areas[hru_subbasins_matching_subbasin_id] = \
+                hru_areas[hru_subbasins_matching_subbasin_id] / sum(
+                    hru_areas[hru_subbasins_matching_subbasin_id])
 
             self.logger.info('Writing new fractional areas to file.\n')
             # write the new fractional areas to the file specific to this landuse layer
-            fractional_hru_areas_file = open(self.results_dir + '/Output/file' + str(landuse_layer_index + 1) + '.dat', 'w')
+            fractional_hru_areas_file = open(
+                self.results_dir + '/Output/file' + str(
+                    landuse_layer_index + 1) + '.dat', 'w')
             fractional_hru_areas_file.write('HRU_ID, HRU_AREA')
             for hru in self.hru_files_data:
                 fractional_hru_areas_file.write('\n')
                 fractional_hru_areas_file.write(str(hru[1] + 1))
                 fractional_hru_areas_file.write(',  ')
-                fractional_hru_areas_file.write(str(float('{0:.6f}'.format(fractional_hru_areas[hru[1]]))))
+                fractional_hru_areas_file.write(
+                    str(float('{0:.6f}'.format(fractional_hru_areas[hru[1]]))))
             fractional_hru_areas_file.close()
 
         self.logger.info('Finished calculating new fractional areas.\n\n')
@@ -735,7 +797,7 @@ class SWATLUUProcess(object):
         message += '<strong>Task Status</strong> page (found in the navigation menu). '
         message += 'There you will find a record of your completed '
         message += 'task and a link to download the results data. '
-        message += 'The link will expire on ' + self.get_expiration_date() 
+        message += 'The link will expire on ' + self.get_expiration_date()
         message += ' (48 hours).<br><br>Sincerely,<br>SWAT Tools'
         try:
             send_mail(
@@ -746,7 +808,8 @@ class SWATLUUProcess(object):
                 fail_silently=False,
                 html_message=message)
         except Exception:
-            self.logger.exception('Error sending the user the email to their data.')
+            self.logger.exception(
+                'Error sending the user the email to their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Error sending the user the email to their data.')
@@ -763,7 +826,8 @@ class SWATLUUProcess(object):
             -------
             None
             """
-        self.logger.info('Sending user email informing them an error has occurred.')
+        self.logger.info(
+            'Sending user email informing them an error has occurred.')
         subject = self.tool_name + ' error'
         message = 'An error has occurred within ' + self.tool_name + ' while processing your data. '
         message += 'Please verify your inputs are not missing any required files. '
@@ -780,8 +844,9 @@ class SWATLUUProcess(object):
                 fail_silently=False,
                 html_message=message)
         except Exception:
-            self.logger.exception('Error sending the user the email informing ' +
-                                  'them of an error occurrence while processing their data.')
+            self.logger.exception(
+                'Error sending the user the email informing ' +
+                'them of an error occurrence while processing their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             raise Exception('Error sending the user the email informing ' +
                             'them of an error occurrence while processing their data.')
@@ -800,7 +865,9 @@ class SWATLUUProcess(object):
             Date (mm-dd-YYYY) three days from the present in string format.
         """
         self.logger.info('Calculating the date three days from now.')
-        return (datetime.datetime.now() + datetime.timedelta(hours=48)).strftime("%m-%d-%Y %H:%M:%S %Z")
+        return (
+        timezone.datetime.now() + timezone.timedelta(hours=48)).strftime(
+            "%m-%d-%Y %H:%M:%S %Z")
 
     def update_task_status_in_database(self):
         """
@@ -817,4 +884,7 @@ class SWATLUUProcess(object):
         """
         self.logger.info('Updating the user\'s task status.')
 
-        UserTask.objects.filter(task_id=self.task_id).update(task_status=1, time_completed=datetime.datetime.now())
+        UserTask.objects.filter(
+            task_id=self.task_id).update(
+            task_status=1,
+            time_completed=timezone.datetime.now())

@@ -1,8 +1,7 @@
 from __future__ import absolute_import
-from celery import shared_task
 
 from swatapps.celery import app
-from luuchecker.process import LUUCheckerProcess
+from .process import LUUCheckerProcess
 
 
 @app.task

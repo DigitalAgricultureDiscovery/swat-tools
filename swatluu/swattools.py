@@ -25,21 +25,24 @@ def merge(hrus, dominant_hrus, nodata_value):
     """
     # inside_watershed will have values for which merging step is carried
     inside_watershed_indexes = nonzero(hrus != nodata_value)
-    outside_watershed_indexes = nonzero(hrus == nodata_value)  
-    
+    outside_watershed_indexes = nonzero(hrus == nodata_value)
+
     # copy hru values
     hrus_test = hrus.copy()
     # change the default nodata value to 1
     hrus_test[outside_watershed_indexes] = 1
     # set type increases following loop's performance
     dominant_hrus_set = set(dominant_hrus)
-    
+
     # set dominant hrus to 0 and non-dominant to 1
     for i in range(0, len(inside_watershed_indexes[0])):
-        if hrus_test[inside_watershed_indexes[0][i]][inside_watershed_indexes[1][i]] in dominant_hrus_set:
-            hrus_test[inside_watershed_indexes[0][i]][inside_watershed_indexes[1][i]] = 0
+        if hrus_test[inside_watershed_indexes[0][i]][
+            inside_watershed_indexes[1][i]] in dominant_hrus_set:
+            hrus_test[inside_watershed_indexes[0][i]][
+                inside_watershed_indexes[1][i]] = 0
         else:
-            hrus_test[inside_watershed_indexes[0][i]][inside_watershed_indexes[1][i]] = 1
+            hrus_test[inside_watershed_indexes[0][i]][
+                inside_watershed_indexes[1][i]] = 1
 
     # perform eclidean allocation, returns the indexes
     # of the nearest dominant hru
@@ -90,11 +93,10 @@ def read_hru_files(txt_in_out_dir):
     hru_filepaths = []
     for hru_file in glob.glob(txt_in_out_dir + '/*.hru'):
         if (hru_file != txt_in_out_dir + '/output.hru') and \
-                (hru_file != txt_in_out_dir + '/outputb.hru'): 
+                (hru_file != txt_in_out_dir + '/outputb.hru'):
             hru_filepaths.append(hru_file)
     # sort filepaths
     hru_filepaths.sort()
-
 
     hru_ids = []
     subbasin_ids = []
@@ -107,8 +109,8 @@ def read_hru_files(txt_in_out_dir):
         hru_file = open(hru_filepath, 'r')
         first_line = hru_file.readline()
         hru_file.close()
-    
-        # collect the indexes in the first line where our 
+
+        # collect the indexes in the first line where our
         # attributes of interest appear
         hru_index = first_line.index('HRU:')
         subbasin_index = first_line.index('Subbasin:')
@@ -116,7 +118,7 @@ def read_hru_files(txt_in_out_dir):
         landuse_index = first_line.index('Luse:')
         soil_index = first_line.index('Soil:')
         slope_index = first_line.index('Slope')
-        
+
         # while testing we noticed that while most .hru files used
         # '/'s for the date, some used '-'s - this will catch that case
         try:
@@ -126,7 +128,8 @@ def read_hru_files(txt_in_out_dir):
 
         # use the indexes to find the values
         hru_id = int(float(first_line[hru_index + 4: subbasin_index - 1]))
-        subbasin_id = int(float(first_line[subbasin_index + 9: last_hru_index - 1]))
+        subbasin_id = int(
+            float(first_line[subbasin_index + 9: last_hru_index - 1]))
         landuse_abbrev = first_line[landuse_index + 5: soil_index - 1]
         soil_code = first_line[soil_index + 6: slope_index - 1]
         slope_range = first_line[slope_index + 6: slash_index - 2]
@@ -198,16 +201,18 @@ def validate_raster_properties(hrus1_path, lu_path, lu_layers):
         # test if pixel resolution matches hrus1
         if hrus1_pres != lu_pres:
             validated['status'] = 'error'
-            validated['msg'] = 'The resolution of hrus1 and ' + layer_name + ' do not match. ' + \
-                               'Your landuse layers must have the same resolution as hrus1. ' + \
-                               'Please refer to the manual for more information on this subject.'
+            validated[
+                'msg'] = 'The resolution of hrus1 and ' + layer_name + ' do not match. ' + \
+                         'Your landuse layers must have the same resolution as hrus1. ' + \
+                         'Please refer to the manual for more information on this subject.'
 
         # test if rows,cols matches hrus1
         if hrus1_extent != lu_extent:
             if hrus1_extent[0] > lu_extent[0] or hrus1_extent[1] > lu_extent[1]:
                 validated['status'] = 'error'
-                validated['msg'] = layer_name + '\'s extent is smaller than hrus1\'s extent. ' + \
-                                   'Your landuse layers must have an extent equal to or greater than that of hrus1. ' + \
-                                   'Please refer to the manual for more information on this subject.'
+                validated[
+                    'msg'] = layer_name + '\'s extent is smaller than hrus1\'s extent. ' + \
+                             'Your landuse layers must have an extent equal to or greater than that of hrus1. ' + \
+                             'Please refer to the manual for more information on this subject.'
 
     return validated

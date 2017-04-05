@@ -5,7 +5,6 @@ class MyLogger():
     """ Creates logger for script. """
 
     def __init__(self, logpath=""):
-        
         # if logpath provided
         if logpath:
             # Instantiate logger and set level to INFO
@@ -17,7 +16,8 @@ class MyLogger():
             handler.setLevel(logging.DEBUG)
 
             # Set format for logging
-            formatter = logging.Formatter("%(asctime)s - %(levelname)s -%(message)s")
+            formatter = logging.Formatter(
+                "%(asctime)s - %(levelname)s -%(message)s")
             handler.setFormatter(formatter)
 
             # Add formatted file handler to main logger

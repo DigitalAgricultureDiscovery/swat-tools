@@ -2,11 +2,11 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, resolve_url
-from django.template import RequestContext
 from django.template.response import TemplateResponse
+from django.utils import timezone
 from swatusers.models import UserTask
-from fieldswat.tasks import process_task
-import datetime
+from .tasks import process_task
+
 import glob
 import io
 import os
@@ -26,7 +26,7 @@ def index(request):
         request.session['progress_message'] = []
         # Set user's unique directory that will hold their uploaded files
         unique_directory_name = 'uid_' + str(request.user.id) + '_fieldswat_' + \
-                                datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+                                timezone.datetime.now().strftime("%Y%m%dT%H%M%S")
         unique_path = settings.TMP_DIR + '/user_data/' + request.user.email + \
               '/' + unique_directory_name
         request.session['directory'] = unique_path
@@ -256,10 +256,9 @@ def upload_swat_model_zip(request):
                 request.session['swatoutput_unique_years'] = unique_years
 
                 # add unique years to context
-                context = RequestContext(request)
-                context.push({
+                context = {
                     'fieldswat_unique_years': [year for year in unique_years]
-                })
+                }
 
                 # Render the main page
                 return render(request, 'fieldswat/index.html', context)
@@ -578,7 +577,7 @@ def add_task_id_to_database(user_id, user_email, task_id):
         email=user_email,
         task_id=task_id,
         task_status=0,
-        time_completed=datetime.datetime.now(),
+        time_completed=timezone.datetime.now(),
     )
     user_task.save()
 
@@ -589,6 +588,7 @@ def reset(request):
     This view clears the session, deletes all existing data and
     refreshes the FieldSWAT home page.
     """
+
     # Delete all data
     # delete_user_data(request)
 
@@ -603,7 +603,8 @@ def reset(request):
     ]
 
     # Cycle through keys and delete the ones not in our keep list
-    for key in request.session.keys():
+    session_keys = list(request.session.keys())
+    for key in session_keys:
         if key not in keys_to_keep:
             del request.session[key]
 

@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.mail import send_mail
+from django.utils import timezone
 from swatusers.models import UserTask
 from matplotlib.path import Path
 from swatluu import geotools
@@ -7,7 +8,6 @@ from swatluu import swattools
 from osgeo import gdal, ogr
 from scipy import stats
 
-import datetime
 import glob
 import logging
 import numpy as np
@@ -18,7 +18,6 @@ import xlsxwriter
 
 
 class FieldSWATProcess(object):
-
     def __init__(self, data=""):
         # set initial paths for the input data
         if data == '':
@@ -49,10 +48,13 @@ class FieldSWATProcess(object):
             self.process_root_dir = data['process_root_dir']
             self.hrus1_dir = data['hrus1_dir']
             self.fieldswat_swat_model_dir = data['fieldswat_swat_model_dir']
-            self.fieldswat_fields_shapefile_filename = data['fieldswat_fields_shapefile_filename']
-            self.fieldswat_fields_shapefile_filepath = data['fieldswat_fields_shapefile_filepath']
+            self.fieldswat_fields_shapefile_filename = data[
+                'fieldswat_fields_shapefile_filename']
+            self.fieldswat_fields_shapefile_filepath = data[
+                'fieldswat_fields_shapefile_filepath']
             self.fieldswat_output_type = data['fieldswat_output_type']
-            self.fieldswat_aggregation_method = data['fieldswat_aggregation_method']
+            self.fieldswat_aggregation_method = data[
+                'fieldswat_aggregation_method']
             self.swatoutput_years = data['swatoutput_years']
             self.swatoutput_runoff = data['swatoutput_runoff']
             self.swatoutput_sediment = data['swatoutput_sediment']
@@ -67,9 +69,11 @@ class FieldSWATProcess(object):
         # Initialize logger for requested process and set header
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(settings.BASE_DIR + '/swatapps/log/tasks/fieldswat/' + self.task_id + '.log')
+        handler = logging.FileHandler(
+            settings.BASE_DIR + '/swatapps/log/tasks/fieldswat/' + self.task_id + '.log')
         handler.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
         self.logger.info('Task ID: ' + self.task_id)
@@ -111,16 +115,19 @@ class FieldSWATProcess(object):
         try:
             self.copy_shapefile_to_output_directory()
         except Exception:
-            self.logger.exception('An error occurred while copying hru1 and fields shapefiles to output directory.')
+            self.logger.exception(
+                'An error occurred while copying hru1 and fields shapefiles to output directory.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
-            raise Exception('An error occurred while copying hru1 and fields shapefiles to output directory.')
+            raise Exception(
+                'An error occurred while copying hru1 and fields shapefiles to output directory.')
 
         # merge hru thresholds
         try:
             self.merge_thresholds()
         except Exception:
-            self.logger.exception('An error occurred while merging hru thresholds.')
+            self.logger.exception(
+                'An error occurred while merging hru thresholds.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('An error occurred while merging hru thresholds.')
@@ -129,31 +136,40 @@ class FieldSWATProcess(object):
             # get hrus1 cols, rows, and resolution
             hrus1_info = self.get_tif_info()
         except Exception:
-            self.logger.exception('An error occurred while fetching the hrus1 raster details.')
+            self.logger.exception(
+                'An error occurred while fetching the hrus1 raster details.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
-            raise Exception('An error occurred while fetching the hrus1 raster details.')
+            raise Exception(
+                'An error occurred while fetching the hrus1 raster details.')
 
         try:
-            grid_x_reshape, grid_y_reshape = self.set_gridx_and_gridy_matrices(hrus1_info)
+            grid_x_reshape, grid_y_reshape = self.set_gridx_and_gridy_matrices(
+                hrus1_info)
         except Exception:
-            self.logger.exception('An error occurred while setting the gridx and gridy matrices.')
+            self.logger.exception(
+                'An error occurred while setting the gridx and gridy matrices.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
-            raise Exception('An error occurred while setting the gridx and gridy matrices.')
+            raise Exception(
+                'An error occurred while setting the gridx and gridy matrices.')
 
         try:
             clu = self.create_hru_field_workbook(grid_x_reshape, grid_y_reshape)
         except Exception:
-            self.logger.exception('An error occurred while creating the hru field workbook.')
+            self.logger.exception(
+                'An error occurred while creating the hru field workbook.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
-            raise Exception('An error occurred while creating the hru field workbook.')
+            raise Exception(
+                'An error occurred while creating the hru field workbook.')
 
         try:
-            field_shapefile, output_data, hru_output_data = self.update_field_info(hrus1_info['nodata'], clu)
+            field_shapefile, output_data, hru_output_data = self.update_field_info(
+                hrus1_info['nodata'], clu)
         except Exception:
-            self.logger.exception('An error occurred while updating field info.')
+            self.logger.exception(
+                'An error occurred while updating field info.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('An error occurred while updating field info.')
@@ -161,20 +177,24 @@ class FieldSWATProcess(object):
         try:
             self.create_new_field_shapefile(field_shapefile, output_data)
         except Exception:
-            self.logger.exception('An error occurred while creating the new shapefile.')
+            self.logger.exception(
+                'An error occurred while creating the new shapefile.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
-            raise Exception('An error occurred while creating the new shapefile.')
+            raise Exception(
+                'An error occurred while creating the new shapefile.')
 
         hru_shapefile = self.results_dir + '/Output/HRU_Response.shp'
 
         try:
             self.update_hru_shapefile(hru_shapefile, hru_output_data)
         except Exception:
-            self.logger.exception('An error occurred while updating the hru shapefile.')
+            self.logger.exception(
+                'An error occurred while updating the hru shapefile.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
-            raise Exception('An error occurred while updating the hru shapefile.')
+            raise Exception(
+                'An error occurred while updating the hru shapefile.')
 
     def create_output_dir(self):
         """
@@ -198,7 +218,7 @@ class FieldSWATProcess(object):
                 shutil.rmtree(results_dir + '/Shape')
             shutil.rmtree(results_dir)
 
-        os.makedirs(results_dir, 0775)
+        os.makedirs(results_dir, 0o775)
         os.makedirs(results_dir + '/Raster')
         os.makedirs(results_dir + '/Output')
         os.makedirs(results_dir + '/Shape')
@@ -207,8 +227,11 @@ class FieldSWATProcess(object):
 
         # copy hru1 shapefile to Output
         hru1_shapefile = []
-        for hru1_shapefile_part in glob.glob(self.fieldswat_swat_model_dir + '/Watershed/Shapes/hru1*'):
-            shutil.copy(hru1_shapefile_part, results_dir + '/Output/HRU_Response' + os.path.splitext(hru1_shapefile_part)[1])
+        for hru1_shapefile_part in glob.glob(
+                        self.fieldswat_swat_model_dir + '/Watershed/Shapes/hru1*'):
+            shutil.copy(hru1_shapefile_part,
+                        results_dir + '/Output/HRU_Response' +
+                        os.path.splitext(hru1_shapefile_part)[1])
 
     def merge_thresholds(self):
         """
@@ -237,11 +260,13 @@ class FieldSWATProcess(object):
         """
         self.logger.info('Reading hrus1.tif into numpy array.')
 
-        hrus, hrus_info = geotools.read_raster(self.results_dir + '/Raster/hrus1/hrus1.tif')
+        hrus, hrus_info = geotools.read_raster(
+            self.results_dir + '/Raster/hrus1/hrus1.tif')
 
         self.logger.info('Reading hru1.shp into numpy array.')
 
-        merged_hru = geotools.read_shapefile(self.fieldswat_swat_model_dir + '/Watershed/Shapes/hru1.shp')
+        merged_hru = geotools.read_shapefile(
+            self.fieldswat_swat_model_dir + '/Watershed/Shapes/hru1.shp')
         merged_hru = np.array(merged_hru, dtype=int)
         # sort HRU_ID column (second column) into ascending order
         # and keep respective positions of other columns
@@ -251,7 +276,8 @@ class FieldSWATProcess(object):
         # old_hrus = [70, 30, 50, 10, 25]
         sorted_hru = merged_hru[merged_hru[:, 1].argsort()]
 
-        self.logger.info('Sorting and merging the non-dominant and dominant hrus.')
+        self.logger.info(
+            'Sorting and merging the non-dominant and dominant hrus.')
         # retrieve dominant hru values - these are the hrus that remained
         # after the threshold was applied (OBJECTID in hru1.shp)
         dominant_hrus = sorted_hru[:, 0]
@@ -281,15 +307,22 @@ class FieldSWATProcess(object):
         # copy hru1 shapefile to output directory
         hru1_dir = self.fieldswat_swat_model_dir + '/Watershed/Shapes/'
         for shapefile_part in glob.glob(hru1_dir + '/hru1.*'):
-            shutil.copyfile(shapefile_part, self.results_dir + '/Shape/' + os.path.basename(shapefile_part))
+            shutil.copyfile(shapefile_part,
+                            self.results_dir + '/Shape/' + os.path.basename(
+                                shapefile_part))
 
         # copy the fields shapefile to output directory
-        for shapefile_part in glob.glob(self.fieldswat_fields_shapefile_filename[:-4] + '*'):
-            shutil.copyfile(shapefile_part, self.results_dir + '/Shape/' + os.path.basename(shapefile_part))
+        for shapefile_part in glob.glob(
+                        self.fieldswat_fields_shapefile_filename[:-4] + '*'):
+            shutil.copyfile(shapefile_part,
+                            self.results_dir + '/Shape/' + os.path.basename(
+                                shapefile_part))
 
         # copy the projection file with a new name twice
-        shutil.copyfile(hru1_dir + '/hru1.prj', self.results_dir + '/Output/Field_Response.prj')
-        shutil.copyfile(hru1_dir + '/hru1.prj', self.results_dir + '/Output/HRU_Response.prj')
+        shutil.copyfile(hru1_dir + '/hru1.prj',
+                        self.results_dir + '/Output/Field_Response.prj')
+        shutil.copyfile(hru1_dir + '/hru1.prj',
+                        self.results_dir + '/Output/HRU_Response.prj')
 
     def get_tif_info(self):
         """
@@ -336,19 +369,23 @@ class FieldSWATProcess(object):
         grid_x = np.zeros((hrus1_info['rows'], hrus1_info['cols']), dtype=float)
         grid_x[0:hrus1_info['rows'], 0] = x_origin + (delta_x / 2)
         for i in range(1, hrus1_info['cols']):
-            grid_x[0:hrus1_info['rows'], i] = grid_x[0:hrus1_info['rows'], i - 1] + delta_x
+            grid_x[0:hrus1_info['rows'], i] = grid_x[0:hrus1_info['rows'],
+                                              i - 1] + delta_x
 
         self.logger.info('Building grid_y.')
         # build y grid
         grid_y = np.zeros((hrus1_info['rows'], hrus1_info['cols']), dtype=float)
         grid_y[0, 0:hrus1_info['cols']] = y_origin - (delta_y / 2)
         for i in range(1, hrus1_info['rows']):
-            grid_y[i, 0:hrus1_info['cols']] = grid_y[i - 1, :hrus1_info['cols']] - delta_y
+            grid_y[i, 0:hrus1_info['cols']] = grid_y[i - 1,
+                                              :hrus1_info['cols']] - delta_y
 
         self.logger.info('Reshaping grid_x and grid_y.')
         # reshape the coordinates grid_x and grid_y to temporary column matrix
-        grid_x_reshape = np.reshape(np.transpose(grid_x), hrus1_info['rows'] * hrus1_info['cols'], 0)
-        grid_y_reshape = np.reshape(np.transpose(grid_y), hrus1_info['rows'] * hrus1_info['cols'], 0)
+        grid_x_reshape = np.reshape(np.transpose(grid_x),
+                                    hrus1_info['rows'] * hrus1_info['cols'], 0)
+        grid_y_reshape = np.reshape(np.transpose(grid_y),
+                                    hrus1_info['rows'] * hrus1_info['cols'], 0)
 
         return grid_x_reshape, grid_y_reshape
 
@@ -359,16 +396,20 @@ class FieldSWATProcess(object):
         clu = np.zeros(len(grid_x_reshape), dtype=int)
 
         # export HRU identified under each CLU in a separate excel file
-        hru_id = np.reshape(np.transpose(self.hrus), len(self.hrus) * len(self.hrus[0]), 0)
+        hru_id = np.reshape(np.transpose(self.hrus),
+                            len(self.hrus) * len(self.hrus[0]), 0)
 
         # open excel workbook and add new sheet titled HRU_Field
-        workbook = xlsxwriter.Workbook(self.results_dir + '/Output/HRU_FIELD.xlsx')
+        workbook = xlsxwriter.Workbook(
+            self.results_dir + '/Output/HRU_FIELD.xlsx')
         sheet = workbook.add_worksheet('HRU_Field')
 
-        self.logger.info('Adding field shapefile data to the HRU_FIELD.xlsx workbook.')
+        self.logger.info(
+            'Adding field shapefile data to the HRU_FIELD.xlsx workbook.')
 
         # open field shapefile
-        field_shapefile = shapefile.Reader(self.fieldswat_fields_shapefile_filename)
+        field_shapefile = shapefile.Reader(
+            self.fieldswat_fields_shapefile_filename)
 
         # merge grid_x_reshape and grid_y_reshape into single list of tuples
         grid_xy_reshape = []
@@ -377,7 +418,6 @@ class FieldSWATProcess(object):
 
         # iterate through the field shapefile records (i.e. fields)
         for i in range(0, len(field_shapefile.shapes())):
-
             # ultimately collect hru ids that are in the current field poly
             in_list = np.zeros(len(grid_x_reshape), dtype=int)
 
@@ -405,13 +445,13 @@ class FieldSWATProcess(object):
 
         workbook.close()
         self.logger.info('Closing HRU_FIELD.xlsx workbook.')
-        
-        return clu
 
+        return clu
 
     def update_field_info(self, hrus1_nodata, clu):
 
-        field_shapefile = shapefile.Reader(self.fieldswat_fields_shapefile_filename)
+        field_shapefile = shapefile.Reader(
+            self.fieldswat_fields_shapefile_filename)
 
         years = np.array(self.swatoutput_years)
         runoff = np.array(self.swatoutput_runoff)
@@ -435,7 +475,8 @@ class FieldSWATProcess(object):
         water = np.zeros(len(self.hrus) * len(self.hrus[0]), dtype=float)
         field_output = np.zeros(len(self.hrus) * len(self.hrus[0]), dtype=float)
 
-        hru_id = np.reshape(np.transpose(self.hrus), len(self.hrus) * len(self.hrus[0]), 0)
+        hru_id = np.reshape(np.transpose(self.hrus),
+                            len(self.hrus) * len(self.hrus[0]), 0)
 
         # find indexes where the nodata value is present in hrus
         nodata_indexes = np.nonzero(hru_id == hrus1_nodata)
@@ -449,11 +490,15 @@ class FieldSWATProcess(object):
         for i in range(0, len(water)):
             water[i] = output_data[hru_id[i]]
 
-        hru_two = np.reshape(np.transpose(clu), (len(self.hrus), len(self.hrus[0])))
-        hru_three = np.reshape(np.transpose(water), (len(self.hrus), len(self.hrus[0])))
+        hru_two = np.reshape(np.transpose(clu),
+                             (len(self.hrus), len(self.hrus[0])))
+        hru_three = np.reshape(np.transpose(water),
+                               (len(self.hrus), len(self.hrus[0])))
 
-        cl = np.reshape(np.transpose(hru_two), len(hru_two) * len(hru_two[0]), 0)
-        wt = np.reshape(np.transpose(hru_three), len(hru_three) * len(hru_three[0]), 0)
+        cl = np.reshape(np.transpose(hru_two), len(hru_two) * len(hru_two[0]),
+                        0)
+        wt = np.reshape(np.transpose(hru_three),
+                        len(hru_three) * len(hru_three[0]), 0)
 
         aggregation_method = self.fieldswat_aggregation_method
 
@@ -536,7 +581,8 @@ class FieldSWATProcess(object):
 
         # add fields
         layer.CreateField(ogr.FieldDefn('Shape_Area', ogr.OFTReal))
-        layer.CreateField(ogr.FieldDefn(str(self.fieldswat_output_type), ogr.OFTReal))
+        layer.CreateField(
+            ogr.FieldDefn(str(self.fieldswat_output_type), ogr.OFTReal))
 
         for i in range(0, len(field_shapefile.shapes())):
 
@@ -582,12 +628,12 @@ class FieldSWATProcess(object):
         lyr = src.GetLayer()
 
         # create new field we wish to append (Runoff or Sediment)
-        lyr.CreateField(ogr.FieldDefn(str(self.fieldswat_output_type).title(), ogr.OFTReal))
+        lyr.CreateField(
+            ogr.FieldDefn(str(self.fieldswat_output_type).title(), ogr.OFTReal))
 
         feature = lyr.GetNextFeature()
 
         for i in range(0, len(new_data)):
-
             feature.SetField(str(self.fieldswat_output_type), new_data[i])
             lyr.SetFeature(feature)
             feature = lyr.GetNextFeature()
@@ -632,7 +678,7 @@ class FieldSWATProcess(object):
         message += '<strong>Task Status</strong> page (found in the navigation menu). '
         message += 'There you will find a record of your completed '
         message += 'task and a link to download the results data. '
-        message += 'The link will expire on ' + self.get_expiration_date() 
+        message += 'The link will expire on ' + self.get_expiration_date()
         message += ' (48 hours).<br><br>Sincerely,<br>SWAT Tools'
         try:
             send_mail(
@@ -643,7 +689,8 @@ class FieldSWATProcess(object):
                 fail_silently=False,
                 html_message=message)
         except Exception:
-            self.logger.exception('Error sending the user the email to their data.')
+            self.logger.exception(
+                'Error sending the user the email to their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Error sending the user the email to their data.')
@@ -660,7 +707,8 @@ class FieldSWATProcess(object):
             -------
             None
             """
-        self.logger.info('Sending user email informing them an error has occurred.')
+        self.logger.info(
+            'Sending user email informing them an error has occurred.')
         subject = self.tool_name + ' error'
         message = 'An error has occurred within ' + self.tool_name + ' while processing your data. '
         message += 'Please verify your inputs are not missing any required files. '
@@ -677,8 +725,9 @@ class FieldSWATProcess(object):
                 fail_silently=False,
                 html_message=message)
         except Exception:
-            self.logger.exception('Error sending the user the email informing ' +
-                                  'them of an error occurrence while processing their data.')
+            self.logger.exception(
+                'Error sending the user the email informing ' +
+                'them of an error occurrence while processing their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             raise Exception('Error sending the user the email informing ' +
                             'them of an error occurrence while processing their data.')
@@ -697,7 +746,9 @@ class FieldSWATProcess(object):
             Date (mm-dd-YYYY) three days from the present in string format.
         """
         self.logger.info('Calculating the date three days from now.')
-        return (datetime.datetime.now() + datetime.timedelta(hours=48)).strftime("%m-%d-%Y %H:%M:%S %Z")
+        return (
+            timezone.datetime.now() + timezone.timedelta(hours=48)).strftime(
+            "%m-%d-%Y %H:%M:%S %Z")
 
     def update_task_status_in_database(self):
         """
@@ -713,4 +764,7 @@ class FieldSWATProcess(object):
         None
         """
         self.logger.info('Updating the user\'s task status.')
-        UserTask.objects.filter(task_id=self.task_id).update(task_status=1, time_completed=datetime.datetime.now())
+        UserTask.objects.filter(
+            task_id=self.task_id).update(
+            task_status=1,
+            time_completed=timezone.datetime.now())
