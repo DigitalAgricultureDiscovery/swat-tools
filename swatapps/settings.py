@@ -44,7 +44,7 @@ ALLOWED_HOSTS = ['saraswat-swat.rcac.purdue.edu']
 ADMINS = [('Ben Hancock', 'hancocb@purdue.edu')]
 
 FILE_UPLOAD_PERMISSIONS = '0o644'
-MAX_UPLOAD_SIZE = '1073741824'
+MAX_UPLOAD_SIZE = '2684354560'
 
 LOGIN_URL = '/login'
 
