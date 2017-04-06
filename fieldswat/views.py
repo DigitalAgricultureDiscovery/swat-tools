@@ -538,7 +538,7 @@ def request_process(request):
         'user_first_name': request.user.first_name,
         'task_id': os.path.basename(request.session.get('directory')),
         'process_root_dir': request.session.get('directory'),
-        'output_dir': settings.BASE_DIR + '/user_data/' + request.user.email + '/' + request.session['unique_directory_name'] + '/output',
+        'output_dir': settings.PROJECT_DIR + '/user_data/' + request.user.email + '/' + request.session['unique_directory_name'] + '/output',
         'results_dir': request.session.get('directory') + '/output',
         'hrus1_dir': request.session.get('fieldswat_swat_model_dir') + '/Watershed/Grid/hrus1',
         'fieldswat_swat_model_dir': request.session['fieldswat_swat_model_dir'],
@@ -617,10 +617,10 @@ def download_data(request):
     if task_id != '':
         user_id = task_id.split('_')[1]
         if int(user_id) == int(request.user.id):
-            if os.path.exists(settings.BASE_DIR + '/user_data/' + request.user.email + '/' + task_id + '/output'):
+            if os.path.exists(settings.PROJECT_DIR + '/user_data/' + request.user.email + '/' + task_id + '/output'):
                 file = io.BytesIO()
 
-                dir_to_zip = settings.BASE_DIR + '/user_data/' + request.user.email + \
+                dir_to_zip = settings.PROJECT_DIR + '/user_data/' + request.user.email + \
                              '/' + task_id + '/output'
 
                 dir_to_zip_len = len(dir_to_zip.rstrip(os.sep)) + 1
