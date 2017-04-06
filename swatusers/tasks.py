@@ -16,7 +16,7 @@ def check_for_expired_data():
     expired_data = UserTask.objects.filter(time_started__lt=expire_date)
 
     for task in expired_data:
-        task_data_folder = settings.BASE_DIR + '/user_data/' + task.user_email + '/' + task.task_id
+        task_data_folder = settings.PROJECT_DIR + '/user_data/' + task.user_email + '/' + task.task_id
         # Delete user's uploaded input data
         if os.path.exists(task_data_folder):
             shutil.rmtree(task_data_folder)
@@ -26,6 +26,6 @@ def check_for_expired_data():
 
 @periodic_task(run_every=crontab(minute="0", hour="0"))
 def test_periodic():
-    f = open(settings.BASE_DIR + '/user_data/periodic_test.log', 'a')
+    f = open(settings.PROJECT_DIR + '/user_data/periodic_test.log', 'a')
     f.write(timezone.datetime.now().time().strftime("%H:%M:%S") + "\n")
     f.close()

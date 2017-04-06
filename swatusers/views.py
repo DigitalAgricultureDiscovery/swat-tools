@@ -215,7 +215,7 @@ def delete_user_data_and_logout(request):
 def delete_user_data(request):
     """ This view delete's the signed in user's data. """
 
-    dir = settings.BASE_DIR + '/user_data/' + request.user.email + '/swatluu'
+    dir = settings.PROJECT_DIR + '/user_data/' + request.user.email + '/swatluu'
 
     if (dir is not None):
         # Delete user's uploaded input data
@@ -249,7 +249,7 @@ def generate_user_activity_report(request):
 
             # Establish connection to the database
             db = mydatabase.MyDatabase(
-                mycnf=settings.BASE_DIR + "/swatapps/my.cnf")
+                mycnf=settings.PROJECT_DIR + "/swatapps/my.cnf")
 
             # Connect to database
             db.connect_to_database()

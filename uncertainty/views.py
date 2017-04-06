@@ -5,7 +5,7 @@ from django.shortcuts import render, resolve_url
 from django.template.response import TemplateResponse
 from django.utils import timezone
 
-from tasks import process_task
+from .tasks import process_task
 from swatusers.models import UserTask
 from swatluu import swattools
 
@@ -634,7 +634,7 @@ def request_process(request):
         'task_id': os.path.basename(request.session.get('directory')),
         'process_root_dir': request.session.get('directory'),
         'results_dir': request.session.get('directory') + '/output',
-        'output_dir': settings.BASE_DIR + '/user_data/' + request.user.email + '/' +
+        'output_dir': settings.PROJECT_DIR + '/user_data/' + request.user.email + '/' +
                       request.session['unique_directory_name'] + '/output',
         'swat_dir': request.session.get('uncertainty_swat_model_dir'),
         'hrus1_dir': request.session.get(
@@ -714,10 +714,11 @@ def download_data(request):
         user_id = task_id.split('_')[1]
         if int(user_id) == int(request.user.id):
             if os.path.exists(
-                                                            settings.BASE_DIR + '/user_data/' + request.user.email + '/' + task_id + '/output/Output'):
+                    settings.PROJECT_DIR + '/user_data/' + request.user.email + '/' + task_id + '/output/Output'):
+
                 file = io.BytesIO()
 
-                dir_to_zip = settings.BASE_DIR + '/user_data/' + request.user.email + \
+                dir_to_zip = settings.PROJECT_DIR + '/user_data/' + request.user.email + \
                              '/' + task_id + '/output/Output'
 
                 # if the folder already exists, that means the user has already used the download link
@@ -725,12 +726,12 @@ def download_data(request):
                 if not os.path.exists(dir_to_zip + '/dist'):
                     # copy the post processing distribution folder over
                     shutil.copytree(
-                        settings.BASE_DIR + '/uncertainty/post_processing_script/dist',
+                        settings.PROJECT_DIR + '/uncertainty/post_processing_script/dist',
                         dir_to_zip + '/dist')
 
                     # copy post processing script README.txt
                     shutil.copy(
-                        settings.BASE_DIR + '/uncertainty/post_processing_script/README.txt',
+                        settings.PROJECT_DIR + '/uncertainty/post_processing_script/README.txt',
                         dir_to_zip)
 
                 dir_to_zip_len = len(dir_to_zip.rstrip(os.sep)) + 1

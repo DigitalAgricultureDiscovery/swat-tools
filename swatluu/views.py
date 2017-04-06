@@ -673,7 +673,7 @@ def runit(request):
         'task_id': os.path.basename(request.session.get('directory')),
         'process_root_dir': request.session.get('directory'),
         'results_dir': request.session.get('directory') + '/output',
-        'output_dir': settings.BASE_DIR + '/user_data/' + request.user.email + '/' +
+        'output_dir': settings.PROJECT_DIR + '/user_data/' + request.user.email + '/' +
                       request.session['unique_directory_name'] + '/output',
         'swat_dir': request.session.get('swat_model_filepath'),
         'hrus1_dir': request.session.get(
@@ -725,10 +725,10 @@ def download_data(request):
         user_id = task_id.split('_')[1]
         if int(user_id) == int(request.user.id):
             if os.path.exists(
-                                                            settings.BASE_DIR + '/user_data/' + request.user.email + '/' + task_id + '/output'):
+                                                            settings.PROJECT_DIR + '/user_data/' + request.user.email + '/' + task_id + '/output'):
                 file = io.BytesIO()
 
-                dir_to_zip = settings.BASE_DIR + '/user_data/' + request.user.email + \
+                dir_to_zip = settings.PROJECT_DIR + '/user_data/' + request.user.email + \
                              '/' + task_id + '/output'
 
                 dir_to_zip_len = len(dir_to_zip.rstrip(os.sep)) + 1

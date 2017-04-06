@@ -74,7 +74,7 @@ class SWATLUUProcess(object):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
         handler = logging.FileHandler(
-            settings.BASE_DIR + '/swatapps/log/tasks/swatluu/' + self.task_id + '.log')
+            settings.PROJECT_DIR + '/swatapps/log/tasks/swatluu/' + self.task_id + '.log')
         handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s')

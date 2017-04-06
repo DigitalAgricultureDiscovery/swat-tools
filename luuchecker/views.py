@@ -528,7 +528,7 @@ def request_process(request):
         'user_first_name': request.user.first_name,
         'task_id': os.path.basename(request.session.get('directory')),
         'process_root_dir': request.session.get('directory'),
-        'output_dir': settings.BASE_DIR + '/user_data/' + request.user.email + '/' +
+        'output_dir': settings.PROJECT_DIR + '/user_data/' + request.user.email + '/' +
                       request.session['unique_directory_name'] + '/Output',
         'output_directory': request.session.get('directory') + '/Output',
         'temp_output_directory': request.session.get(
@@ -588,10 +588,10 @@ def download_data(request):
         user_id = task_id.split('_')[1]
         if int(user_id) == int(request.user.id):
             if os.path.exists(
-                                                            settings.BASE_DIR + '/user_data/' + request.user.email + '/' + task_id + '/Output'):
+                                                            settings.PROJECT_DIR + '/user_data/' + request.user.email + '/' + task_id + '/Output'):
                 file = io.BytesIO()
 
-                dir_to_zip = settings.BASE_DIR + '/user_data/' + request.user.email + \
+                dir_to_zip = settings.PROJECT_DIR + '/user_data/' + request.user.email + \
                              '/' + task_id + '/Output'
 
                 dir_to_zip_len = len(dir_to_zip.rstrip(os.sep)) + 1
