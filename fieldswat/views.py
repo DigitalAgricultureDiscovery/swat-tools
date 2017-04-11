@@ -27,7 +27,7 @@ def index(request):
         # Set user's unique directory that will hold their uploaded files
         unique_directory_name = 'uid_' + str(request.user.id) + '_fieldswat_' + \
                                 timezone.datetime.now().strftime("%Y%m%dT%H%M%S")
-        unique_path = settings.TMP_DIR + '/user_data/' + request.user.email + \
+        unique_path = settings.UPLOAD_DIR + request.user.email + \
               '/' + unique_directory_name
         request.session['directory'] = unique_path
         request.session['unique_directory_name'] = unique_directory_name
@@ -56,13 +56,13 @@ def create_working_directory(request):
     """ Creates the directory structure that all inputs/outputs will be
         placed for this current process. """
     # Create main directory for user data (e.g. ../user_data/user_email)
-    if not os.path.exists(settings.TMP_DIR + '/user_data'):
-        os.makedirs(settings.TMP_DIR + '/user_data')
-        os.chmod(settings.TMP_DIR + '/user_data', 0o775)
+    if not os.path.exists(settings.UPLOAD_DIR):
+        os.makedirs(settings.UPLOAD_DIR)
+        os.chmod(settings.UPLOAD_DIR, 0o775)
 
-    if not os.path.exists(settings.TMP_DIR + '/user_data/' + request.user.email):
-        os.makedirs(settings.TMP_DIR + '/user_data/' + request.user.email)
-        os.chmod(settings.TMP_DIR + '/user_data/' + request.user.email, 0o775)
+    if not os.path.exists(settings.UPLOAD_DIR + request.user.email):
+        os.makedirs(settings.UPLOAD_DIR + request.user.email)
+        os.chmod(settings.UPLOAD_DIR + request.user.email, 0o775)
 
     # Set up the working directory for this specific process
     unique_path = request.session.get("directory")

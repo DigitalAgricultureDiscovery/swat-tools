@@ -22,6 +22,7 @@ ADMINS = get_admins()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_DIR = Path(__file__).ancestor(3)
 SETTINGS_DIR = os.path.dirname(__file__)
+UPLOAD_DIR = "/tmp/user_data/"
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_secret_key()
@@ -143,7 +144,7 @@ USE_TZ = True
 
 # Media files
 
-MEDIA_ROOT = BASE_DIR
+MEDIA_ROOT = PROJECT_DIR.child("user_data")
 MEDIA_URL = '/media/'
 
 
