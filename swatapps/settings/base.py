@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 from unipath import Path
 import os
 
+from .aws_settings import *
 from .settings_secret import *
 
 # Admins (name, email)
@@ -59,7 +60,8 @@ ROOT_URLCONF = 'swatapps.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates').replace('\\', '/')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates').replace('\\', '/'),
+                 os.path.join(PROJECT_DIR, 's3direct/templates').replace('\\', '/')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -164,7 +166,7 @@ STATICFILES_DIRS = (
 AUTH_USER_MODEL = 'swatusers.SwatUser'
 
 # File upload settings
-FILE_UPLOAD_PERMISSIONS = '0o644'
+FILE_UPLOAD_PERMISSIONS = 0o644
 MAX_UPLOAD_SIZE = '2684354560'
 
 # Login url
