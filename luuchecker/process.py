@@ -116,7 +116,8 @@ class LUUCheckerProcess(object):
             self.logger.info('Processing started.')
             # create output directory structure
             self.create_output_dir()
-        except Exception:
+        except Exception as e:
+            print(e)
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Unable to initialize logger.')

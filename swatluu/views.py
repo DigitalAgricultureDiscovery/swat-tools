@@ -29,7 +29,7 @@ def index(request):
         unique_directory_name = 'uid_' + str(request.user.id) + '_swatluu_' + \
                                 timezone.datetime.now().strftime(
                                     "%Y%m%dT%H%M%S")
-        unique_path = settings.MEDIA_URL + '/user_data/' + request.user.email + \
+        unique_path = settings.UPLOAD_DIR + request.user.email + \
                       '/' + unique_directory_name
         request.session['unique_directory_name'] = unique_directory_name
         request.session['directory'] = unique_path
@@ -59,14 +59,14 @@ def create_working_directory(request):
     """ Creates the directory structure that all inputs/outputs will be
         placed for this current process. """
     # Create main directory for user data (e.g. ../user_data/user_email)
-    if not os.path.exists(settings.MEDIA_URL + '/user_data'):
-        os.makedirs(settings.MEDIA_URL + '/user_data')
-        os.chmod(settings.MEDIA_URL + '/user_data', 0o775)
+    if not os.path.exists(settings.UPLOAD_DIR):
+        os.makedirs(settings.UPLOAD_DIR)
+        os.chmod(settings.UPLOAD_DIR)
 
     if not os.path.exists(
-                            settings.MEDIA_URL + '/user_data/' + request.user.email):
-        os.makedirs(settings.MEDIA_URL + '/user_data/' + request.user.email)
-        os.chmod(settings.MEDIA_URL + '/user_data/' + request.user.email, 0o775)
+                            settings.UPLOAD_DIR + request.user.email):
+        os.makedirs(settings.UPLOAD_DIR + request.user.email)
+        os.chmod(settings.UPLOAD_DIR + request.user.email, 0o775)
 
     # Set up the working directory for this specific process
     unique_path = request.session.get("directory")
@@ -103,9 +103,7 @@ def upload_swat_model_zip(request):
                                'persists please use the Contact Us form to request further assistance ' + \
                                'from the site admins.'
                 return render(request, 'swatluu/index.html')
-            f = open('/tmp/s3path', 'w')
-            f.write(settings.MEDIA_URL)
-            f.close()
+
             try:
                 # Create base working directory now that user has uploaded a file
                 create_working_directory(request)
