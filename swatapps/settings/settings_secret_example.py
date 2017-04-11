@@ -2,6 +2,10 @@ def get_secret_key():
     return 'SECRET_KEY'
 
 
+def get_admins():
+    return [("ADMIN_NAME", "ADMIN_EMAIL"), ("ADMIN_NAME", "ADMIN_EMAIL")]
+
+
 def get_email_host():
     return 'EMAIL_HOST'
 
