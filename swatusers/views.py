@@ -7,7 +7,7 @@ from django.shortcuts import render, resolve_url
 from django.template.response import TemplateResponse
 from .forms import ContactUsForm, LoginForm, RegistrationForm
 from .models import UserTask
-from swatapps.settings.local import ADMINS, NORECAPTCHA_SITE_KEY, \
+from swatapps.settings.production import ADMINS, NORECAPTCHA_SITE_KEY, \
     NORECAPTCHA_SECRET_KEY
 
 from datetime import datetime, timedelta
@@ -104,10 +104,10 @@ def validate_recaptcha_response(recaptcha_response):
     # Post verification data to verification url
     response = urllib.request.urlopen(
         verification_url,
-        urllib.parse.urlencode(verification_data))
+        urllib.parse.urlencode(verification_data).encode("utf-8"))
 
     # Read response from verification post
-    content = json.loads(response.read())
+    content = json.loads(response.readall().decode("utf-8"))
 
     return content["success"]
 

@@ -10,23 +10,42 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
+from unipath import Path
 import os
+import sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_DIR = Path(__file__).ancestor(3)
+SETTINGS_DIR = os.path.dirname(__file__)
 
+
+sys.path.insert(0, os.path.join(BASE_DIR, 'settings'))
+import settings_secret
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'rwj=ia9syuy*dn!*8clw1_5+y+%(yqpdqpazsz&_mi6+0@u0y3'
+SECRET_KEY = settings_secret.get_secret_key()
+
+# Google recaptcha site/secret keys
+NORECAPTCHA_SITE_KEY = settings_secret.get_norecaptcha_site_key()
+NORECAPTCHA_SECRET_KEY = settings_secret.get_norecaptcha_secret_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['ec2-34-209-79-75.us-west-2.compute.amazonaws.com']
 
+ADMINS = [('Ben Hancock', 'hancocb@purdue.edu')]
+
+AUTH_USER_MODEL = 'swatusers.SwatUser'
+
+FILE_UPLOAD_PERMISSIONS = '0o644'
+MAX_UPLOAD_SIZE = '2684354560'
+
+LOGIN_URL = '/login'
 
 # Application definition
 
@@ -37,6 +56,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'bootstrap3',
+    'swatusers',
+    'swatluu',
+    'luuchecker',
+    'uncertainty',
+    'fieldswat'
 ]
 
 MIDDLEWARE = [
@@ -54,7 +79,7 @@ ROOT_URLCONF = 'swatapps.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates').replace('\\', '/')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -75,10 +100,38 @@ WSGI_APPLICATION = 'swatapps.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            'read_default_file': SETTINGS_DIR + '/my.cnf',
+        },
     }
 }
+
+
+# Celery
+BROKER_URL = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+    },
+}
+LOG_LOCATION = "{0}/logs".format(BASE_DIR)
 
 
 # Password validation
@@ -114,7 +167,35 @@ USE_L10N = True
 USE_TZ = True
 
 
+# Media files
+
+MEDIA_ROOT = BASE_DIR
+MEDIA_URL = '/media/'
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
+STATIC_ROOT = PROJECT_DIR + '/static/'
 STATIC_URL = '/static/'
+STATIC_PATH = '/static/'
+STATIC_PATH_DIR = os.path.join(PROJECT_DIR, 'static')
+STATICFILES_DIRS = (
+    os.path.join(PROJECT_DIR, 'static_storage'),
+)
+
+
+# Email 
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = settings_secret.get_email_host()
+EMAIL_HOST_USER = settings_secret.get_email_user()
+EMAIL_HOST_PASSWORD = settings_secret.get_email_password()
+EMAIL_PORT = settings_secret.get_email_port()
+DEFAULT_FROM_EMAIL = settings_secret.get_email_user()
+
+
+# API key
+
+APIKEY = settings_secret.get_apikey()
+

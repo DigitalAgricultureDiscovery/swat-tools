@@ -1,5 +1,5 @@
 def get_secret_key():
-    return 'rwj=ia9syuy*dn!*8clw1_5+y+%(yqpdqpazsz&_mi6+0@u0y3'
+    return 'm=@^zgds=0*&3isec(yt0=bm)^5kgjm^m7yzggn89&76vw98hn'
 
 
 def get_email_host():
@@ -11,7 +11,7 @@ def get_email_user():
 
 
 def get_email_password():
-    return 'swattools0516'
+    return 'sv>9xj:P]"{ew8i,J"O;O:rs=x]W;Q7('
 
 
 def get_email_port():
@@ -19,12 +19,22 @@ def get_email_port():
 
 
 def get_norecaptcha_site_key():
-    return '6Lc2TxgUAAAAAGtidC9GXnuE749EIiInWkvCkM6I'
+    return '6LeMaRwUAAAAAFFMSkrk1L8_uyRXJMJ22ekEjRAW'
 
 
 def get_norecaptcha_secret_key():
-    return '6Lc2TxgUAAAAAMY8wLRRtHKcGwPVZ0_OgEWKj_bW'
+    return '6LeMaRwUAAAAABj4eM-l1-zopSx57EGL1RPvELsJ'
 
 
 def get_apikey():
     return '1VOmuDwDWXpUEnv21B3eTXt7cmFGsDld'
+
+def get_aws_access_key():
+    return 'AKIAIOXWDKHJAD4O76NQ'
+
+def get_aws_secret_access_key():
+    return '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'
+
+def get_s3_bucket_name():
+    return 'saraswat-swat'
+

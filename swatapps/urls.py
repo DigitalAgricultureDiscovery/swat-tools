@@ -106,3 +106,4 @@ urlpatterns = [
     url(r'^fieldswat/reset$', fieldswat_views.reset, name='fieldswat/reset'),
     url(r'^fieldswat/download_data$', fieldswat_views.download_data, name='fieldswat/download_data'),
 ]
+
