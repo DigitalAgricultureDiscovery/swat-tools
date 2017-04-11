@@ -4,8 +4,10 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, resolve_url
 from django.template.response import TemplateResponse
 from django.utils import timezone
+
 from swatusers.models import UserTask
 from .tasks import process_task
+from .forms import SwatModelForm
 
 import csv
 import glob
@@ -35,7 +37,7 @@ def index(request):
         request.session['directory'] = unique_path
 
         # Render main SWAT LUU view
-        return render(request, 'swatluu/index.html')
+        return render(request, 'swatluu/index.html', {"swat_model_form": SwatModelForm()})
 
 
 def fix_file_permissions(path):

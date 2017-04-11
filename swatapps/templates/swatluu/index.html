@@ -4,6 +4,7 @@
 
 {% block meta_description %}
     <meta name="description" content="SWAT LUU is a geospatial tool that ingests multiple land use/land cover geospatial datasets and other associated information interactively and prepares the input files necessary for activating the land use update (LUU) module in SWAT." />
+    {{ swat_model_form.media }}
 {% endblock %}
 {% block title %}SWAT LUU - {% endblock %}
 
@@ -105,13 +106,14 @@
     <div class="row" style="padding-top: 15px;">
         <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
             <div class="inner-block" style="max-width: 650px; min-width: 610px; width: 45%;">
-                <form id="form1" role="form" method="post" action="{% url 'swatluu/upload_swat_model_zip' %}" enctype="multipart/form-data" style="text-align: left">
-                    {% csrf_token %}
-                    <label><b>SWAT Model Input:</b> &nbsp;</label>
-                    
-                    {% buttons %}
+                <form id="form1" role="form" method="post" action="" style="text-align: left">
+                  {% csrf_token %}
+
+                  {{ swat_model_form.as_p }}
+
+                  {% buttons %}
                         <div align="left">
-                            <input style="display: inline; padding-bottom: 5px" id="SwatModel" type="file" name="swat_model_zip">
+{#                            <input style="display: inline; padding-bottom: 5px" id="SwatModel" type="file" name="swat_model_zip">#}
                             <button id="upload1" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading').show();">Upload</button>
                             <button id="Help1" type="button">?</button>
                         {% if request.session.swat_model_filepath %}
