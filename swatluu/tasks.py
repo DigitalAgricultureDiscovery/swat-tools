@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
-from swatapps.celery import app
+from celery import shared_task
 from swatluu.process import SWATLUUProcess
 
 
-@app.task
+@shared_task
 def process_task(data):
     """
     Master method responsible for calling the methods required
