@@ -44,7 +44,6 @@ function uploadFile (file, s3Data, url) {
         setTimeout(function () {
           successfulUpload($("#SwatModel"), file.name);
         }, 2500);
-
       } else {
         alert("Could not upload file.");
       }
