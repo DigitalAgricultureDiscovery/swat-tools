@@ -12,6 +12,7 @@
 {% load static %}
 
 {% block javascript %}
+  <link href="{% static 'css/bootstrap-progress.min.css' %}" rel="stylesheet" type="text/css" />
   <script src="{% static 'js/s3upload/s3-upload.js' %}"></script>
 {% endblock %}
 
@@ -138,7 +139,9 @@
                         {% endif %}
                         </div>
                     {% endbuttons %}
-
+                    <div class="progress progress-striped active">
+                      <div class="bar"></div>
+                    </div>
                     <div id="help1div" class="alert alert-info" role="alert"></div>
                     <div id="loading" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
