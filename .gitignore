@@ -1,9 +1,9 @@
 *.idea/*
 *.pyc
+*/migrations/*
 static/*
 swatapps_venv/*
 swatapps/settings/aws_settings.py
 swatapps/settings/my.cnf
 swatapps/settings/settings_secret.py
-swatusers/migrations/*
 user_data/*
