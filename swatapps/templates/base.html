@@ -181,26 +181,28 @@
             {% endblock content %}
         </div>
 
-        <script>
-            function alertSessionExpire() {
-                // error notification
-                // Shorthand for:
-                // alertify.notify( message, 'error', [wait, callback]);
-                alertify.set('notifier', 'delay', 0);
-                alertify.error('Session expired!');
-            }
+        {% if user.is_authenticated %}
+          <script>
+              function alertSessionExpire() {
+                  // error notification
+                  // Shorthand for:
+                  // alertify.notify( message, 'error', [wait, callback]);
+                  alertify.set('notifier', 'delay', 0);
+                  alertify.error('Session expired!');
+              }
 
-            function warnSessionExpire() {
-                // warning notification
-                // Shorthand for:
-                // alertify.notify( message, 'warning', [wait, callback]);
-                alertify.set('notifier', 'delay', 0);
-                alertify.warning('Session will expire in one minute. Please refresh the page to remain active.');
-            }
+              function warnSessionExpire() {
+                  // warning notification
+                  // Shorthand for:
+                  // alertify.notify( message, 'warning', [wait, callback]);
+                  alertify.set('notifier', 'delay', 0);
+                  alertify.warning('Session will expire in one minute. Please refresh the page to remain active.');
+              }
 
-            setTimeout(warnSessionExpire, ({{ request.session.get_expiry_age }} * 1000) - 60000);
-            setTimeout(alertSessionExpire, {{ request.session.get_expiry_age }} * 1000)
-        </script>
+              setTimeout(warnSessionExpire, ({{ request.session.get_expiry_age }} * 1000) - 60000);
+              setTimeout(alertSessionExpire, {{ request.session.get_expiry_age }} * 1000);
+          </script>
+        {% endif %}
 
         <footer>
             <div id="acknowledgements">

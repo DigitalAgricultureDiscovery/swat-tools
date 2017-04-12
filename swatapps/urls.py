@@ -28,7 +28,7 @@ urlpatterns = [
     url(r'^$', swatusers_views.index, name='index'),
 
     # presign s3 upload
-    url(r'^sign_s3/$', swatluu_views.sign_s3, name='sign_s3'),
+    url(r'^sign_s3/', include('s3upload.urls')),
 
     # Registration view from swatusers views
     url(r'^register$', swatusers_views.register_user, name='register'),

@@ -6,11 +6,16 @@
     <meta name="description" content="SWAT LUU is a geospatial tool that ingests multiple land use/land cover geospatial datasets and other associated information interactively and prepares the input files necessary for activating the land use update (LUU) module in SWAT." />
     {{ swat_model_form.media }}
 {% endblock %}
+
 {% block title %}SWAT LUU - {% endblock %}
 
-{% block content %}
-
 {% load static %}
+
+{% block javascript %}
+  <script src="{% static 'js/s3upload/s3-upload.js' %}"></script>
+{% endblock %}
+
+{% block content %}
 
     {# Load jquery resources #}
 
@@ -111,44 +116,6 @@
             getSignedRequest(file);
           };
         });
-
-        function getSignedRequest (file) {
-          var xhr = new XMLHttpRequest();
-          xhr.open("GET", "/sign_s3?file_name=" + file.name + "&file_type=" + file.type);
-          xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-              if (xhr.status === 200) {
-                var response = $.parseJSON(xhr.responseText);
-                uploadFile(file, response.data, response.url);
-              } else {
-                alert("Could not get signed URL.");
-              }
-            }
-          };
-          xhr.send();
-        }
-
-        function uploadFile (file, s3Data, url) {
-          var xhr = new XMLHttpRequest();
-          xhr.open("POST", s3Data.url);
-
-          var postData = new FormData();
-          for (key in s3Data.fields) {
-            postData.append(key, s3Data.fields[key]);
-          }
-          postData.append("file", file);
-
-          xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-              if (xhr.status === 200 || xhr.status === 204) {
-                // do something with the s3 file url
-              } else {
-                alert("Could not upload file.");
-              }
-            }
-          };
-          xhr.send(postData);
-        }
     </script>
 
     <!-- SWAT MODEL UPLOAD -->
