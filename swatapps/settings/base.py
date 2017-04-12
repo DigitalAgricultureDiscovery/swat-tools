@@ -41,8 +41,7 @@ INSTALLED_APPS = [
     'swatluu',
     'luuchecker',
     'uncertainty',
-    'fieldswat',
-    's3direct'
+    'fieldswat'
 ]
 
 MIDDLEWARE = [
