@@ -7,6 +7,7 @@ class S3Upload(models.Model):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     email = models.EmailField()
+    file_name = models.CharField(max_length=100)
     task_id = models.CharField(max_length=100)
     data_type = models.CharField(max_length=4)
     s3_url = models.CharField(max_length=255)
