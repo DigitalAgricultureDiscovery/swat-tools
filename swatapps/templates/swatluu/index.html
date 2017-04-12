@@ -114,7 +114,10 @@
             if (!file) {
               return alert("No file selected.");
             }
-            getSignedRequest(file);
+            // If file size over 100MB, direct upload to S3
+            if (file.size > 5000000) {
+              getSignedRequest(file);
+            }
           };
         });
     </script>
@@ -130,7 +133,7 @@
                     {% buttons %}
                         <div align="left">
                             <input style="display: inline; padding-bottom: 5px" id="SwatModel" type="file" name="swat_model_zip">
-                            <button id="upload1" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading').show();">Upload</button>
+                            <button id="upload1" type="submit" class="btn btn-primary" value="Validate" onclick="$('#loading').show();">Validate</button>
                             <button id="Help1" type="button">?</button>
                         {% if request.session.swat_model_filepath %}
                             <span class="icon" style="color: #33CC33; margin-left: 15px">
