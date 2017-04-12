@@ -27,8 +27,8 @@ from fieldswat import views as fieldswat_views
 urlpatterns = [
     url(r'^$', swatusers_views.index, name='index'),
 
-    # s3 direct
-    url(r'^s3direct/', include('s3direct.urls')),
+    # presign s3 upload
+    url(r'^sign_s3/$', swatluu_views.sign_s3, name='sign_s3'),
 
     # Registration view from swatusers views
     url(r'^register$', swatusers_views.register_user, name='register'),

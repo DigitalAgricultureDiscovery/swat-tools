@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, resolve_url
 from django.template.response import TemplateResponse
 from django.utils import timezone
@@ -9,6 +9,7 @@ from swatusers.models import UserTask
 from .tasks import process_task
 from .forms import SwatModelForm
 
+import boto3
 import csv
 import glob
 import io
@@ -79,6 +80,36 @@ def create_working_directory(request):
 
     # Set folder permissions
     fix_file_permissions(unique_path)
+
+
+@login_required
+def sign_s3(request):
+    # Bucket name
+    s3_bucket = settings.AWS_STORAGE_BUCKET_NAME
+
+    # Get file name and type
+    file_name = request.GET["file_name"]
+    file_type = request.GET["file_type"]
+
+    # Connect to bucket
+    s3 = boto3.client("s3")
+
+    # Generate presigned post to be sent back to client
+    presigned_post = s3.generate_presigned_post(
+        Bucket=s3_bucket,
+        Key=file_name,
+        Fields={"acl": "public-read", "Content-Type": file_type},
+        Conditions=[
+            {"acl": "public-read"},
+            {"Content-Type": file_type}
+        ],
+        ExpiresIn=3600
+    )
+
+    return JsonResponse({
+        "data": presigned_post,
+        "url": "https://{0}.s3.amazonaws.com/{1}".format(s3_bucket, file_name)
+    })
 
 
 @login_required
