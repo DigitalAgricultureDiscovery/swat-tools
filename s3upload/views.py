@@ -44,9 +44,10 @@ def sign_s3(request):
     ext = os.path.splitext(file_name)[1]
 
     # Path and name on bucket
-    key = "{0}_swatmodel{1}".format(
-        request.session["unique_directory_name"],
-        ext)
+    key = "user_data/{0}/{1}".format(
+        request.user.email,
+        file_name
+    )
 
     # Generate presigned post to be sent back to client
     presigned_post = s3.generate_presigned_post(
