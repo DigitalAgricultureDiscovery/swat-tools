@@ -5,6 +5,7 @@ from django.shortcuts import render, resolve_url
 from django.template.response import TemplateResponse
 from django.utils import timezone
 
+from s3upload.models import S3Upload
 from swatusers.models import UserTask
 from .tasks import process_task
 
@@ -65,8 +66,7 @@ def create_working_directory(request):
         os.makedirs(settings.UPLOAD_DIR)
         os.chmod(settings.UPLOAD_DIR)
 
-    if not os.path.exists(
-                            settings.UPLOAD_DIR + request.user.email):
+    if not os.path.exists(settings.UPLOAD_DIR + request.user.email):
         os.makedirs(settings.UPLOAD_DIR + request.user.email)
         os.chmod(settings.UPLOAD_DIR + request.user.email, 0o775)
 
@@ -79,39 +79,6 @@ def create_working_directory(request):
 
     # Set folder permissions
     fix_file_permissions(unique_path)
-
-
-@login_required
-def sign_s3(request):
-    # Bucket name
-    s3_bucket = settings.AWS_STORAGE_BUCKET_NAME
-
-    # Get file name and type
-    file_name = request.GET["file_name"]
-    file_type = request.GET["file_type"]
-
-    # Connect to bucket
-    s3 = boto3.client("s3")
-
-    # Get file extension
-    ext = os.path.splitext(file_name)[1]
-
-    # Generate presigned post to be sent back to client
-    presigned_post = s3.generate_presigned_post(
-        Bucket=s3_bucket,
-        Key=request.session['unique_directory_name'] + '_swatmodel' + ext,
-        Fields={"acl": "public-read", "Content-Type": file_type},
-        Conditions=[
-            {"acl": "public-read"},
-            {"Content-Type": file_type}
-        ],
-        ExpiresIn=3600
-    )
-
-    return JsonResponse({
-        "data": presigned_post,
-        "url": "https://{0}.s3.amazonaws.com/{1}".format(s3_bucket, file_name)
-    })
 
 
 @login_required
