@@ -37,13 +37,21 @@ def sign_s3(request):
     # Connect to bucket
     s3 = boto3.client("s3")
 
+    # Check if the file is already on s3
+    #check_if_file_already_on_s3(s3)
+
     # Get file extension
     ext = os.path.splitext(file_name)[1]
+
+    # Path and name on bucket
+    key = "{0}_swatmodel{1}".format(
+        request.session["unique_directory_name"],
+        ext)
 
     # Generate presigned post to be sent back to client
     presigned_post = s3.generate_presigned_post(
         Bucket=s3_bucket,
-        Key=request.session['unique_directory_name'] + '_swatmodel' + ext,
+        Key=key,
         Fields={"acl": "public-read", "Content-Type": file_type},
         Conditions=[
             {"acl": "public-read"},
@@ -73,3 +81,10 @@ def sign_s3(request):
         "data": presigned_post,
         "url": "https://{0}.s3.amazonaws.com/{1}".format(s3_bucket, file_name)
     })
+
+
+def check_if_file_already_on_s3(s3):
+
+    my_bucket = s3.Bucket('saraswat-swat')
+
+    list_of_files_in_bucket = []
