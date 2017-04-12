@@ -7,7 +7,6 @@ from django.utils import timezone
 
 from swatusers.models import UserTask
 from .tasks import process_task
-from .forms import SwatModelForm
 
 import boto3
 import csv
@@ -38,7 +37,7 @@ def index(request):
         request.session['directory'] = unique_path
 
         # Render main SWAT LUU view
-        return render(request, 'swatluu/index.html', {"swat_model_form": SwatModelForm()})
+        return render(request, 'swatluu/index.html')
 
 
 def fix_file_permissions(path):
@@ -94,10 +93,13 @@ def sign_s3(request):
     # Connect to bucket
     s3 = boto3.client("s3")
 
+    # Get file extension
+    ext = os.path.splitext(file_name)[1]
+
     # Generate presigned post to be sent back to client
     presigned_post = s3.generate_presigned_post(
         Bucket=s3_bucket,
-        Key=file_name,
+        Key=request.session['unique_directory_name'] + '_swatmodel' + ext,
         Fields={"acl": "public-read", "Content-Type": file_type},
         Conditions=[
             {"acl": "public-read"},
