@@ -193,6 +193,19 @@ footer, #content:after {
     font-weight: 800;
 }
 
+/* progress bar for s3 uploads */
+.progress {
+    background: #333;
+    clear: left;
+    display: none;
+    float: left;
+    width: 200px;
+}
+
+.progress-active {
+    display: block;
+}
+
 @media (max-width: 767px) {
 
     #anrc_logo_col {
