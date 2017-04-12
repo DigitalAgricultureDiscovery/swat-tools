@@ -63,7 +63,7 @@ footer, #content:after {
     font-size: .7em;
 }
 
-#help1div, #help2div, #help3div, #help4div, #help5div, #help6div, #help9div, #warning-percent {
+#uploadAlert, #help1div, #help2div, #help3div, #help4div, #help5div, #help6div, #help9div, #warning-percent {
     display: none;
 }
 

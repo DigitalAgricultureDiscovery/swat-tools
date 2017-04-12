@@ -9,12 +9,12 @@ from s3upload.models import S3Upload
 from swatusers.models import UserTask
 from .tasks import process_task
 
-import boto3
 import csv
 import glob
 import io
 import os
 import shutil
+import subprocess
 import swattools
 import zipfile
 
@@ -91,61 +91,121 @@ def upload_swat_model_zip(request):
 
     # If user is submitting a zipped SWAT Model
     if request.method == 'POST':
+        file_exists = False
+        file_on_s3 = False
         if 'swat_model_zip' in request.FILES:
-            # Get the uploaded file and store the name of the zip
-            try:
-                file = request.FILES['swat_model_zip']
-                filename = file.name
-                swat_model_file = os.path.splitext(filename)
-                swat_model_filename = swat_model_file[0]
-                swat_model_file_ext = swat_model_file[1]
-            except:
-                request.session[
-                    'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
-                return render(request, 'swatluu/index.html')
+            file_exists = True
+        else:
+            file_obj = S3Upload.objects.filter(
+                task_id=request.session.get("unique_directory_name"))
+            if file_obj:
+                file_exists = True
+                file_on_s3 = True
 
-            try:
-                # Create base working directory now that user has uploaded a file
-                create_working_directory(request)
-                unique_path = request.session.get('directory')
-            except:
-                request.session[
-                    'error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
-                return render(request, 'swatluu/index.html')
+        if file_exists:
+            if not file_on_s3:
+                # Get the uploaded file and store the name of the zip
+                try:
+                    file = request.FILES['swat_model_zip']
+                    filename = file.name
+                    swat_model_file = os.path.splitext(filename)
+                    swat_model_filename = swat_model_file[0]
+                    swat_model_file_ext = swat_model_file[1]
+                except:
+                    request.session[
+                        'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                   'persists please use the Contact Us form to request further assistance ' + \
+                                   'from the site admins.'
+                    return render(request, 'swatluu/index.html')
 
-            try:
-                # If the SWAT Model directory already exists, remove it to make way for new upload
-                if os.path.exists(
-                                        unique_path + '/input/' + swat_model_filename):
-                    shutil.rmtree(unique_path + '/input/' + swat_model_filename)
-            except:
-                request.session[
-                    'error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
-                               'to reset the tool. If the issue persists please use the Contact Us ' + \
-                               'form to request further assistance from the site admins.'
-                return render(request, 'swatluu/index.html')
+                try:
+                    # Create base working directory now that user has uploaded a file
+                    create_working_directory(request)
+                    unique_path = request.session.get('directory')
+                except:
+                    request.session[
+                        'error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
+                                   'persists please use the Contact Us form to request further assistance ' + \
+                                   'from the site admins.'
+                    return render(request, 'swatluu/index.html')
 
-            try:
-                # Read uploaded file into tmp directory
-                with open(unique_path + '/input/' + filename,
-                          'wb+') as destination:
-                    for chunk in file.chunks():
-                        destination.write(chunk)
-            except:
-                request.session[
-                    'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
-                return render(request, 'swatluu/index.html')
+                try:
+                    # If the SWAT Model directory already exists, remove it to make way for new upload
+                    if os.path.exists(
+                                            unique_path + '/input/' + swat_model_filename):
+                        shutil.rmtree(unique_path + '/input/' + swat_model_filename)
+                except:
+                    request.session[
+                        'error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
+                                   'to reset the tool. If the issue persists please use the Contact Us ' + \
+                                   'form to request further assistance from the site admins.'
+                    return render(request, 'swatluu/index.html')
 
+                try:
+                    # Read uploaded file into tmp directory
+                    with open(unique_path + '/input/' + filename,
+                              'wb+') as destination:
+                        for chunk in file.chunks():
+                            destination.write(chunk)
+                except:
+                    request.session[
+                        'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                   'persists please use the Contact Us form to request further assistance ' + \
+                                   'from the site admins.'
+                    return render(request, 'swatluu/index.html')
+            else:
+                try:
+                    # Create base working directory now that
+                    # user has uploaded a file
+                    create_working_directory(request)
+                    unique_path = request.session.get('directory')
+                except:
+                    request.session['error'] = 'Unable to set up user ' \
+                       'workspace, please try again. If the issue persists ' \
+                       'please use the Contact Us form to request further ' \
+                       'assistance from the site admins.'
+                    return render(request, 'swatluu/index.html')
+
+                try:
+                    # If the SWAT Model directory already exists,
+                    # remove it to make way for new upload
+                    input_dir = unique_path + '/input/' + file_obj[0].file_name
+                    if os.path.exists(input_dir):
+                        shutil.rmtree(input_dir)
+
+                    # Get filename and ext
+                    filename = file_obj[0].file_name
+                    swat_model_file = os.path.splitext(file_obj[0].file_name)
+                    swat_model_filename = swat_model_file[0]
+                    swat_model_file_ext = swat_model_file[1]
+                except:
+                    request.session['error'] = 'Unable to remove previously ' \
+                       'uploaded file, please use the Reset button to reset ' \
+                       'the tool. If the issue persists please use the ' \
+                       'Contact Us form to request further assistance from ' \
+                       'the site admins.'
+                    return render(request, 'swatluu/index.html')
+
+                try:
+                    subprocess.call([
+                        "curl",
+                        "-o",
+                        input_dir,
+                        file_obj[0].s3_url])
+                except:
+                    request.session["error"] = "Unable to retrieve file from " \
+                        "storage. Please try re-uploading. If this issue " \
+                        "persists please use the Contact Us form to request " \
+                        "further assistance from the site admins."
             try:
                 # Unzip uploaded file in tmp directory
-                os.system(
-                    'unzip -qq ' + unique_path + '/input/' + swat_model_filename + ' -d ' + unique_path + '/input/')
+                subprocess.call([
+                    "unzip",
+                    "-qq",
+                    unique_path + "/input/" + swat_model_filename,
+                    "-d",
+                    unique_path + "/input/"
+                ])
 
                 # Set permissions for unzipped data
                 fix_file_permissions(

@@ -41,6 +41,10 @@ function uploadFile (file, s3Data, url) {
           var bar = document.querySelector(".bar");
           bar.style.width = "0%"
         }, 2000);
+        setTimeout(function () {
+          successfulUpload($("#SwatModel"), file.name);
+        }, 2500);
+
       } else {
         alert("Could not upload file.");
       }
@@ -56,4 +60,13 @@ var progressBar = function(data, showProgress) {
       bar = document.querySelector(".bar");
 
   bar.style.width = pcnt + "%"
+};
+
+var successfulUpload = function(el, fileName) {
+  el.val("");
+  $("#uploadAlert").append('Successfully uploaded "' + fileName + '". Click Validate to continue.');
+  $("#uploadAlert").show();
+  setTimeout(function () {
+    $("#uploadAlert").hide();
+  }, 7000);
 };

@@ -61,6 +61,7 @@ def sign_s3(request):
     s3_upload = S3Upload.objects.create(
         user_id=request.user.id,
         email=request.user.email,
+        file_name=file_name,
         task_id=request.session.get("unique_directory_name"),
         data_type="swat",
         s3_url=url,
