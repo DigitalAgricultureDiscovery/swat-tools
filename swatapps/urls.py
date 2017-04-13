@@ -30,6 +30,9 @@ urlpatterns = [
     # presign s3 upload
     url(r'^sign_s3', include('s3upload.urls')),
 
+    # internet speed page
+    url(r'^set_internet_speed$', swatusers_views.set_internet_speed, name='speed'),
+
     # Registration view from swatusers views
     url(r'^register$', swatusers_views.register_user, name='register'),
     url(r'^register_complete$', swatusers_views.register_complete, name='register_complete'),

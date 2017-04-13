@@ -220,6 +220,10 @@ footer, #content:after {
     display: block;
 }
 
+#id_upload_speed > li {
+    list-style-type: none;
+}
+
 @media (max-width: 767px) {
 
     #anrc_logo_col {

@@ -5,8 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, resolve_url
 from django.template.response import TemplateResponse
-from .forms import ContactUsForm, LoginForm, RegistrationForm
-from .models import UserTask
+from .forms import ContactUsForm, InternetSpeedForm, LoginForm, RegistrationForm
+from .models import UserTask, SwatUser
 from swatapps.settings.production import ADMINS, NORECAPTCHA_SITE_KEY, \
     NORECAPTCHA_SECRET_KEY
 
@@ -87,6 +87,32 @@ def authenticate_user(request):
             )
     else:
         return HttpResponseRedirect(resolve_url('tool_selection'))
+
+
+@login_required
+def set_internet_speed(request):
+
+    if request.method == 'POST':
+
+        form = InternetSpeedForm(request.POST)
+
+        if form.is_valid():
+            request.user.upload_speed = form.cleaned_data["upload_speed"]
+            request.user.save()
+            return render(request, 'swatusers/internet_speed.html',
+                          {'form': form, 'status': "success"})
+        else:
+            return render(request, 'swatusers/internet_speed.html',
+                          {'form': form})
+    else:
+        form = InternetSpeedForm(initial={
+            "upload_speed": request.user.upload_speed
+        })
+
+    return render(
+        request,
+        'swatusers/internet_speed.html',
+        {'form': form})
 
 
 def validate_recaptcha_response(recaptcha_response):

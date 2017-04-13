@@ -69,3 +69,22 @@ class LoginForm(forms.Form):
 
     class Meta:
         fields = ['email', 'password']
+
+
+class InternetSpeedForm(forms.Form):
+    """ Form for the user to set their internet speed. """
+
+    UPLOAD_SPEED_CHOICES = (
+        (1, 'Speed 1'),
+        (2, 'Speed 2'),
+        (3, 'Speed 3'),
+        (4, 'Speed 4'),
+        (5, 'Speed 5'),
+        (0, 'Not Provided')
+    )
+
+    upload_speed = forms.ChoiceField(
+        label="Upload Speed (Optional)",
+        widget=forms.RadioSelect,
+        choices=UPLOAD_SPEED_CHOICES
+    )
