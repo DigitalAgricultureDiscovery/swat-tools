@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% load staticfiles %}
+
+{% block meta_description %}
+  <meta name="description" content="Allow user to provide information about their internet connection's upload speed." />
+{% endblock %}
+
+{% block title %}Set Upload Speed - {% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-sm-12 col-md-12 col-lg-12">
+      <p>
+        Please provide us with your upload speed so we may better transfer your data.
+      </p>
+      <form role="form" method="post" action="{% url 'speed' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary" value="Confirm">Confirm</button>
+        {% if status == "success" %}
+          <div class="alert alert-success" role="alert" style="margin-top: 10px;">Upload speed set!</div>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+{% endblock content %}
