@@ -29,7 +29,7 @@ function getSignedRequest (file) {
         } else {
           $("#SwatModel").val("");
           $(".overwrite").addClass("overwrite-active");
-          $("#help1div").append('File already exists on S3. Click Validate to continue.');
+          $("#help1div").append('File already exists on S3. Choose to overwrite or click Validate to continue.');
           $("#help1div").show();
           overwriteS3Upload(file);
         }
