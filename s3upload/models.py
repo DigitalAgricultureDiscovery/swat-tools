@@ -10,5 +10,6 @@ class S3Upload(models.Model):
     file_name = models.CharField(max_length=100)
     task_id = models.CharField(max_length=100)
     data_type = models.CharField(max_length=4)
+    file_size = models.IntegerField()
     s3_url = models.CharField(max_length=255)
     time_uploaded = models.DateTimeField(auto_now_add=True)

@@ -33,59 +33,91 @@ def sign_s3(request):
     # Get file name and type
     file_name = request.GET["file_name"]
     file_type = request.GET["file_type"]
+    file_size = request.GET["file_size"]
 
     # Connect to bucket
     s3 = boto3.client("s3")
 
     # Check if the file is already on s3
-    #check_if_file_already_on_s3(s3)
+    match_results = check_if_file_already_on_s3(file_name, file_size)
 
-    # Get file extension
-    ext = os.path.splitext(file_name)[1]
+    if not match_results[0]:
+        # Path and name on bucket
+        key = "user_data/{0}/{1}".format(
+            request.user.id,
+            file_name
+        )
 
-    # Path and name on bucket
-    key = "user_data/{0}/{1}".format(
-        request.user.email,
-        file_name
-    )
+        # Generate presigned post to be sent back to client
+        presigned_post = s3.generate_presigned_post(
+            Bucket=s3_bucket,
+            Key=key,
+            Fields={"acl": "public-read", "Content-Type": file_type},
+            Conditions=[
+                {"acl": "public-read"},
+                {"Content-Type": file_type}
+            ],
+            ExpiresIn=3600
+        )
 
-    # Generate presigned post to be sent back to client
-    presigned_post = s3.generate_presigned_post(
-        Bucket=s3_bucket,
-        Key=key,
-        Fields={"acl": "public-read", "Content-Type": file_type},
-        Conditions=[
-            {"acl": "public-read"},
-            {"Content-Type": file_type}
-        ],
-        ExpiresIn=3600
-    )
+        # S3 url
+        url = "https://{0}.s3.amazonaws.com/user_data/{1}/{2}".format(
+            s3_bucket,
+            request.user.id,
+            file_name)
 
-    # S3 url
-    url = "https://{0}.s3.amazonaws.com/{1}".format(
-        s3_bucket,
-        request.session['unique_directory_name'] + '_swatmodel' + ext)
+        # Add file to database
+        s3_upload = S3Upload.objects.create(
+            user_id=request.user.id,
+            email=request.user.email,
+            file_name=file_name,
+            task_id=request.session.get("unique_directory_name"),
+            data_type="swat",
+            file_size=file_size,
+            s3_url=url,
+            time_uploaded=timezone.datetime.now(),
+        )
+        s3_upload.save()
 
-    # Add file to database
-    s3_upload = S3Upload.objects.create(
-        user_id=request.user.id,
-        email=request.user.email,
-        file_name=file_name,
-        task_id=request.session.get("unique_directory_name"),
-        data_type="swat",
-        s3_url=url,
-        time_uploaded=timezone.datetime.now(),
-    )
-    s3_upload.save()
+        response = {
+            "data": presigned_post,
+            "url": url
+        }
+    else:
+        response = {
+            "data": "exists",
+            "url": match_results[1]
+        }
 
-    return JsonResponse({
-        "data": presigned_post,
-        "url": "https://{0}.s3.amazonaws.com/{1}".format(s3_bucket, file_name)
-    })
+    return JsonResponse(response)
 
 
-def check_if_file_already_on_s3(s3):
+def check_if_file_already_on_s3(file_name, file_size):
+    """
+    This method checks the S3Upload table for any records matching the
+    incoming file's name and size. If a match is found True is returned,
+    otherwise False is returned to indicate no match.
+    
+    Parameters
+    ----------
+    file_name: Name of the file the user is uploading.
+    file_size: File size (bytes) for the file the user is uploading.
 
-    my_bucket = s3.Bucket('saraswat-swat')
+    Returns
+    -------
+    file_exists: Boolean set to True if file already on S3.
+    """
 
-    list_of_files_in_bucket = []
+    # Switch to true if matching file found in S3Upload table
+    file_exists = False
+    matching_file_url = ""
+
+    # Fetch all records with a matching file name
+    s3_objs = S3Upload.objects.filter(file_name=file_name, file_size=file_size)
+
+    # If at least one record was found
+    if s3_objs:
+        file_exists = True
+        matching_file_url = s3_objs[0].s3_url
+
+    return file_exists, matching_file_url
