@@ -129,7 +129,6 @@
                 <form id="form1" role="form" method="post" action="{% url 'swatluu/upload_swat_model_zip' %}" enctype="multipart/form-data" style="text-align: left">
                     {% csrf_token %}
                     <label><b>SWAT Model Input:</b> &nbsp;</label>
-
                     {% buttons %}
                         <div align="left">
                             <input style="display: inline; padding-bottom: 5px" id="SwatModel" type="file" name="swat_model_zip">
@@ -144,6 +143,11 @@
                     {% endbuttons %}
                     <div class="progress progress-striped active">
                       <div class="bar"></div>
+                    </div>
+                    <div class="upload overwrite">
+                      <label><strong>Overwrite existing file?</strong>&nbsp</label>
+                      <label class="radio-inline"><input type="radio" name="upload-overwrite" checked="checked" value="no">No</label>
+                      <label class="radio-inline"><input type="radio" name="upload-overwrite" value="yes">Yes</label>
                     </div>
                     <div id="uploadAlert" class="alert alert-success" role="alert"></div>
                     <div id="help1div" class="alert alert-info" role="alert"></div>

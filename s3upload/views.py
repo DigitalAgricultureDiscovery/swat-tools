@@ -33,6 +33,7 @@ def sign_s3(request):
     file_name = request.GET["file_name"]
     file_type = request.GET["file_type"]
     file_size = request.GET["file_size"]
+    overwrite = request.GET["overwrite"]
 
     # Connect to bucket
     s3 = boto3.client("s3")
@@ -40,7 +41,7 @@ def sign_s3(request):
     # Check if the file is already on s3
     match_results = check_if_file_already_on_s3(file_name, file_size)
 
-    if not match_results[0]:
+    if not match_results[0] or overwrite == "true":
         # Path and name on bucket
         key = "user_data/{0}/{1}".format(
             request.user.id,
@@ -86,6 +87,10 @@ def sign_s3(request):
         response = {
             "data": "exists",
             "url": match_results[1]
+        }
+
+        request.session["on_s3"] = {
+            request.session.get("unique_directory_name"): (file_name, file_size)
         }
 
     return JsonResponse(response)

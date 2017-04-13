@@ -35,6 +35,7 @@ def index(request):
         unique_path = settings.UPLOAD_DIR + request.user.email + \
                       '/' + unique_directory_name
         request.session['unique_directory_name'] = unique_directory_name
+        request.session['on_s3'] = {}
         request.session['directory'] = unique_path
 
         # Render main SWAT LUU view
@@ -97,11 +98,20 @@ def upload_swat_model_zip(request):
         if 'swat_model_zip' in request.FILES:
             file_exists = True
         else:
-            file_obj = S3Upload.objects.filter(
-                task_id=request.session.get("unique_directory_name"))
-            if file_obj:
-                file_exists = True
-                file_on_s3 = True
+            task_id = request.session.get('unique_directory_name')
+
+            if task_id in request.session.get('on_s3').keys():
+                file_name, file_size = request.session.get('on_s3')[task_id]
+
+                file_obj = S3Upload.objects.filter(
+                    email=request.user.email,
+                    file_name=file_name,
+                    file_size=file_size
+                )
+
+                if file_obj:
+                    file_exists = True
+                    file_on_s3 = True
 
         if file_exists:
             if not file_on_s3:

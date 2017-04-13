@@ -1,15 +1,37 @@
+overwrite = false;
+
+var overwriteS3Upload = function (file) {
+  $("input[name=upload-overwrite]:radio").change(function () {
+    if ($(this).val() === "yes") {
+      overwrite = true;
+      getSignedRequest(file);
+      $(".overwrite").removeClass("overwrite-active");
+      $("#help1div").hide();
+    }
+  });
+};
+
 // Obtains a pre-signed request from the server for the selected file
 function getSignedRequest (file) {
   var xhr = new XMLHttpRequest();
-  xhr.open("GET", "/sign_s3?file_name=" + file.name + "&file_type=" + file.type + "&file_size=" + file.size);
+  if (overwrite === true) {
+    xhr.open("GET", "/sign_s3?file_name=" + file.name + "&file_type=" + file.type + "&file_size=" + file.size + "&overwrite=true");
+  } else {
+    xhr.open("GET", "/sign_s3?file_name=" + file.name + "&file_type=" + file.type + "&file_size=" + file.size + "&overwrite=false");
+  }
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
         var response = $.parseJSON(xhr.responseText);
-        if (response.data != "exists") {
+        overwrite_file = file;
+        if (response.data != "exists" || overwrite === true) {
           uploadFile(file, response.data);
-        } else{
-          alert("File already exists.");
+        } else {
+          $("#SwatModel").val("");
+          $(".overwrite").addClass("overwrite-active");
+          $("#help1div").append('File already exists on S3. Click Validate to continue.');
+          $("#help1div").show();
+          overwriteS3Upload(file);
         }
       } else {
         alert("Could not get signed URL.");
