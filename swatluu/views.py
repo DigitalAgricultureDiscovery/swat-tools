@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, resolve_url
 from django.template.response import TemplateResponse
 from django.utils import timezone
@@ -46,7 +46,8 @@ def fix_file_permissions(path):
         files changing the directory permissions to 775 and file
         permissions to 664. """
 
-    # Change directory and file permissions for "path" to 775 and 664 respectively
+    # Change directory and file permissions for "path"
+    # to 775 and 664 respectively
     if os.path.isfile(path):
         os.chmod(path, 0o664)
     else:
@@ -112,46 +113,52 @@ def upload_swat_model_zip(request):
                     swat_model_filename = swat_model_file[0]
                     swat_model_file_ext = swat_model_file[1]
                 except:
-                    request.session[
-                        'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                                   'persists please use the Contact Us form to request further assistance ' + \
-                                   'from the site admins.'
+                    request.session['error'] = 'Unable to receive the ' \
+                        'uploaded file, please try again. If the issue ' \
+                        'persists please use the Contact Us form to request ' \
+                        'further assistance from the site admins.'
                     return render(request, 'swatluu/index.html')
 
                 try:
-                    # Create base working directory now that user has uploaded a file
+                    # Create base working directory now that
+                    # user has uploaded a file
                     create_working_directory(request)
                     unique_path = request.session.get('directory')
                 except:
-                    request.session[
-                        'error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
-                                   'persists please use the Contact Us form to request further assistance ' + \
-                                   'from the site admins.'
+                    request.session['error'] = 'Unable to set up user ' \
+                        'workspace, please try again. If the issue persists ' \
+                        'please use the Contact Us form to request further ' \
+                        'assistance from the site admins.'
                     return render(request, 'swatluu/index.html')
 
                 try:
-                    # If the SWAT Model directory already exists, remove it to make way for new upload
-                    if os.path.exists(
-                                            unique_path + '/input/' + swat_model_filename):
-                        shutil.rmtree(unique_path + '/input/' + swat_model_filename)
+                    # If the SWAT Model directory already exists,
+                    # remove it to make way for new upload
+                    model_path = "{0}/input/{1}".format(
+                        unique_path,
+                        swat_model_filename
+                    )
+                    if os.path.exists(model_path):
+                        shutil.rmtree(model_path)
                 except:
-                    request.session[
-                        'error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
-                                   'to reset the tool. If the issue persists please use the Contact Us ' + \
-                                   'form to request further assistance from the site admins.'
+                    request.session['error'] = 'Unable to remove previously ' \
+                        'uploaded file, please use the Reset button to reset ' \
+                        'the tool. If the issue persists please use the ' \
+                        'Contact Us form to request further assistance from ' \
+                        'the site admins.'
                     return render(request, 'swatluu/index.html')
 
                 try:
                     # Read uploaded file into tmp directory
-                    with open(unique_path + '/input/' + filename,
-                              'wb+') as destination:
+                    file_path = "{0}/input/{1}".format(unique_path, filename)
+                    with open(file_path, 'wb+') as destination:
                         for chunk in file.chunks():
                             destination.write(chunk)
                 except:
-                    request.session[
-                        'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                                   'persists please use the Contact Us form to request further assistance ' + \
-                                   'from the site admins.'
+                    request.session['error'] = 'Unable to receive the ' \
+                        'uploaded file, please try again. If the issue ' \
+                        'persists please use the Contact Us form to request ' \
+                        'further assistance from the site admins.'
                     return render(request, 'swatluu/index.html')
             else:
                 try:
@@ -208,66 +215,57 @@ def upload_swat_model_zip(request):
                 ])
 
                 # Set permissions for unzipped data
-                fix_file_permissions(
-                    unique_path + '/input/' + swat_model_filename)
+                model_path = "{0}/input/{1}".format(
+                    unique_path,
+                    swat_model_filename
+                )
+                fix_file_permissions(model_path)
 
                 # Remove uploaded zip file
-                os.remove(
-                    unique_path + '/input/' + swat_model_filename + swat_model_file_ext)
+                os.remove(model_path + swat_model_file_ext)
             except:
-                request.session[
-                    'error'] = 'Unable to unzip the uploaded file, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
+                request.session['error'] = 'Unable to unzip the uploaded ' \
+                    'file, please try again. If the issue persists please ' \
+                    'use the Contact Us form to request further assistance ' \
+                    'from the site admins.'
                 return render(request, 'swatluu/index.html')
 
             # Check if decompression completed or failed (no folder if failed)
-            if not os.path.exists(
-                                    unique_path + '/input/' + swat_model_filename):
+            if not os.path.exists(model_path):
                 request.session['error'] = 'Could not extract the folder "' + \
-                                           swat_model_filename + '". ' + \
-                                           'Please check if the file is ' + \
-                                           'compressed in zip format and ' + \
-                                           'has the same name as ' + \
-                                           'compressed folder. If the issue ' + \
-                                           'persists please use the Contact Us ' + \
-                                           'form to request further assistance ' + \
-                                           'from the site admins.'
+                    swat_model_filename + '". Please check if the file is ' \
+                    'compressed in zip format and has the same name as ' \
+                    'compressed folder. If the issue persists please use the ' \
+                    'Contact Us form to request further assistance from the ' \
+                    'site admins.'
                 return render(request, 'swatluu/index.html')
 
             # Check if the required files/folders exist
             loc = unique_path + '/input/' + swat_model_filename + \
-                  '/Watershed/Grid/hrus1/w001001.adf'
+                '/Watershed/Grid/hrus1/w001001.adf'
             shapeloc = unique_path + '/input/' + swat_model_filename + \
-                       '/Watershed/Shapes/hru1.shp'
+                '/Watershed/Shapes/hru1.shp'
             scenarioloc = unique_path + '/input/' + swat_model_filename + \
-                          '/Scenarios/Default/TxtInOut/*.hru'
+                '/Scenarios/Default/TxtInOut/*.hru'
 
             # Check if the zip was extracted
-            if not os.path.exists(
-                                    unique_path + '/input/' + swat_model_filename):
+            if not os.path.exists(model_path):
                 request.session['error'] = 'Could not extract the folder "' + \
-                                           swat_model_filename + '". Please ' + \
-                                           'check if the file is compressed ' + \
-                                           'in zip format and has the same ' + \
-                                           'name as compressed folder. If the issue ' + \
-                                           'persists please use the Contact Us ' + \
-                                           'form to request further assistance ' + \
-                                           'from the site admins.'
+                    swat_model_filename + '". Please check if the file is ' \
+                    'compressed in zip format and has the same name as ' \
+                    'compressed folder. If the issue persists please use the ' \
+                    'Contact Us form to request further assistance from the ' \
+                    'site admins.'
                 return render(request, 'swatluu/index.html')
 
             # Check if hru files were found
             if not (glob.glob(scenarioloc)):
-                request.session['error'] = 'Could not find the folder or ' + \
-                                           'hru files in ' + \
-                                           swat_model_filename + \
-                                           '/Scenarios/Default/TxtInOut/' + \
-                                           '*.hru. Please check for files ' + \
-                                           'in folder and re-upload the ' + \
-                                           'zip file. If the issue ' + \
-                                           'persists please use the Contact Us ' + \
-                                           'form to request further assistance ' + \
-                                           'from the site admins.'
+                request.session['error'] = 'Could not find the folder or hru ' \
+                    'files in ' + swat_model_filename + '/Scenarios/Default/' \
+                    'TxtInOut/*.hru. Please check for files in folder and ' \
+                    're-upload the zip file. If the issue persists please ' \
+                    'use the Contact Us form to request further assistance ' \
+                    'from the site admins.'
                 return render(request, 'swatluu/index.html')
 
             # Check if watershed folder was found
@@ -283,9 +281,7 @@ def upload_swat_model_zip(request):
             if os.path.exists(loc):
                 # Update relevant session variables
                 request.session['swat_model_filename'] = filename
-                request.session[
-                    'swat_model_filepath'] = unique_path + '/input/' + \
-                                             swat_model_filename
+                request.session['swat_model_filepath'] = model_path
                 request.session['progress_message'].append(
                     'Swat Model zip folder uploaded.')
                 # Render the main page
