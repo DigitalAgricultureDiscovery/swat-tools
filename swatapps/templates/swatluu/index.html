@@ -107,6 +107,21 @@
             });
         });
 
+        function determineDestination (file) {
+          $.ajax({
+            url: "s3/determine_upload_destination",
+            type: "POST",
+            data: {
+              "file_size": file.size
+            },
+            success: function (data) {
+              if (data.status === "true") {
+                getSignedRequest(file);
+              }
+            }
+          });
+        }
+
         $(function () {
           document.getElementById("SwatModel").onchange = function () {
             var files = document.getElementById("SwatModel").files;
@@ -114,10 +129,7 @@
             if (!file) {
               return alert("No file selected.");
             }
-            // If file size over 100MB, direct upload to S3
-            if (file.size > 5000000) {
-              getSignedRequest(file);
-            }
+            determineDestination(file);
           };
         });
     </script>

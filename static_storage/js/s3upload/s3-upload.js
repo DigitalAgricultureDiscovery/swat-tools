@@ -15,15 +15,16 @@ var overwriteS3Upload = function (file) {
 function getSignedRequest (file) {
   var xhr = new XMLHttpRequest();
   if (overwrite === true) {
-    xhr.open("GET", "/sign_s3?file_name=" + file.name + "&file_type=" + file.type + "&file_size=" + file.size + "&overwrite=true");
+    xhr.open("GET", "s3/sign_s3?file_name=" + file.name + "&file_type=" + file.type + "&file_size=" + file.size + "&overwrite=true");
   } else {
-    xhr.open("GET", "/sign_s3?file_name=" + file.name + "&file_type=" + file.type + "&file_size=" + file.size + "&overwrite=false");
+    xhr.open("GET", "s3/sign_s3?file_name=" + file.name + "&file_type=" + file.type + "&file_size=" + file.size + "&overwrite=false");
   }
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
         var response = $.parseJSON(xhr.responseText);
         overwrite_file = file;
+        var uploadSpeed = $("#upload_speed").val();
         if (response.data != "exists" || overwrite === true) {
           uploadFile(file, response.data);
         } else {

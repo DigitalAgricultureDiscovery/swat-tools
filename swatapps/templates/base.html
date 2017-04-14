@@ -184,24 +184,54 @@
 
         {% if user.is_authenticated %}
           <script>
-              function alertSessionExpire() {
-                  // error notification
-                  // Shorthand for:
-                  // alertify.notify( message, 'error', [wait, callback]);
-                  alertify.set('notifier', 'delay', 0);
-                  alertify.error('Session expired!');
+            // Acquires csrf token from csrf cookie
+            function getCookie(name) {
+              var cookieValue = null;
+              if (document.cookie && document.cookie !== "") {
+                var cookies = document.cookie.split(";");
+                for (var i = 0; i < cookies.length; i++) {
+                  var cookie = $.trim(cookies[i]);
+                  // Does this cookie string begin with the name we want?
+                  if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                  }
+                }
               }
+              return cookieValue;
+            }
 
-              function warnSessionExpire() {
-                  // warning notification
-                  // Shorthand for:
-                  // alertify.notify( message, 'warning', [wait, callback]);
-                  alertify.set('notifier', 'delay', 0);
-                  alertify.warning('Session will expire in one minute. Please refresh the page to remain active.');
+            // Tells dAJAX request headers to include csrf token
+            function csrfSafeMethod(method) {
+              // these HTTP methods do not require CSRF protection
+              return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+            }
+            $.ajaxSetup({
+              beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                  xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                }
               }
+            });
 
-              setTimeout(warnSessionExpire, ({{ request.session.get_expiry_age }} * 1000) - 60000);
-              setTimeout(alertSessionExpire, {{ request.session.get_expiry_age }} * 1000);
+            function alertSessionExpire() {
+                // error notification
+                // Shorthand for:
+                // alertify.notify( message, 'error', [wait, callback]);
+                alertify.set('notifier', 'delay', 0);
+                alertify.error('Session expired!');
+            }
+
+            function warnSessionExpire() {
+                // warning notification
+                // Shorthand for:
+                // alertify.notify( message, 'warning', [wait, callback]);
+                alertify.set('notifier', 'delay', 0);
+                alertify.warning('Session will expire in one minute. Please refresh the page to remain active.');
+            }
+
+            setTimeout(warnSessionExpire, ({{ request.session.get_expiry_age }} * 1000) - 60000);
+            setTimeout(alertSessionExpire, {{ request.session.get_expiry_age }} * 1000);
           </script>
         {% endif %}
 
