@@ -5,7 +5,8 @@ from django.utils import timezone
 
 import boto3
 
-from s3upload.models import S3Upload
+from .models import S3Upload
+from .forms import UploadDestinationForm
 
 
 @login_required
@@ -125,3 +126,65 @@ def check_if_file_already_on_s3(file_name, file_size):
         matching_file_url = s3_objs[0].s3_url
 
     return file_exists, matching_file_url
+
+
+@login_required
+def determine_upload_destination(request):
+    """
+    This method uses the user's upload speed and size of the file to
+    determine whether or not the file should be uploaded to S3 or 
+    through nginx and Apache.
+    
+    Parameters
+    ----------
+    request: Contains metadata about the http request.
+
+    Returns
+    -------
+    use_s3: Boolean value, if true send file to S3.
+    """
+
+    # When set to true the uploaded file will be sent to S3
+    use_s3 = "false"
+
+    if request.is_ajax():
+        # Set form with posted values
+        form = UploadDestinationForm(request.POST)
+
+        # Check if form is valid
+        if form.is_valid():
+            # Get file size
+            file_size = form.cleaned_data["file_size"]
+
+            # Overhead (%) reduces upload speed to reflect more real
+            # world internet usage
+            overhead = 0
+
+            # Convert lower threshold upload speeds to bytes
+            # Keys correspond to setting on the Internet Speed form
+            upload_speed_threshold = {
+                0: (1000 * 1024) / 8,
+                1: (56 * 1024) / 8,
+                2: (256 * 1024) / 8,
+                3: (1000 * 1024) / 8,
+                4: (10000 * 1024) / 8,
+                5: (25000 * 1024) / 8
+            }
+
+            # Get users set upload speed range
+            upload_speed = request.user.upload_speed
+
+            # User upload speed in bytes (per sec)
+            user_threshold = upload_speed_threshold[upload_speed]
+
+            # Reduce by overhead %
+            user_threshold = user_threshold * ((100 - overhead) * .01)
+
+            # Determine how many minutes the upload would take
+            time_to_upload = (file_size / user_threshold) / 60
+
+            # If more than 20 minutes use S3 as the destination
+            if time_to_upload > 20:
+                use_s3 = "true"
+
+    return JsonResponse({"status": use_s3})

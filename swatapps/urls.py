@@ -28,7 +28,7 @@ urlpatterns = [
     url(r'^$', swatusers_views.index, name='index'),
 
     # presign s3 upload
-    url(r'^sign_s3', include('s3upload.urls')),
+    url(r'^s3/', include('s3upload.urls')),
 
     # internet speed page
     url(r'^set_internet_speed$', swatusers_views.set_internet_speed, name='speed'),

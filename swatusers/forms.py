@@ -75,12 +75,12 @@ class InternetSpeedForm(forms.Form):
     """ Form for the user to set their internet speed. """
 
     UPLOAD_SPEED_CHOICES = (
-        (1, 'Speed 1'),
-        (2, 'Speed 2'),
-        (3, 'Speed 3'),
-        (4, 'Speed 4'),
-        (5, 'Speed 5'),
-        (0, 'Not Provided')
+        (0, 'Not Provided'),
+        (1, '<= 256 Kbps'),
+        (2, '> 256 Kbps <= 1 Mbps'),
+        (3, '> 1 Mbps <= 10 Mbps'),
+        (4, '> 10 Mbps <= 25 Mbps'),
+        (5, '> 25 Mbps')
     )
 
     upload_speed = forms.ChoiceField(

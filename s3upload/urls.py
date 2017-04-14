@@ -16,9 +16,12 @@ Including another URLconf
 
 from django.conf.urls import url
 
-from .views import sign_s3
+from .views import determine_upload_destination, sign_s3
 
 
 urlpatterns = [
-    url("", sign_s3, name="sign_s3")
+    url(r'^sign_s3', sign_s3, name='sign_s3'),
+
+    url(r'^determine_upload_destination$', determine_upload_destination),
+
 ]
