@@ -53,7 +53,9 @@ def sign_s3(request):
         presigned_post = s3.generate_presigned_post(
             Bucket=s3_bucket,
             Key=key,
-            Fields={"acl": "public-read", "Content-Type": file_type},
+            Fields={
+                "acl": "public-read",
+                "Content-Type": file_type},
             Conditions=[
                 {"acl": "public-read"},
                 {"Content-Type": file_type}
