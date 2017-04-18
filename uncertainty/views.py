@@ -6,6 +6,7 @@ from django.template.response import TemplateResponse
 from django.utils import timezone
 
 from .tasks import process_task
+from s3upload.models import S3Upload
 from swatusers.models import UserTask
 from swatluu import swattools
 
@@ -14,6 +15,7 @@ import glob
 import io
 import os
 import shutil
+import subprocess
 import zipfile
 
 
@@ -34,7 +36,9 @@ def index(request):
         unique_path = settings.UPLOAD_DIR + request.user.email + \
                       '/' + unique_directory_name
         request.session['unique_directory_name'] = unique_directory_name
+        request.session['on_s3'] = {}
         request.session['directory'] = unique_path
+
         # Render main LUU Uncertainty view
         return render(request, 'uncertainty/index.html')
 
@@ -88,88 +92,162 @@ def upload_swat_model_zip(request):
     request.session['error'] = []
     # If user is submitting a zipped SWAT Model
     if request.method == 'POST':
+        file_exists = False
+        file_on_s3 = False
         if 'swat_model_zip' in request.FILES:
-            # Get the uploaded file and store the name of the zip
-            try:
-                file = request.FILES['swat_model_zip']
-                filename = file.name
-                swat_model_file = os.path.splitext(filename)
-                swat_model_filename = swat_model_file[0]
-                swat_model_file_ext = swat_model_file[1]
-            except:
-                request.session[
-                    'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
-                return render(request, 'uncertainty/index.html')
+            file_exists = True
+        else:
+            task_id = request.session.get('unique_directory_name')
 
-            try:
-                # Set up the working directory
-                create_working_directory(request)
-                unique_path = request.session.get("directory")
-            except:
-                request.session[
-                    'error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
-                return render(request, 'uncertainty/index.html')
+            if task_id in request.session.get('on_s3').keys():
+                file_name, file_size = request.session.get('on_s3')[task_id]
 
-            try:
-                # If the SWAT Model directory already exists, remove it to make way for new upload
-                if os.path.exists(
-                                        unique_path + '/input/' + swat_model_filename):
-                    shutil.rmtree(unique_path + '/input/' + swat_model_filename)
-            except:
-                request.session[
-                    'error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
-                               'to reset the tool. If the issue persists please use the Contact Us ' + \
-                               'form to request further assistance from the site admins.'
-                return render(request, 'uncertainty/index.html')
+                file_obj = S3Upload.objects.filter(
+                    email=request.user.email,
+                    file_name=file_name,
+                    file_size=file_size
+                )
 
-            try:
-                # Read uploaded file into tmp directory
-                with open(unique_path + '/input/' + filename,
-                          'wb+') as destination:
-                    for chunk in file.chunks():
-                        destination.write(chunk)
-            except:
-                request.session[
-                    'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
-                return render(request, 'uncertainty/index.html')
+                if file_obj:
+                    file_exists = True
+                    file_on_s3 = True
+
+        if file_exists:
+            if not file_on_s3:
+                # Get the uploaded file and store the name of the zip
+                try:
+                    file = request.FILES['swat_model_zip']
+                    filename = file.name
+                    swat_model_file = os.path.splitext(filename)
+                    swat_model_filename = swat_model_file[0]
+                    swat_model_file_ext = swat_model_file[1]
+                except:
+                    request.session[
+                        'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
+                                   'persists please use the Contact Us form to request further assistance ' + \
+                                   'from the site admins.'
+                    return render(request, 'uncertainty/index.html')
+
+                try:
+                    # Set up the working directory
+                    create_working_directory(request)
+                    unique_path = request.session.get("directory")
+                except:
+                    request.session['error'] = 'Unable to set up user ' \
+                        'workspace, please try again. If the issue persists ' \
+                        'please use the Contact Us form to request further ' \
+                        'assistance from the site admins.'
+                    return render(request, 'uncertainty/index.html')
+
+                try:
+                    # If the SWAT Model directory already exists,
+                    # remove it to make way for new upload
+                    model_path = "{0}/input/{1}".format(
+                        unique_path,
+                        swat_model_filename
+                    )
+                    if os.path.exists(model_path):
+                        shutil.rmtree(model_path)
+                except:
+                    request.session['error'] = 'Unable to remove previously ' \
+                        'uploaded file, please use the Reset button to reset ' \
+                        'the tool. If the issue persists please use the ' \
+                        'Contact Us form to request further assistance from ' \
+                        'the site admins.'
+                    return render(request, 'uncertainty/index.html')
+
+                try:
+                    # Read uploaded file into tmp directory
+                    file_path = "{0}/input/{1}".format(unique_path, filename)
+
+                    with open(file_path, 'wb+') as destination:
+                        for chunk in file.chunks():
+                            destination.write(chunk)
+                except:
+                    request.session['error'] = 'Unable to receive the ' \
+                        'uploaded file, please try again. If the issue ' \
+                        'persists please use the Contact Us form to request ' \
+                        'further assistance from the site admins.'
+                    return render(request, 'uncertainty/index.html')
+            else:
+                try:
+                    # Set up the working directory
+                    create_working_directory(request)
+                    unique_path = request.session.get("directory")
+                except:
+                    request.session['error'] = 'Unable to set up user ' \
+                        'workspace, please try again. If the issue persists ' \
+                        'please use the Contact Us form to request further ' \
+                        'assistance from the site admins.'
+                    return render(request, 'uncertainty/index.html')
+                try:
+                    # If the SWAT Model directory already exists,
+                    # remove it to make way for new upload
+                    input_dir = "{0}/input/{1}".format(
+                        unique_path,
+                        file_obj[0].file_name)
+                    if os.path.exists(input_dir):
+                        shutil.rmtree(input_dir)
+
+                    # Get filename and ext
+                    filename = file_obj[0].file_name
+                    swat_model_file = os.path.splitext(file_obj[0].file_name)
+                    swat_model_filename = swat_model_file[0]
+                    swat_model_file_ext = swat_model_file[1]
+                except:
+                    request.session['error'] = 'Unable to remove previously ' \
+                        'uploaded file, please use the Reset button to reset ' \
+                        'the tool. If the issue persists please use the ' \
+                        'Contact Us form to request further assistance from ' \
+                        'the site admins.'
+                    return render(request, 'uncertainty/index.html')
+                try:
+                    subprocess.call([
+                        'curl',
+                        '-o',
+                        input_dir,
+                        file_obj[0].s3_url
+                    ])
+                except:
+                    request.session['error'] = 'Unable to retrieve file from ' \
+                        'storage. Please try re-uploading. If this issue ' \
+                        'persists please use the Contact Us form to request ' \
+                        'further assistance from the site admins.'
 
             try:
                 # Unzip uploaded file in tmp directory
-                os.system(
-                    'unzip -qq ' + unique_path + '/input/' + swat_model_filename + ' -d ' + unique_path + '/input/')
+                subprocess.call([
+                    'unzip',
+                    '-qq',
+                    unique_path + '/input/' + swat_model_filename,
+                    '-d',
+                    unique_path + '/input'
+                ])
 
                 # Set permissions for unzipped data
-                fix_file_permissions(
-                    unique_path + '/input/' + swat_model_filename)
+                model_path = "{0}/input/{1}".format(
+                    unique_path,
+                    swat_model_filename
+                )
+                fix_file_permissions(model_path)
 
                 # Remove uploaded zip file
-                os.remove(
-                    unique_path + '/input/' + swat_model_filename + swat_model_file_ext)
+                os.remove(model_path + swat_model_file_ext)
             except:
-                request.session[
-                    'error'] = 'Unable to unzip the uploaded file, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
+                request.session['error'] = 'Unable to unzip the uploaded ' \
+                    'file, please try again. If the issue persists please ' \
+                    'use the Contact Us form to request further assistance ' \
+                    'from the site admins.'
                 return render(request, 'uncertainty/index.html')
 
             # Check if decompression completed or failed (no folder if failed)
-            if not os.path.exists(
-                                    unique_path + '/input/' + swat_model_filename):
+            if not os.path.exists(model_path):
                 request.session['error'] = 'Could not extract the folder "' + \
-                                           swat_model_filename + '". ' + \
-                                           'Please check if the file is ' + \
-                                           'compressed in zip format and ' + \
-                                           'has the same name as ' + \
-                                           'compressed folder. If the issue ' + \
-                                           'persists please use the Contact Us ' + \
-                                           'form to request further assistance ' + \
-                                           'from the site admins.'
+                    swat_model_filename + '". Please check if the file is ' \
+                    'compressed in zip format and has the same name as ' \
+                    'compressed folder. If the issue persists please use the ' \
+                    'Contact Us form to request further assistance from the ' \
+                    'site admins.'
                 return render(request, 'uncertainty/index.html')
 
             # Check if the required files/folders exist

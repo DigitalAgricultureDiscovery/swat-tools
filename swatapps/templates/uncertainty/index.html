@@ -11,6 +11,11 @@
 
 {% load static %}
 
+{% block javascript %}
+  <link href="{% static 'css/bootstrap-progress.min.css' %}" rel="stylesheet" type="text/css" />
+  <script src="{% static 'js/s3upload/s3-upload.js' %}"></script>
+{% endblock %}
+
     {# Load jquery resources #}
 
     <script type='text/javascript'>
@@ -139,6 +144,32 @@
             //     $("#help6div").hide();
             //     $("#message6").remove();
             // });
+
+            function determineDestination (file) {
+              $.ajax({
+                url: "s3/determine_upload_destination",
+                type: "POST",
+                data: {
+                  "file_size": file.size
+                },
+                success: function (data) {
+                  if (data.status === "true") {
+                    getSignedRequest(file);
+                  }
+                }
+              });
+            }
+
+            $(function () {
+              document.getElementById("SwatModel").onchange = function () {
+                var files = document.getElementById("SwatModel").files;
+                var file = files[0];
+                if (!file) {
+                  return alert("No file selected.");
+                }
+                determineDestination(file);
+              };
+            });
         });
 
     </script>
@@ -153,7 +184,7 @@
                     {% buttons %}
                         <div align="left">
                             <input style="display: inline; padding-bottom: 5px" id="SwatModel" type="file" name="swat_model_zip">
-                            <button id="upload1" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading').show();">Upload</button>
+                            <button id="upload1" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading').show();">Validate</button>
                             <button id="Help1" type="button">?</button>
                         {% if request.session.uncertainty_swat_model_dir %}
                             <span class="icon" style="color: #33CC33; margin-left: 15px">
@@ -162,7 +193,15 @@
                         {% endif %}
                         </div>
                     {% endbuttons %}
-
+                    <div class="progress progress-striped active">
+                      <div class="bar"></div>
+                    </div>
+                    <div class="upload overwrite">
+                      <label><strong>Overwrite existing file?</strong>&nbsp</label>
+                      <label class="radio-inline"><input type="radio" name="upload-overwrite" checked="checked" value="no">No</label>
+                      <label class="radio-inline"><input type="radio" name="upload-overwrite" value="yes">Yes</label>
+                    </div>
+                    <div id="uploadAlert" class="alert alert-success" role="alert"></div>
                     <div id="help1div" class="alert alert-info" role="alert"></div>
                     <div id="loading" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
