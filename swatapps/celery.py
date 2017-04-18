@@ -7,19 +7,23 @@ from celery.schedules import crontab
 from django.conf import settings
 
 # set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'swatapps.settings.production')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'swatapps.settings.local')
 
 app = Celery('swatapps')
 
-# Using a string here means the worker will not have to
-# pickle the object when using Windows
+# Using a string here means the worker don't have to serialize
+# the configuration object to child processes.
+# - namespace='CELERY' means all celery-related configuration keys
+#   should have a `CELERY_` prefix.
 app.config_from_object('django.conf:settings')
+
+# Load task modules from all registered Django app configs.
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 # Schedule periodic tasks (UTC is default timezone)
 app.conf.beat_schedule = {
-    'update-iclimate-table': {
+    'clean-s3upload-table': {
         'task': 's3upload.tasks.clean_up_database',
-        'schedule': crontab(minute=5)  #
-    }
+        'schedule': crontab(minute='*/30')
+    },
 }
