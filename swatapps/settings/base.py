@@ -112,6 +112,7 @@ LOGGING = {
 }
 LOG_LOCATION = "{0}/log".format(BASE_DIR)
 
+
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
@@ -165,8 +166,14 @@ STATICFILES_DIRS = (
 # User model
 AUTH_USER_MODEL = 'swatusers.SwatUser'
 
+AUTHENTICATION_BACKENDS = (
+    'swatusers.backends.EmailAuthBackend',
+)
+
 # File upload settings
-FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_TEMP_DIR = '/tmp'
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = '0o664'
+FILE_UPLOAD_PERMISSIONS = '0o664'
 MAX_UPLOAD_SIZE = '2684354560'
 
 # Login url
