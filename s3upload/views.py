@@ -86,6 +86,10 @@ def sign_s3(request):
             "data": presigned_post,
             "url": url
         }
+
+        request.session["on_s3"] = {
+            request.session.get("unique_directory_name"): (file_name, file_size)
+        }
     else:
         response = {
             "data": "exists",
