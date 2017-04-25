@@ -190,7 +190,8 @@ def determine_upload_destination(request):
             time_to_upload = (file_size / user_threshold) / 60
 
             # If more than 20 minutes use S3 as the destination
-            if time_to_upload > 20:
+            # or file larger than 950 megabytes
+            if time_to_upload > 20 or file_size > 950000000:
                 use_s3 = "true"
 
     return JsonResponse({"status": use_s3})
