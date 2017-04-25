@@ -17,7 +17,7 @@ class MyDatabase():
         self.cursor = None
 
         # Set up logger
-        self.logger = MyLogger(logpath="/depot/saraswat/web/swatapps/swatapps/log/cron/user_activity_log.log").logger
+        self.logger = MyLogger(logpath="/depot/saraswat/web/swatapps/swatapps/log/cron/user_activity.log").logger
 
     def connect_to_database(self):
         """ Connect to the database provided in MySQL config file. """
