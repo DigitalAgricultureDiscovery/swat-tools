@@ -26,4 +26,8 @@ app.conf.beat_schedule = {
         'task': 's3upload.tasks.clean_up_database',
         'schedule': crontab(minute='*/30')
     },
+    'clean-user-data': {
+        'task': 'swatusers.tasks.clean_up_user_data',
+        'schedule': crontab(hour='*/1l')
+    }
 }
