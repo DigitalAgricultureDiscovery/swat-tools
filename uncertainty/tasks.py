@@ -1,7 +1,11 @@
 from __future__ import absolute_import
 
 from celery import shared_task
+from celery.utils.log import get_task_logger
 from uncertainty.process import UncertaintyProcess
+
+
+logger = get_task_logger("celery.tasks")
 
 
 @shared_task
@@ -19,7 +23,7 @@ def process_task(data):
     -------
     none
     """
-    process = UncertaintyProcess(data)
+    process = UncertaintyProcess(data, logger)
 
     process.start()
     process.copy_results_to_depot()

@@ -6,7 +6,5 @@ from .clean import clean_up_user_data
 
 
 @shared_task
-def clean_up_user_data():
+def remove_expired_data():
     clean_up_user_data()
-
-

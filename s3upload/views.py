@@ -4,9 +4,13 @@ from django.http import JsonResponse
 from django.utils import timezone
 
 import boto3
+import logging
 
 from .models import S3Upload
 from .forms import UploadDestinationForm
+
+
+logger = logging.getLogger("django")
 
 
 @login_required
@@ -27,69 +31,94 @@ def sign_s3(request):
     JsonResponse: JSON object containing the presigned post and S3 url.
     """
 
+    response = {}
+
     # Bucket name
     s3_bucket = settings.AWS_STORAGE_BUCKET_NAME
 
     # Get file name and type
-    file_name = request.GET["file_name"]
-    file_type = request.GET["file_type"]
-    file_size = request.GET["file_size"]
-    overwrite = request.GET["overwrite"]
+    try:
+        file_name = request.GET["file_name"]
+        file_type = request.GET["file_type"]
+        file_size = request.GET["file_size"]
+        overwrite = request.GET["overwrite"]
+    except:
+        file_name = ""
+        file_type = ""
+        file_size = ""
+        overwrite = ""
+        logger.error("Unable to retrieve file information from GET.")
 
-    # Connect to bucket
-    s3 = boto3.client("s3")
+    try:
+        # Connect to bucket
+        s3 = boto3.client("s3")
+    except:
+        s3 = None
+        logger.error("Boto3 unable to connect to S3 bucket.")
 
     # Check if the file is already on s3
     match_results = check_if_file_already_on_s3(file_name, file_size)
 
-    if not match_results[0] or overwrite == "true":
+    if (not match_results[0] or overwrite == "true") and s3:
         # Path and name on bucket
         key = "user_data/{0}/{1}".format(
             request.user.id,
             file_name
         )
 
-        # Generate presigned post to be sent back to client
-        presigned_post = s3.generate_presigned_post(
-            Bucket=s3_bucket,
-            Key=key,
-            Fields={
-                "acl": "public-read",
-                "Content-Type": file_type},
-            Conditions=[
-                {"acl": "public-read"},
-                {"Content-Type": file_type}
-            ],
-            ExpiresIn=3600
-        )
+        try:
+            # Generate presigned post to be sent back to client
+            presigned_post = s3.generate_presigned_post(
+                Bucket=s3_bucket,
+                Key=key,
+                Fields={
+                    "acl": "public-read",
+                    "Content-Type": file_type},
+                Conditions=[
+                    {"acl": "public-read"},
+                    {"Content-Type": file_type}
+                ],
+                ExpiresIn=3600
+            )
 
-        # S3 url
-        url = "https://{0}.s3.amazonaws.com/user_data/{1}/{2}".format(
-            s3_bucket,
-            request.user.id,
-            file_name)
+            # S3 url
+            url = "https://{0}.s3.amazonaws.com/user_data/{1}/{2}".format(
+                s3_bucket,
+                request.user.id,
+                file_name)
 
-        # Add file to database
-        s3_upload = S3Upload.objects.create(
-            user_id=request.user.id,
-            email=request.user.email,
-            file_name=file_name,
-            task_id=request.session.get("unique_directory_name"),
-            data_type="swat",
-            file_size=file_size,
-            s3_url=url,
-            time_uploaded=timezone.datetime.now(),
-        )
-        s3_upload.save()
+            # Json response to request
+            response = {
+                "data": presigned_post,
+                "url": url
+            }
 
-        response = {
-            "data": presigned_post,
-            "url": url
-        }
+            # Track in session
+            request.session["on_s3"] = {
+                request.session.get("unique_directory_name"): (
+                file_name, file_size)
+            }
+        except:
+            presigned_post = None
+            url = ""
+            logger.error("Unable to generate presigned post for S3.")
 
-        request.session["on_s3"] = {
-            request.session.get("unique_directory_name"): (file_name, file_size)
-        }
+        try:
+            if presigned_post:
+                # Add file to database
+                s3_upload = S3Upload.objects.create(
+                    user_id=request.user.id,
+                    email=request.user.email,
+                    file_name=file_name,
+                    task_id=request.session.get("unique_directory_name"),
+                    data_type="swat",
+                    file_size=file_size,
+                    s3_url=url,
+                    time_uploaded=timezone.datetime.now(),
+                )
+                s3_upload.save()
+        except:
+            logger.warning("Unable to save S3 object to database.")
     else:
         response = {
             "data": "exists",

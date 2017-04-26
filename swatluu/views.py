@@ -11,12 +11,16 @@ from .tasks import process_task
 
 import csv
 import glob
+import logging
 import io
 import os
 import shutil
 import subprocess
 import swattools
 import zipfile
+
+
+logger = logging.getLogger('django')
 
 
 @login_required
@@ -66,7 +70,7 @@ def create_working_directory(request):
     # Create main directory for user data (e.g. ../user_data/user_email)
     if not os.path.exists(settings.UPLOAD_DIR):
         os.makedirs(settings.UPLOAD_DIR)
-        os.chmod(settings.UPLOAD_DIR)
+        os.chmod(settings.UPLOAD_DIR, 0o775)
 
     if not os.path.exists(settings.UPLOAD_DIR + request.user.email):
         os.makedirs(settings.UPLOAD_DIR + request.user.email)
@@ -123,6 +127,9 @@ def upload_swat_model_zip(request):
                     swat_model_filename = swat_model_file[0]
                     swat_model_file_ext = swat_model_file[1]
                 except:
+                    logger.error(
+                        "{0}: Unable upload SWAT model zipfile.".format(
+                            request.session.get('unique_directory_name')))
                     request.session['error'] = 'Unable to receive the ' \
                         'uploaded file, please try again. If the issue ' \
                         'persists please use the Contact Us form to request ' \
@@ -135,6 +142,9 @@ def upload_swat_model_zip(request):
                     create_working_directory(request)
                     unique_path = request.session.get('directory')
                 except:
+                    logger.error(
+                        "{0}: Unable to create working directory.".format(
+                            request.session.get('unique_directory_name')))
                     request.session['error'] = 'Unable to set up user ' \
                         'workspace, please try again. If the issue persists ' \
                         'please use the Contact Us form to request further ' \
@@ -151,6 +161,9 @@ def upload_swat_model_zip(request):
                     if os.path.exists(model_path):
                         shutil.rmtree(model_path)
                 except:
+                    logger.error(
+                        "{0}: Unable to remove previously uploaded files.".format(
+                            request.session.get('unique_directory_name')))
                     request.session['error'] = 'Unable to remove previously ' \
                         'uploaded file, please use the Reset button to reset ' \
                         'the tool. If the issue persists please use the ' \
@@ -165,6 +178,9 @@ def upload_swat_model_zip(request):
                         for chunk in file.chunks():
                             destination.write(chunk)
                 except:
+                    logger.error(
+                        "{0}: Unable to write uploaded data to disk.".format(
+                            request.session.get('unique_directory_name')))
                     request.session['error'] = 'Unable to receive the ' \
                         'uploaded file, please try again. If the issue ' \
                         'persists please use the Contact Us form to request ' \
@@ -177,6 +193,9 @@ def upload_swat_model_zip(request):
                     create_working_directory(request)
                     unique_path = request.session.get('directory')
                 except:
+                    logger.error(
+                        "{0}: Unable to create working directory.".format(
+                            request.session.get('unique_directory_name')))
                     request.session['error'] = 'Unable to set up user ' \
                        'workspace, please try again. If the issue persists ' \
                        'please use the Contact Us form to request further ' \
@@ -196,6 +215,9 @@ def upload_swat_model_zip(request):
                     swat_model_filename = swat_model_file[0]
                     swat_model_file_ext = swat_model_file[1]
                 except:
+                    logger.error(
+                        "{0}: Unable to obtain SWAT model information.".format(
+                            request.session.get('unique_directory_name')))
                     request.session['error'] = 'Unable to remove previously ' \
                        'uploaded file, please use the Reset button to reset ' \
                        'the tool. If the issue persists please use the ' \
@@ -210,6 +232,9 @@ def upload_swat_model_zip(request):
                         input_dir,
                         file_obj[0].s3_url])
                 except:
+                    logger.error(
+                        "{0}: Unable to retrieve SWAT model from S3.".format(
+                            request.session.get('unique_directory_name')))
                     request.session["error"] = "Unable to retrieve file from " \
                         "storage. Please try re-uploading. If this issue " \
                         "persists please use the Contact Us form to request " \
@@ -234,6 +259,8 @@ def upload_swat_model_zip(request):
                 # Remove uploaded zip file
                 os.remove(model_path + swat_model_file_ext)
             except:
+                logger.error("{0}: Unable to unzip uploaded SWAT model.".format(
+                    request.session.get('unique_directory_name')))
                 request.session['error'] = 'Unable to unzip the uploaded ' \
                     'file, please try again. If the issue persists please ' \
                     'use the Contact Us form to request further assistance ' \
@@ -242,6 +269,8 @@ def upload_swat_model_zip(request):
 
             # Check if decompression completed or failed (no folder if failed)
             if not os.path.exists(model_path):
+                logger.error("{0}: Could not extract SWAT model zip folder.".format(
+                    request.session.get('unique_directory_name')))
                 request.session['error'] = 'Could not extract the folder "' + \
                     swat_model_filename + '". Please check if the file is ' \
                     'compressed in zip format and has the same name as ' \
@@ -258,18 +287,10 @@ def upload_swat_model_zip(request):
             scenarioloc = unique_path + '/input/' + swat_model_filename + \
                 '/Scenarios/Default/TxtInOut/*.hru'
 
-            # Check if the zip was extracted
-            if not os.path.exists(model_path):
-                request.session['error'] = 'Could not extract the folder "' + \
-                    swat_model_filename + '". Please check if the file is ' \
-                    'compressed in zip format and has the same name as ' \
-                    'compressed folder. If the issue persists please use the ' \
-                    'Contact Us form to request further assistance from the ' \
-                    'site admins.'
-                return render(request, 'swatluu/index.html')
-
             # Check if hru files were found
             if not (glob.glob(scenarioloc)):
+                logger.error("{0}: Unable to find TxtInOut directory.".format(
+                    request.session.get('unique_directory_name')))
                 request.session['error'] = 'Could not find the folder or hru ' \
                     'files in ' + swat_model_filename + '/Scenarios/Default/' \
                     'TxtInOut/*.hru. Please check for files in folder and ' \
@@ -280,6 +301,8 @@ def upload_swat_model_zip(request):
 
             # Check if watershed folder was found
             if not os.path.exists(shapeloc):
+                logger.error("{0}: Unable to find hru1.shp.".format(
+                    request.session.get('unique_directory_name')))
                 request.session['error'] = 'Could not find the folder ' + \
                     swat_model_filename + '/Watershed/Shapes/hru1.shp. ' \
                     'Please check for files in folder and re-upload the zip ' \
@@ -297,6 +320,8 @@ def upload_swat_model_zip(request):
                 # Render the main page
                 return render(request, 'swatluu/index.html')
             else:
+                logger.error("{0}: Unable find hrus1/w001001.adf.".format(
+                    request.session.get('unique_directory_name')))
                 # Couldn't find a required SWAT Model folder, return error msg
                 request.session['error'] = 'Could not find the folder ' + \
                     swat_model_filename + '/Watershed/Grid/hrus1/w001001.adf.' \
@@ -330,6 +355,9 @@ def upload_landuse_zip(request):
                 filename = file.name
                 landuse_filename = os.path.splitext(filename)[0]
             except:
+                logger.error(
+                    "{0}: Unable upload landuse zipfile.".format(
+                        request.session.get('unique_directory_name')))
                 request.session['error'] = 'Unable to receive the uploaded ' \
                    'file, please try again. If the issue persists please use ' \
                    'the Contact Us form to request further assistance from ' \
@@ -344,6 +372,9 @@ def upload_landuse_zip(request):
                 if os.path.exists(unique_path + '/input/' + landuse_filename):
                     shutil.rmtree(unique_path + '/input/' + landuse_filename)
             except:
+                logger.error(
+                    "{0}: Unable to remove existing landuse directory.".format(
+                        request.session.get('unique_directory_name')))
                 request.session['error'] = 'Unable to remove previously ' \
                     'uploaded file, please use the Reset button to reset ' \
                     'the tool. If the issue persists please use the Contact ' \
@@ -358,6 +389,9 @@ def upload_landuse_zip(request):
                     for chunk in file.chunks():
                         destination.write(chunk)
             except:
+                logger.error(
+                    "{0}: Unable to write landuse zipfile to disk.".format(
+                        request.session.get('unique_directory_name')))
                 request.session['error'] = 'Unable to receive the uploaded ' \
                     'file, please try again. If the issue persists please ' \
                     'use the Contact Us form to request further assistance ' \
@@ -380,6 +414,9 @@ def upload_landuse_zip(request):
                 # Remove landuse zip
                 os.remove(unique_path + '/input/' + filename)
             except:
+                logger.error(
+                    "{0}: Unable extract landuse zipfile.".format(
+                        request.session.get('unique_directory_name')))
                 # Create error message if unzip failed
                 request.session['error'] = 'Could not unzip the folder. ' + \
                     'If the issue persists please use the Contact Us form ' \
@@ -388,6 +425,9 @@ def upload_landuse_zip(request):
 
             # Check if unzipped folder exists
             if not os.path.exists(unique_path + '/input/' + landuse_filename):
+                logger.error(
+                    "{0}: Unable to find extracted landuse directory.".format(
+                        request.session.get('unique_directory_name')))
                 request.session['error'] = 'Could not unzip the folder "' + \
                     landuse_filename + '". Please check if the file is ' \
                     'compressed in zip format and has the same name as ' \

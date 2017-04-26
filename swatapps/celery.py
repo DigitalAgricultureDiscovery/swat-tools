@@ -27,7 +27,7 @@ app.conf.beat_schedule = {
         'schedule': crontab(minute='*/30')
     },
     'clean-user-data': {
-        'task': 'swatusers.tasks.clean_up_user_data',
-        'schedule': crontab(hour='*/1l')
+        'task': 'swatusers.tasks.remove_expired_data',
+        'schedule': crontab(minute=0, hour='*/1')
     }
 }

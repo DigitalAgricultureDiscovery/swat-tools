@@ -15,11 +15,10 @@ from .base import *
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['ec2-34-209-79-75.us-west-2.compute.amazonaws.com']
+ALLOWED_HOSTS = ['precision.ag.purdue.edu']
 
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_AGE = 1800
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_SAVE_EVERY_REQUEST = True
 CSRF_COOKIE_SECURE = True
-

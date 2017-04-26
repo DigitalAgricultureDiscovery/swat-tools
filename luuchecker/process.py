@@ -5,18 +5,20 @@ from swatusers.models import UserTask
 from subprocess import check_call
 from swatluu import geotools
 
-import logging
 import numpy as np
 import os
 import shutil
 
 
 class LUUCheckerProcess(object):
-    def __init__(self, data=""):
+    def __init__(self, data="", logger=""):
         """
         A LUU Checker process requested by a user. It contains the core
         variables and methods for creating the new composite landuse layer.
         """
+
+        if logger:
+            self.logger = logger
 
         # set initial paths for the input data
         if data == '':
@@ -130,7 +132,7 @@ class LUUCheckerProcess(object):
                 self.base_landuse_raster_filepath,
                 output_filepath)
         except Exception:
-            self.logger.exception('Unable to convert raster from .adf to .tif.')
+            self.logger.error('Unable to convert raster from .adf to .tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Unable to convert raster from .adf to .tif.')
@@ -152,7 +154,7 @@ class LUUCheckerProcess(object):
                 "layername": "subs1",
             }
         except Exception:
-            self.logger.exception('Unable to read the base landuse raster.')
+            self.logger.error('Unable to read the base landuse raster.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Unable to read the base landuse raster.')
@@ -165,7 +167,7 @@ class LUUCheckerProcess(object):
             total_subbasin_count = len(
                 geotools.read_shapefile(self.subbasin_shapefile_filepath))
         except Exception:
-            self.logger.exception('Unable to read the subbasin shapefile.')
+            self.logger.error('Unable to read the subbasin shapefile.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Unable to read the subbasin shapefile.')
@@ -181,7 +183,7 @@ class LUUCheckerProcess(object):
                                          self.subbasin_shapefile_filepath,
                                          output_tif_filepath)
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'Error converting shapefile to raster. Please make ' + \
                 'sure you uploaded file.shp.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -198,7 +200,7 @@ class LUUCheckerProcess(object):
             geotools.read_raster(self.temp_output_directory + '/subbasin.tif')[
                 0]
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'Unable to read the rasterized subbasin geotiff.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -214,7 +216,7 @@ class LUUCheckerProcess(object):
             emerging_lulc_report = open(
                 self.output_directory + '/Emerging_LULC_Report.txt', 'w')
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'Unable to create emerging_lulcs text file to store new landuse information.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -275,7 +277,7 @@ class LUUCheckerProcess(object):
 
                 self.logger.info('End looping through subbasins.')
         except:
-            self.logger.exception(
+            self.logger.error(
                 'An error occurred while creating the emerging lulc report.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -291,7 +293,7 @@ class LUUCheckerProcess(object):
                 self.base_landuse_raster_adf_filepath,
                 self.temp_output_directory + '/base_new1.tif')
         except:
-            self.logger.exception(
+            self.logger.error(
                 'An error occurred while creating the composite raster.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -311,15 +313,7 @@ class LUUCheckerProcess(object):
 
     def setup_logger(self):
         # Initialize logger for requested process and set header
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(
-            settings.PROJECT_DIR + '/swatapps/log/tasks/luuchecker/' + self.task_id + '.log')
-        handler.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
+
         self.logger.info('Task ID: ' + self.task_id)
         self.logger.info('User: ' + self.user_email)
         self.logger.info('Task started.')
@@ -447,7 +441,7 @@ class LUUCheckerProcess(object):
                  self.temp_output_directory + '/base_new1.tif',
                  self.output_directory + '/base_new.tif'])
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'Error converting new base raster to geotiff.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
@@ -502,7 +496,7 @@ class LUUCheckerProcess(object):
                 fail_silently=False,
                 html_message=message)
         except Exception:
-            self.logger.exception('Unable to convert raster from .adf to .tif.')
+            self.logger.error('Unable to convert raster from .adf to .tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Unable to convert raster from .adf to .tif.')
@@ -537,7 +531,7 @@ class LUUCheckerProcess(object):
                 fail_silently=False,
                 html_message=message)
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'Error sending the user the email informing ' +
                 'them of an error occurrence while processing their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
