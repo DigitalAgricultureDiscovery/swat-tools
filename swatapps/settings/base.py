@@ -98,19 +98,76 @@ CELERY_RESULT_SERIALIZER = 'json'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
         },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue'
+        },
+    },
+    'handlers': {
+        'tasks': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'log/tasks.log'),
+            'formatter': 'verbose'
+        },
+        'console': {
+            'level': 'INFO',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'log/info.log'),
+            'formatter': 'verbose'
+        },
+        'rotate_file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'log/error.log'),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 100,
+            'backupCount': 20,
+            'encoding': 'utf8'
+        },
+        'clean_user_data': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'log/clean.log'),
+            'formatter': 'verbose'
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler'
+        }
     },
     'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        'celery.tasks': {
+            'handlers': ['tasks', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True
         },
+        'clean': {
+            'handlers': ['clean_user_data'],
+            'level': 'INFO',
+            'propagate': True
+        },
+        'django': {
+            'handlers': ['console', 'file', 'rotate_file', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True
+        }
     },
 }
-LOG_LOCATION = "{0}/log".format(BASE_DIR)
 
 
 # Password validation

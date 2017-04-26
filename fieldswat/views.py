@@ -10,12 +10,16 @@ from swatusers.models import UserTask
 from .tasks import process_task
 
 import glob
+import logging
 import io
 import os
 import pypyodbc
 import shutil
 import subprocess
 import zipfile
+
+
+logger = logging.getLogger('django')
 
 
 # Create your views here.
@@ -44,7 +48,8 @@ def fix_file_permissions(path):
         files changing the directory permissions to 775 and file
         permissions to 664. """
 
-    # Change directory and file permissions for "path" to 775 and 664 respectively
+    # Change directory and file permissions for "path"
+    # to 775 and 664 respectively
     if os.path.isfile(path):
         os.chmod(path, 0o664)
     else:
@@ -122,6 +127,9 @@ def upload_swat_model_zip(request):
                     swat_model_filename = os.path.splitext(filename)[0]
                     swat_model_file_ext = swat_model_file[1]
                 except:
+                    logger.error(
+                        "{0}: Unable upload SWAT model zipfile.".format(
+                            request.session.get('unique_directory_name')))
                     request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                                'persists please use the Contact Us form to request further assistance ' + \
                                                'from the site admins.'
@@ -132,6 +140,9 @@ def upload_swat_model_zip(request):
                     create_working_directory(request)
                     unique_path = request.session.get("directory")
                 except:
+                    logger.error(
+                        "{0}: Unable to create working directory.".format(
+                            request.session.get('unique_directory_name')))
                     request.session['error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
                                                'persists please use the Contact Us form to request further assistance ' + \
                                                'from the site admins.'
@@ -147,6 +158,9 @@ def upload_swat_model_zip(request):
                     if os.path.exists(model_path):
                         shutil.rmtree(model_path)
                 except:
+                    logger.error(
+                        "{0}: Unable to remove previously uploaded files.".format(
+                            request.session.get('unique_directory_name')))
                     request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
                                                'to reset the tool. If the issue persists please use the Contact Us ' + \
                                                'form to request further assistance from the site admins.'
@@ -158,6 +172,9 @@ def upload_swat_model_zip(request):
                         for chunk in file.chunks():
                             destination.write(chunk)
                 except:
+                    logger.error(
+                        "{0}: Unable to write uploaded data to disk.".format(
+                            request.session.get('unique_directory_name')))
                     request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                                'persists please use the Contact Us form to request further assistance ' + \
                                                'from the site admins.'
@@ -168,6 +185,9 @@ def upload_swat_model_zip(request):
                     create_working_directory(request)
                     unique_path = request.session.get("directory")
                 except:
+                    logger.error(
+                        "{0}: Unable to create working directory.".format(
+                            request.session.get('unique_directory_name')))
                     request.session[
                         'error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
                                    'persists please use the Contact Us form to request further assistance ' + \
@@ -187,6 +207,9 @@ def upload_swat_model_zip(request):
                     swat_model_filename = swat_model_file[0]
                     swat_model_file_ext = swat_model_file[1]
                 except:
+                    logger.error(
+                        "{0}: Unable to obtain SWAT model information.".format(
+                            request.session.get('unique_directory_name')))
                     request.session[
                         'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                    'persists please use the Contact Us form to request further assistance ' + \
@@ -201,6 +224,9 @@ def upload_swat_model_zip(request):
                         file_obj[0].s3_url
                     ])
                 except:
+                    logger.error(
+                        "{0}: Unable to retrieve SWAT model from S3.".format(
+                            request.session.get('unique_directory_name')))
                     request.session["error"] = "Unable to retrieve file from " \
                         "storage. Please try re-uploading. If this issue " \
                         "persists please use the Contact Us form to request " \
@@ -228,6 +254,8 @@ def upload_swat_model_zip(request):
                 # Remove uploaded zip file
                 os.remove(model_path + swat_model_file_ext)
             except:
+                logger.error("{0}: Unable to unzip uploaded SWAT model.".format(
+                    request.session.get('unique_directory_name')))
                 request.session['error'] = 'Unable to unzip the uploaded file, please try again. If the issue ' + \
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
@@ -258,6 +286,9 @@ def upload_swat_model_zip(request):
 
             # Check if the zip was extracted
             if not os.path.exists(unique_path + '/input/' + swat_model_filename):
+                logger.error(
+                    "{0}: Could not extract SWAT model zip folder.".format(
+                        request.session.get('unique_directory_name')))
                 request.session['error'] = 'Could not extract the folder "' + \
                                            swat_model_filename + '". Please ' + \
                                            'check if the file is compressed ' + \
@@ -270,6 +301,8 @@ def upload_swat_model_zip(request):
 
             # Check if hru files were found
             if not (glob.glob(scenarioloc)):
+                logger.error("{0}: Unable to find TxtInOut directory.".format(
+                    request.session.get('unique_directory_name')))
                 request.session['error'] = 'Could not find the folder or ' + \
                                            'hru files in ' + \
                                            swat_model_filename + \
@@ -284,6 +317,8 @@ def upload_swat_model_zip(request):
 
             # Check if watershed folder was found
             if not os.path.exists(shapeloc):
+                logger.error("{0}: Unable to find hru1.shp.".format(
+                    request.session.get('unique_directory_name')))
                 request.session['error'] = 'Could not find the folder ' + \
                                            swat_model_filename + \
                                            '/Watershed/Shapes/hru1.shp. ' + \
@@ -294,6 +329,8 @@ def upload_swat_model_zip(request):
                                            'from the site admins.'
                 return render(request, 'fieldswat/index.html')
             if not glob.glob(swatoutputdbloc):
+                logger.error("{0}: Unable to find SWATOutput.mdb.".format(
+                    request.session.get('unique_directory_name')))
                 request.session['error'] = 'Could not find the folder or ' + \
                                            'SWATOutput.mdb access file in ' + \
                                            swat_model_filename + \
@@ -326,6 +363,8 @@ def upload_swat_model_zip(request):
                     unique_years = list(set(swatoutput_mdb_data[0]))
                     unique_years.sort()
                 except:
+                    logger.error("{0}: Missing .hru file or unique year in database.".format(
+                        request.session.get('unique_directory_name')))
                     request.session['error'] = 'Either you are missing .hru ' + \
                                                'file or unique year in your ' + \
                                                'database. Please compare your ' + \
@@ -348,6 +387,8 @@ def upload_swat_model_zip(request):
                 # Render the main page
                 return render(request, 'fieldswat/index.html', context)
             else:
+                logger.error("{0}: Unable to find hrus1/w001001.adf.".format(
+                    request.session.get('unique_directory_name')))
                 # Couldn't find a required SWAT Model folder, return error msg
                 request.session['error'] = 'Could not find the folder ' + \
                                            swat_model_filename + \
@@ -460,6 +501,8 @@ def upload_fields_shapefile_zip(request):
                 filename = file.name
                 fields_shapefile_foldername = os.path.splitext(filename)[0]
             except:
+                logger.error("{0}: Unable to receive the uploaded shapefile.".format(
+                    request.session.get('unique_directory_name')))
                 request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
@@ -473,6 +516,8 @@ def upload_fields_shapefile_zip(request):
                 if os.path.exists(unique_path + '/input/' + fields_shapefile_foldername):
                     shutil.rmtree(unique_path + '/input/' + fields_shapefile_foldername)
             except:
+                logger.error("{0}: Unable to remove previously uploaded shapefile.".format(
+                    request.session.get('unique_directory_name')))
                 request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
                                            'to reset the tool. If the issue persists please use the Contact Us ' + \
                                            'form to request further assistance from the site admins.'
@@ -484,6 +529,8 @@ def upload_fields_shapefile_zip(request):
                     for chunk in file.chunks():
                         destination.write(chunk)
             except:
+                logger.error("{0}: Unable to write uploaded shapefile to disk.".format(
+                    request.session.get('unique_directory_name')))
                 request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
@@ -501,11 +548,15 @@ def upload_fields_shapefile_zip(request):
                 # Remove landuse zip
                 os.remove(unique_path + '/input/' + filename)
             except:
+                logger.error("{0}: Unable to extract zipped shapefile.".format(
+                    request.session.get('unique_directory_name')))
                 request.session['error'] = 'Could not unzip the folder. ' + \
                                            'Please contact administrator'
                 return render(request, 'fieldswat/index.html')
 
             if not os.path.exists(unique_path + '/input/' + fields_shapefile_foldername):
+                logger.error("{0}: Unable to locate extracted shapefile's directory.".format(
+                    request.session.get('unique_directory_name')))
                 request.session['error'] = 'Could not extract the folder "' + \
                                            fields_shapefile_foldername + '". ' + \
                                            'Please check if the file is ' + \
@@ -546,6 +597,8 @@ def upload_fields_shapefile_zip(request):
             # Render the main page
             return render(request, 'fieldswat/index.html')
         else:
+            logger.error("{0}: Unable to find uploaded shapefile.".format(
+                request.session.get('unique_directory_name')))
             request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                        'persists please use the Contact Us form to request further assistance ' + \
                                        'from the site admins.'

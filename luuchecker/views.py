@@ -9,9 +9,13 @@ from .tasks import process_task
 from swatusers.models import UserTask
 
 import io
+import logging
 import os
 import shutil
 import zipfile
+
+
+logger = logging.getLogger('django')
 
 
 @login_required
@@ -56,7 +60,7 @@ def create_working_directory(request):
     # Create main directory for user data (e.g. ../user_data/user_email)
     if not os.path.exists(settings.UPLOAD_DIR):
         os.makedirs(settings.UPLOAD_DIR)
-        os.chmod(settings.UPLOAD_DIR)
+        os.chmod(settings.UPLOAD_DIR, 0o775)
 
     if not os.path.exists(settings.UPLOAD_DIR + request.user.email):
         os.makedirs(settings.UPLOAD_DIR + request.user.email)
@@ -91,6 +95,9 @@ def upload_subbasin_shapefile_zip(request):
                 subbasin_shapefile_filename = subbasin_shapefile_file[0]
                 subbasin_shapefile_file_ext = subbasin_shapefile_file[1]
             except:
+                logger.error(
+                    "{0}: Unable to receive uploaded shapefile.".format(
+                        request.session.get('unique_directory_name')))
                 request.session[
                     'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                'persists please use the Contact Us form to request further assistance ' + \
@@ -102,6 +109,9 @@ def upload_subbasin_shapefile_zip(request):
                 create_working_directory(request)
                 unique_path = request.session.get("directory")
             except:
+                logger.error(
+                    "{0}: Unable to create working directory.".format(
+                        request.session.get('unique_directory_name')))
                 request.session[
                     'error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
                                'persists please use the Contact Us form to request further assistance ' + \
@@ -115,6 +125,9 @@ def upload_subbasin_shapefile_zip(request):
                     shutil.rmtree(
                         unique_path + '/input/' + subbasin_shapefile_filename)
             except:
+                logger.error(
+                    "{0}: Unable to remove previously uploaded file.".format(
+                        request.session.get('unique_directory_name')))
                 request.session[
                     'error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
                                'to reset the tool. If the issue persists please use the Contact Us ' + \
@@ -128,6 +141,9 @@ def upload_subbasin_shapefile_zip(request):
                     for chunk in file.chunks():
                         destination.write(chunk)
             except:
+                logger.error(
+                    "{0}: Unable to write uploaded shapefile to disk.".format(
+                        request.session.get('unique_directory_name')))
                 request.session[
                     'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                'persists please use the Contact Us form to request further assistance ' + \
@@ -149,6 +165,9 @@ def upload_subbasin_shapefile_zip(request):
                 os.remove(
                     unique_path + '/input/' + subbasin_shapefile_filename + subbasin_shapefile_file_ext)
             except:
+                logger.error(
+                    "{0}: Unable to unzip uploaded shapefile.".format(
+                        request.session.get('unique_directory_name')))
                 request.session[
                     'error'] = 'Unable to unzip the uploaded file, please try again. If the issue ' + \
                                'persists please use the Contact Us form to request further assistance ' + \
@@ -157,6 +176,9 @@ def upload_subbasin_shapefile_zip(request):
 
             if not os.path.exists(
                                     unique_path + '/input/' + subbasin_shapefile_filename):
+                logger.error(
+                    "{0}: Unable to extract subbasin shapefile.".format(
+                        request.session.get('unique_directory_name')))
                 request.session['error'] = 'Could not extract the folder "' + \
                                            subbasin_shapefile_filename + '". ' + \
                                            'Please check if the file is ' + \
@@ -171,6 +193,9 @@ def upload_subbasin_shapefile_zip(request):
             subbasin_shapefile_filepath = unique_path + '/input/' + subbasin_shapefile_filename + '/subs1.shp'
 
             if not os.path.exists(subbasin_shapefile_filepath):
+                logger.error(
+                    "{0}: Unable upload SWAT model zipfile.".format(
+                        request.session.get('unique_directory_name')))
                 request.session['error'] = 'Could not find the folder ' + \
                                            subbasin_shapefile_filename + '/subs1.shp. Please ' + \
                                            'check for files in folder and ' + \
@@ -217,6 +242,9 @@ def upload_landuse_folder_zip(request):
                 filename = file.name
                 landuse_filename = os.path.splitext(filename)[0]
             except:
+                logger.error(
+                    "{0}: Unable receive uploaded landuse zipfile.".format(
+                        request.session.get('unique_directory_name')))
                 request.session[
                     'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                'persists please use the Contact Us form to request further assistance ' + \
@@ -231,6 +259,9 @@ def upload_landuse_folder_zip(request):
                 if os.path.exists(unique_path + '/input/' + landuse_filename):
                     shutil.rmtree(unique_path + '/input/' + landuse_filename)
             except:
+                logger.error(
+                    "{0}: Unable to remove previously uploaded landuse zipfile.".format(
+                        request.session.get('unique_directory_name')))
                 request.session[
                     'error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
                                'to reset the tool. If the issue persists please use the Contact Us ' + \
@@ -244,6 +275,9 @@ def upload_landuse_folder_zip(request):
                     for chunk in file.chunks():
                         destination.write(chunk)
             except:
+                logger.error(
+                    "{0}: Unable to write landuse zipfile to disk.".format(
+                        request.session.get('unique_directory_name')))
                 request.session[
                     'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
                                'persists please use the Contact Us form to request further assistance ' + \
@@ -263,6 +297,9 @@ def upload_landuse_folder_zip(request):
                 os.remove(unique_path + '/input/' + filename)
             except:
                 # Create error message if unzip failed
+                logger.error(
+                    "{0}: Unable to unzip the landuse zipfile.".format(
+                        request.session.get('unique_directory_name')))
                 request.session['error'] = 'Could not unzip the folder. ' + \
                                            'If the issue ' + \
                                            'persists please use the Contact ' + \
@@ -272,6 +309,9 @@ def upload_landuse_folder_zip(request):
 
             # Check if unzipped folder exists
             if not os.path.exists(unique_path + '/input/' + landuse_filename):
+                logger.error(
+                    "{0}: Unable to find unzipped landuse folder.".format(
+                        request.session.get('unique_directory_name')))
                 request.session['error'] = 'Could not unzip the folder "' + \
                                            landuse_filename + '". Please ' + \
                                            'check if the file is compressed ' + \

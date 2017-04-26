@@ -9,7 +9,6 @@ from osgeo import gdal, ogr
 from scipy import stats
 
 import glob
-import logging
 import numpy as np
 import os
 import shapefile
@@ -18,7 +17,11 @@ import xlsxwriter
 
 
 class FieldSWATProcess(object):
-    def __init__(self, data=""):
+    def __init__(self, data="", logger=""):
+
+        if logger:
+            self.logger = logger
+
         # set initial paths for the input data
         if data == '':
             self.user_id = ''
@@ -66,16 +69,6 @@ class FieldSWATProcess(object):
         self.tool_name = 'Field SWAT'
 
     def setup_logger(self):
-        # Initialize logger for requested process and set header
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(
-            settings.PROJECT_DIR + '/swatapps/log/tasks/fieldswat/' + self.task_id + '.log')
-        handler.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
         self.logger.info('Task ID: ' + self.task_id)
         self.logger.info('User: ' + self.user_email)
         self.logger.info('Task started.')
@@ -95,7 +88,7 @@ class FieldSWATProcess(object):
             # create output directory structure
             self.create_output_dir()
         except Exception:
-            self.logger.exception('Create output directory structures.')
+            self.logger.error('Create output directory structures.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Create output directory structures.')
@@ -106,7 +99,7 @@ class FieldSWATProcess(object):
                 self.results_dir + '/Raster/hrus1',
                 self.results_dir + '/Raster/hrus1/hrus1.tif')
         except Exception:
-            self.logger.exception('Unable to convert raster from .adf to .tif.')
+            self.logger.error('Unable to convert raster from .adf to .tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Unable to convert raster from .adf to .tif.')
@@ -115,7 +108,7 @@ class FieldSWATProcess(object):
         try:
             self.copy_shapefile_to_output_directory()
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'An error occurred while copying hru1 and fields shapefiles to output directory.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -126,7 +119,7 @@ class FieldSWATProcess(object):
         try:
             self.merge_thresholds()
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'An error occurred while merging hru thresholds.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -136,7 +129,7 @@ class FieldSWATProcess(object):
             # get hrus1 cols, rows, and resolution
             hrus1_info = self.get_tif_info()
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'An error occurred while fetching the hrus1 raster details.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -147,7 +140,7 @@ class FieldSWATProcess(object):
             grid_x_reshape, grid_y_reshape = self.set_gridx_and_gridy_matrices(
                 hrus1_info)
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'An error occurred while setting the gridx and gridy matrices.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -157,7 +150,7 @@ class FieldSWATProcess(object):
         try:
             clu = self.create_hru_field_workbook(grid_x_reshape, grid_y_reshape)
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'An error occurred while creating the hru field workbook.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -168,7 +161,7 @@ class FieldSWATProcess(object):
             field_shapefile, output_data, hru_output_data = self.update_field_info(
                 hrus1_info['nodata'], clu)
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'An error occurred while updating field info.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -177,7 +170,7 @@ class FieldSWATProcess(object):
         try:
             self.create_new_field_shapefile(field_shapefile, output_data)
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'An error occurred while creating the new shapefile.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -189,7 +182,7 @@ class FieldSWATProcess(object):
         try:
             self.update_hru_shapefile(hru_shapefile, hru_output_data)
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'An error occurred while updating the hru shapefile.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -689,7 +682,7 @@ class FieldSWATProcess(object):
                 fail_silently=False,
                 html_message=message)
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'Error sending the user the email to their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -725,7 +718,7 @@ class FieldSWATProcess(object):
                 fail_silently=False,
                 html_message=message)
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'Error sending the user the email informing ' +
                 'them of an error occurrence while processing their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)

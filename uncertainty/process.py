@@ -6,14 +6,16 @@ from django.utils import timezone
 from swatusers.models import UserTask
 
 import csv
-import logging
 import numpy as np
 import os
 import shutil
 
 
 class UncertaintyProcess(object):
-    def __init__(self, data=''):
+    def __init__(self, data='', logger=''):
+
+        if logger:
+            self.logger = logger
 
         if data == '':
             self.results_dir = ''
@@ -69,7 +71,7 @@ class UncertaintyProcess(object):
         try:
             self.create_output_dir()
         except Exception:
-            self.logger.exception('Create output directory structures.')
+            self.logger.error('Create output directory structures.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Create output directory structures.')
@@ -80,7 +82,7 @@ class UncertaintyProcess(object):
                 self.results_dir + '/Raster/hrus1',
                 self.results_dir + '/Raster/hrus1/hrus1.tif')
         except Exception:
-            self.logger.exception('Unable to convert raster from .adf to .tif.')
+            self.logger.error('Unable to convert raster from .adf to .tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Unable to convert raster from .adf to .tif.')
@@ -88,7 +90,7 @@ class UncertaintyProcess(object):
         try:
             self.create_lupdat_file()
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'An error occurred while creating the lup dat files.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -98,7 +100,7 @@ class UncertaintyProcess(object):
         try:
             self.extract_lookup_info()
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'An error occurred while extracting lookup info.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -107,7 +109,7 @@ class UncertaintyProcess(object):
         try:
             self.merge_thresholds()
         except Exception:
-            self.logger.exception('An error occurred while merging thresholds.')
+            self.logger.error('An error occurred while merging thresholds.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('An error occurred while merging thresholds.')
@@ -115,7 +117,7 @@ class UncertaintyProcess(object):
         try:
             self.create_fractional_values()
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'An error occurred while creating fractional values.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -125,7 +127,7 @@ class UncertaintyProcess(object):
         try:
             self.extract_hru_files_data()
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'An error occurred while extracting hru files data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -135,7 +137,7 @@ class UncertaintyProcess(object):
         try:
             self.apply_realization()
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'An error occurred while applying realization.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -143,15 +145,6 @@ class UncertaintyProcess(object):
 
     def setup_logger(self):
         # Initialize logger for requested process and set header
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(
-            settings.PROJECT_DIR + '/swatapps/log/tasks/uncertainty/' + self.task_id + '.log')
-        handler.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
         self.logger.info('Task ID: ' + self.task_id)
         self.logger.info('User: ' + self.user_email)
         self.logger.info('Task started.')
@@ -213,7 +206,7 @@ class UncertaintyProcess(object):
         try:
             lup_file = open(self.results_dir + '/Output/lup.dat', 'a')
         except IOError:
-            self.logger.exception('Unable to open the lup.dat file.')
+            self.logger.error('Unable to open the lup.dat file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
         self.logger.info('Extracting information about landuse layers\' dates.')
@@ -232,7 +225,7 @@ class UncertaintyProcess(object):
             try:
                 geotools.convert_adf_to_tif(layer_path, converted_layer_path)
             except Exception:
-                self.logger.exception(
+                self.logger.error(
                     'Unable to convert raster from .adf to .tif.')
                 UserTask.objects.filter(task_id=self.task_id).update(
                     task_status=2)
@@ -276,7 +269,7 @@ class UncertaintyProcess(object):
             lookup_file = csv.reader(open(self.lookup_filepath, 'r'),
                                      delimiter=',')
         except:
-            self.logger.exception('Unable to open the lookup file.')
+            self.logger.error('Unable to open the lookup file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
         # append lookup codes and values to list, throw error if 0 is used
@@ -320,7 +313,7 @@ class UncertaintyProcess(object):
             hrus, hru_info = geotools.read_raster(
                 self.results_dir + '/Raster/hrus1/hrus1.tif')
         except Exception:
-            self.logger.exception('Unable to read hrus1.tif.')
+            self.logger.error('Unable to read hrus1.tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
         self.logger.info('Reading hru1.shp into numpy array.')
@@ -336,7 +329,7 @@ class UncertaintyProcess(object):
             # old_hrus = [70, 30, 50, 10, 25]
             sorted_hru = merged_hru[merged_hru[:, 1].argsort()]
         except Exception:
-            self.logger.exception('Unable to open shapefile hrus1.shp')
+            self.logger.error('Unable to open shapefile hrus1.shp')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
         self.logger.info(
@@ -762,7 +755,7 @@ class UncertaintyProcess(object):
                 fail_silently=False,
                 html_message=message)
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'Error sending the user the email to their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -798,7 +791,7 @@ class UncertaintyProcess(object):
                 fail_silently=False,
                 html_message=message)
         except Exception:
-            self.logger.exception(
+            self.logger.error(
                 'Error sending the user the email informing ' +
                 'them of an error occurrence while processing their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
