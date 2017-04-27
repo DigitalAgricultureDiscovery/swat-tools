@@ -836,65 +836,91 @@ def reset(request):
 
 @login_required
 def download_data(request):
-    task_id = request.GET.get('id', '')
-    if task_id != '':
-        user_id = task_id.split('_')[1]
+    # Get task id from the url
+    task_id = request.GET.get("id", "")
+    # If a task id was found
+    if task_id != "":
+        # Separate user id from task id
+        user_id = task_id.split("_")[1]
+        # Verify user making request is allowed to download the data
         if int(user_id) == int(request.user.id):
-            if os.path.exists(
-                    settings.PROJECT_DIR + '/user_data/' + request.user.email + '/' + task_id + '/output/Output'):
-
-                file = io.BytesIO()
-
-                dir_to_zip = settings.PROJECT_DIR + '/user_data/' + request.user.email + \
-                             '/' + task_id + '/output/Output'
-
-                # if the folder already exists, that means the user has already used the download link
+            # Construct path to output data
+            output_data = "{0}/user_data/{1}/{2}/output/Output".format(
+                settings.PROJECT_DIR,
+                request.user.email,
+                task_id
+            )
+            # Check if path to output exist
+            if os.path.exists(output_data):
+                # Construct path for directory to be zipped
+                dir_to_zip = "{0}/user_data/{1}/{2}/output/Output/".format(
+                    settings.PROJECT_DIR,
+                    request.user.email,
+                    task_id
+                )
+                # If the folder already exists, that means the
+                # user has already used the download link
                 # no need to copy the post processing files over again
-                if not os.path.exists(dir_to_zip + '/dist'):
-                    # copy the post processing distribution folder over
+                if not os.path.exists(dir_to_zip + "/dist"):
+                    # Construct path to post processing distribution folder
+                    proc_dir = "{0}/uncertainty/post_processing_script/".format(
+                        settings.PROJECT_DIR
+                    )
+                    # Copy the post processing distribution folder over
                     shutil.copytree(
-                        settings.PROJECT_DIR + '/uncertainty/post_processing_script/dist',
-                        dir_to_zip + '/dist')
-
-                    # copy post processing script README.txt
+                        os.path.join(proc_dir + "dist"),
+                        os.path.join(dir_to_zip + "dist")
+                    )
+                    # Copy post processing script README.txt
                     shutil.copy(
-                        settings.PROJECT_DIR + '/uncertainty/post_processing_script/README.txt',
-                        dir_to_zip)
-
+                        os.path.join(proc_dir, "README.txt"),
+                        dir_to_zip
+                    )
+                # Length of path
                 dir_to_zip_len = len(dir_to_zip.rstrip(os.sep)) + 1
-
-                with zipfile.ZipFile(file, mode='w',
-                                     compression=zipfile.ZIP_DEFLATED) as zf:
+                # Open byte stream
+                file = io.BytesIO()
+                # Compression method
+                cmethod = zipfile.ZIP_DEFLATED
+                # Start zipping file
+                with zipfile.ZipFile(file, mode='w', compression=cmethod) as zf:
+                    # Permissions for zip
                     zf.external_attr = 0o0770
+                    # Walk through directory and add files to zip archive
                     for dirname, subdirs, files in os.walk(dir_to_zip):
                         for filename in files:
                             path = os.path.join(dirname, filename)
                             entry = path[dir_to_zip_len:]
                             zf.write(path, entry)
+                # Close the zip archive
                 zf.close()
-
-                response = HttpResponse(file.getvalue(),
-                                        content_type="application/zip")
-                response[
-                    'Content-Disposition'] = 'attachment; filename=' + task_id + '.zip'
+                # Prepare response to download request
+                response = HttpResponse(
+                    file.getvalue(),
+                    content_type="application/zip"
+                )
+                response["Content-Disposition"] = "attachment; filename=" + task_id + ".zip"
             else:
-                context = {'title': ('File does not exist error')}
+                context = {"title": "File does not exist error."}
                 return TemplateResponse(
                     request,
-                    'swatusers/file_does_not_exist.html',
-                    context)
+                    "swatusers/file_does_not_exist.html",
+                    context
+                )
         else:
-            context = {'title': ('File permission error')}
+            context = {"title": "File permission error."}
             return TemplateResponse(
                 request,
-                'swatusers/permission_error.html',
-                context)
+                "swatusers/permission_error.html",
+                context
+            )
     else:
-        context = {'title': ('File permission error')}
+        context = {"title": "File permission error."}
         return TemplateResponse(
             request,
-            'swatusers/permission_error.html',
-            context)
+            "swatusers/permission_error.html",
+            context
+        )
     return response
 
 
