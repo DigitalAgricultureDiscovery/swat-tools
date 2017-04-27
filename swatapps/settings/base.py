@@ -88,7 +88,7 @@ DATABASES = {
 }
 
 # Celery
-BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
@@ -112,7 +112,7 @@ LOGGING = {
         },
     },
     'handlers': {
-        'tasks': {
+        'celery.tasks': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'log/tasks.log'),
@@ -151,8 +151,8 @@ LOGGING = {
         }
     },
     'loggers': {
-        'celery.tasks': {
-            'handlers': ['tasks', 'mail_admins'],
+        'tasks': {
+            'handlers': ['celery.tasks', 'mail_admins'],
             'level': 'INFO',
             'propagate': True
         },

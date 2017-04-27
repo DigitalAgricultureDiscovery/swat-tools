@@ -1,3 +1,4 @@
+from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
@@ -10,21 +11,22 @@ import os
 import shutil
 import sys
 
-sys.path.insert(0, os.path.join(settings.PROJECT_DIR, "swatluu"))
+from swatluu import geotools
+from swatluu import swattools
 
-import geotools
-import swattools
+
+logger = get_task_logger(__name__)
+
+
+sys.path.insert(0, os.path.join(settings.PROJECT_DIR, "swatluu"))
 
 
 class SWATLUUProcess(object):
-    def __init__(self, data="", logger=""):
+    def __init__(self, data=""):
         """
         Return a SWATLUUProcess object with all the input path's initialized
         and variables later created and reused throughout the process.
         """
-
-        if logger:
-            self.logger = logger
 
         # set initial paths for the input data
         if data == "":
@@ -70,6 +72,8 @@ class SWATLUUProcess(object):
         self.hru_files_data = []
         self.unique_subbasin_ids = []
         self.tool_name = 'SWAT LUU'
+
+        self.logger = logger
 
     def setup_logger(self):
         self.logger.info('Task ID: ' + self.task_id)

@@ -1,4 +1,4 @@
-from django.conf import settings
+from celery.utils.log import get_task_logger
 from django.core.mail import send_mail
 from django.utils import timezone
 from swatusers.models import UserTask
@@ -10,15 +10,15 @@ import os
 import shutil
 
 
+logger = get_task_logger(__name__)
+
+
 class LUUCheckerProcess(object):
-    def __init__(self, data="", logger=""):
+    def __init__(self, data=""):
         """
         A LUU Checker process requested by a user. It contains the core
         variables and methods for creating the new composite landuse layer.
         """
-
-        if logger:
-            self.logger = logger
 
         # set initial paths for the input data
         if data == '':
@@ -74,6 +74,7 @@ class LUUCheckerProcess(object):
             self.new_landuse_layer = ''
 
         self.tool_name = 'LUU Checker'
+        self.logger = logger
 
     def start(self):
         """

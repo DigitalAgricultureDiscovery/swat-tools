@@ -1,4 +1,4 @@
-from django.conf import settings
+from celery.utils.log import get_task_logger
 from django.core.mail import send_mail
 from django.utils import timezone
 from swatusers.models import UserTask
@@ -16,11 +16,12 @@ import shutil
 import xlsxwriter
 
 
-class FieldSWATProcess(object):
-    def __init__(self, data="", logger=""):
+logger = get_task_logger(__name__)
 
-        if logger:
-            self.logger = logger
+
+class FieldSWATProcess(object):
+
+    def __init__(self, data=""):
 
         # set initial paths for the input data
         if data == '':
@@ -67,6 +68,7 @@ class FieldSWATProcess(object):
         self.dominant_hrus = ''
         self.hrus_info = ''
         self.tool_name = 'Field SWAT'
+        self.logger = logger
 
     def setup_logger(self):
         self.logger.info('Task ID: ' + self.task_id)
