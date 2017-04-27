@@ -92,6 +92,7 @@ var successfulUpload = function(el, fileName) {
   el.val("");
   $("#uploadAlert").append('Successfully uploaded "' + fileName + '". Click Validate to continue.');
   $("#uploadAlert").show();
+  $("#upload1").prop("disabled", false);
   setTimeout(function () {
     $("#uploadAlert").hide();
   }, 7000);

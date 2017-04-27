@@ -155,6 +155,8 @@
                 success: function (data) {
                   if (data.status === "true") {
                     getSignedRequest(file);
+                  } else {
+                    $("#upload1").prop("disabled", false);
                   }
                 }
               });
@@ -184,7 +186,7 @@
                     {% buttons %}
                         <div align="left">
                             <input style="display: inline; padding-bottom: 5px" id="SwatModel" type="file" name="swat_model_zip">
-                            <button id="upload1" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading').show();">Validate</button>
+                            <button id="upload1" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading').show();" disabled>Validate</button>
                             <button id="Help1" type="button">?</button>
                         {% if request.session.uncertainty_swat_model_dir %}
                             <span class="icon" style="color: #33CC33; margin-left: 15px">
