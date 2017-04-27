@@ -1,11 +1,11 @@
 from __future__ import absolute_import
 
+import logging
 from celery import shared_task
-from celery.utils.log import get_task_logger
 from .process import FieldSWATProcess
 
 
-logger = get_task_logger("celery.tasks")
+logger = logging.getLogger("tasks")
 
 
 @shared_task
@@ -23,10 +23,14 @@ def process_task(data):
     -------
     none
     """
-    process = FieldSWATProcess(data, logger)
 
+    logger.info("Starting process for task {0}.".format(data["task_id"]))
+
+    process = FieldSWATProcess(data)
     process.start()
     process.copy_results_to_depot()
     process.clean_up_input_data()
     process.email_user_link_to_results()
     process.update_task_status_in_database()
+
+    logger.info("Task {0} completed.".format(data["task_id"]))

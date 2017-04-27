@@ -1,6 +1,4 @@
-from swatluu import geotools
-from swatluu import swattools
-from django.conf import settings
+from celery.utils.log import get_task_logger
 from django.core.mail import send_mail
 from django.utils import timezone
 from swatusers.models import UserTask
@@ -10,12 +8,15 @@ import numpy as np
 import os
 import shutil
 
+from swatluu import geotools
+from swatluu import swattools
+
+
+logger = get_task_logger(__name__)
+
 
 class UncertaintyProcess(object):
-    def __init__(self, data='', logger=''):
-
-        if logger:
-            self.logger = logger
+    def __init__(self, data=''):
 
         if data == '':
             self.results_dir = ''
@@ -55,6 +56,8 @@ class UncertaintyProcess(object):
         self.old_hru_areas = ''
         self.unique_subbasin_ids = ''
         self.tool_name = 'LUU Uncertainty'
+
+        self.logger = logger
 
     def start(self):
         """
