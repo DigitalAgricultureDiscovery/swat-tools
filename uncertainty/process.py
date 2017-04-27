@@ -717,14 +717,6 @@ class UncertaintyProcess(object):
         if os.path.exists(self.output_dir):
             shutil.rmtree(self.output_dir)
 
-        # Change folder group permissions
-        shutil.chown(self.results_dir, group="saraswat-web")
-        for root, dirs, files in os.walk(self.results_dir):
-            for d in dirs:
-                shutil.chown(os.path.join(root, d), group="saraswat-web")
-            for f in files:
-                shutil.chown(os.path.join(root, f), group="saraswat-web")
-
         # Copy output over to web directory
         shutil.copytree(self.results_dir, self.output_dir)
 
