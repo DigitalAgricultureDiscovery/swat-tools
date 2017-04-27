@@ -868,8 +868,8 @@ def download_data(request):
                     )
                     # Copy the post processing distribution folder over
                     shutil.copytree(
-                        os.path.join(proc_dir + "dist"),
-                        os.path.join(dir_to_zip + "dist")
+                        os.path.join(proc_dir, "dist"),
+                        os.path.join(dir_to_zip, "dist")
                     )
                     # Copy post processing script README.txt
                     shutil.copy(
