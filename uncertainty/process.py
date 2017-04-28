@@ -1,4 +1,3 @@
-from celery.utils.log import get_task_logger
 from django.core.mail import send_mail
 from django.utils import timezone
 from swatusers.models import UserTask
@@ -12,11 +11,8 @@ from swatluu import geotools
 from swatluu import swattools
 
 
-logger = get_task_logger(__name__)
-
-
 class UncertaintyProcess(object):
-    def __init__(self, data=''):
+    def __init__(self, logger, data=''):
 
         if data == '':
             self.results_dir = ''

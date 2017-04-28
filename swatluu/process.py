@@ -1,4 +1,3 @@
-from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
@@ -15,14 +14,11 @@ from swatluu import geotools
 from swatluu import swattools
 
 
-logger = get_task_logger(__name__)
-
-
 sys.path.insert(0, os.path.join(settings.PROJECT_DIR, "swatluu"))
 
 
 class SWATLUUProcess(object):
-    def __init__(self, data=""):
+    def __init__(self, logger, data=""):
         """
         Return a SWATLUUProcess object with all the input path's initialized
         and variables later created and reused throughout the process.

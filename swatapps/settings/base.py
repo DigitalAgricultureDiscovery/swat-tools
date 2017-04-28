@@ -88,7 +88,7 @@ DATABASES = {
 }
 
 # Celery
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+BROKER_URL = 'redis://127.0.0.1:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
@@ -100,72 +100,176 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s',
         },
         'simple': {
-            'format': '%(levelname)s %(message)s'
+            'format': '%(levelname)s %(message)s',
         },
     },
     'filters': {
         'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue'
+            '()': 'django.utils.log.RequireDebugTrue',
         },
     },
     'handlers': {
-        'celery.tasks': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'log/tasks.log'),
-            'formatter': 'verbose'
-        },
         'console': {
             'level': 'INFO',
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+            'formatter': 'simple',
         },
-        'file': {
+        'debug_logger': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'log/debug.log'),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 100,
+            'backupCount': 20,
+            'encoding': 'utf8',
+        },
+        'info_logger': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'log/info.log'),
-            'formatter': 'verbose'
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 100,
+            'backupCount': 20,
+            'encoding': 'utf8',
         },
-        'rotate_file': {
+        'error_logger': {
             'level': 'ERROR',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'log/error.log'),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 100,
             'backupCount': 20,
-            'encoding': 'utf8'
-        },
-        'clean_user_data': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'log/clean.log'),
-            'formatter': 'verbose'
+            'encoding': 'utf8',
         },
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+        'fieldswat_logger': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'log/fieldswat.log'),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 100,
+            'backupCount': 20,
+            'encoding': 'utf8',
+        },
+        'luuchecker_logger': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'log/luuchecker.log'),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 100,
+            'backupCount': 20,
+            'encoding': 'utf8',
+        },
+        's3upload_logger': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'log/s3upload.log'),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 100,
+            'backupCount': 20,
+            'encoding': 'utf8',
+        },
+        'swatluu_logger': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'log/swatluu.log'),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 100,
+            'backupCount': 20,
+            'encoding': 'utf8',
+        },
+        'swatusers_logger': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'log/swatusers.log'),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 100,
+            'backupCount': 20,
+            'encoding': 'utf8',
+        },
+        'uncertainty_logger': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'log/uncertainty.log'),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 100,
+            'backupCount': 20,
+            'encoding': 'utf8',
+        },
     },
     'loggers': {
-        'tasks': {
-            'handlers': ['celery.tasks', 'mail_admins'],
-            'level': 'INFO',
-            'propagate': True
-        },
-        'clean': {
-            'handlers': ['clean_user_data'],
-            'level': 'INFO',
-            'propagate': True
-        },
         'django': {
-            'handlers': ['console', 'file', 'rotate_file', 'mail_admins'],
-            'level': 'INFO',
-            'propagate': True
-        }
+            'handlers': [
+                'console',
+                'debug_logger',
+                'info_logger',
+                'error_logger',
+                'mail_admins'
+            ],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'fieldswat.tasks': {
+            'handlers': [
+                'console',
+                'fieldswat_logger',
+                'mail_admins',
+            ],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'luuchecker.tasks': {
+            'handlers': [
+                'console',
+                'luuchecker_logger',
+                'mail_admins',
+            ],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        's3upload.tasks': {
+            'handlers': [
+                'console',
+                'mail_admins',
+                's3upload_logger',
+            ],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'swatluu.tasks': {
+            'handlers': [
+                'console',
+                'mail_admins',
+                'swatluu_logger',
+            ],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'swatusers.tasks': {
+            'handlers': [
+                'console',
+                'mail_admins',
+                'swatusers_logger',
+            ],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'uncertainty.tasks': {
+            'handlers': [
+                'console',
+                'mail_admins',
+                'uncertainty_logger',
+            ],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
     },
 }
 

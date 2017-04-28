@@ -1,4 +1,3 @@
-from celery.utils.log import get_task_logger
 from django.core.mail import send_mail
 from django.utils import timezone
 from swatusers.models import UserTask
@@ -16,12 +15,9 @@ import shutil
 import xlsxwriter
 
 
-logger = get_task_logger(__name__)
-
-
 class FieldSWATProcess(object):
 
-    def __init__(self, data=""):
+    def __init__(self, logger, data=""):
 
         # set initial paths for the input data
         if data == '':

@@ -1,4 +1,3 @@
-import logging
 import os
 import shutil
 from django.utils import timezone
@@ -6,10 +5,7 @@ from django.utils import timezone
 from .models import UserTask
 
 
-logger = logging.getLogger("clean")
-
-
-def remove_expired_process_folders(proj_path, email_addr, task_id):
+def remove_expired_process_folders(proj_path, email_addr, task_id, logger):
     """
     Removes expired user data (>48 hours) from depot location. Provided
     path for directory to be removed, verifies location exists, and walks
@@ -44,7 +40,7 @@ def remove_expired_process_folders(proj_path, email_addr, task_id):
             task_id))
 
 
-def remove_unfinished_process_folders(path):
+def remove_unfinished_process_folders(path, logger):
     """
     Verify path exists in tmp user data directory and, if so, remove it.
     
@@ -65,7 +61,7 @@ def remove_unfinished_process_folders(path):
         logger.warning("Unable to remove unfinished process " + path + ".")
 
 
-def clean_up_user_data():
+def clean_up_user_data(logger):
     """
     Responsible for calls to methods that will remove temporary and processed
     user data that is older than 48 hours. Also removes records of expired
@@ -94,7 +90,8 @@ def clean_up_user_data():
             remove_expired_process_folders(
                 proj_path,
                 obj["email"],
-                obj["taskid"])
+                obj["taskid"],
+                logger)
 
             try:
                 # Delete the record from the database
@@ -135,7 +132,7 @@ def clean_up_user_data():
                     # If the folder has not been modified in over 48 hours
                     if divmod(time_diff.days * 86400 + time_diff.seconds, 60)[0] / (60*24*2) > 1:
                         logger.info("Removing {0}.".format(task))
-                        remove_unfinished_process_folders(tmp_path + 'user_data/' + user + '/' + task)
+                        remove_unfinished_process_folders(tmp_path + 'user_data/' + user + '/' + task, logger)
     except:
         logger.warning("Unable to remove expired /tmp/user_data.")
         return
