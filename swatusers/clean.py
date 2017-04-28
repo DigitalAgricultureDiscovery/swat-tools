@@ -61,7 +61,7 @@ def remove_unfinished_process_folders(path, logger):
         logger.warning("Unable to remove unfinished process " + path + ".")
 
 
-def clean_up_user_data(logger):
+def clean_up_user_data(logger, expired_objs):
     """
     Responsible for calls to methods that will remove temporary and processed
     user data that is older than 48 hours. Also removes records of expired
@@ -78,10 +78,6 @@ def clean_up_user_data(logger):
     tmp_path = "/tmp/"
     proj_path = "/depot/saraswat/web/swatapps/"
 
-    # Find records in database that are at least 48 hours old
-    expired_objs = UserTask.objects.filter(
-        time_completed__lte=timezone.now() - timezone.timedelta(days=2))
-
     # If any expired records were found
     if expired_objs:
         # Loop through expired objects
@@ -89,17 +85,9 @@ def clean_up_user_data(logger):
             # Call method that deletes expired tasks' directories
             remove_expired_process_folders(
                 proj_path,
-                obj.email,
-                obj.taskid,
+                obj[0],
+                obj[1],
                 logger)
-
-            try:
-                # Delete the record from the database
-                obj.delete()
-                logger.info("{0} removed.".format(obj.taskid))
-            except:
-                logger.warning("Unable to remove {0}.".format(
-                    obj.taskid))
     else:
         logger.info("No expired objects found.")
 
