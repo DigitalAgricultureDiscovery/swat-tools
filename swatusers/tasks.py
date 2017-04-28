@@ -21,6 +21,11 @@ def remove_expired_data():
     expired_objs_list = []
     if expired_objs:
         for obj in expired_objs:
-            expired_objs_list.append((obj.email, obj.taskid))
+            expired_objs_list.append((obj.email, obj.task_id))
+            try:
+                logger.info("Remove {0} from database.".format(obj.task_id))
+                obj.delete()
+            except:
+                logger.info("Unable to remove {0} from database.".format(obj.task_id))
 
     clean_up_user_data(logger, expired_objs_list)
