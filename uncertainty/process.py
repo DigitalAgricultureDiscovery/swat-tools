@@ -17,6 +17,7 @@ class UncertaintyProcess(object):
         if data == '':
             self.results_dir = ''
             self.process_root_dir = ''
+            self.post_processing_dir = ''
             self.output_dir = ''
             self.swat_dir = ''
             self.hrus1_dir = ''
@@ -33,6 +34,7 @@ class UncertaintyProcess(object):
         else:
             self.results_dir = data['results_dir']
             self.process_root_dir = data['process_root_dir']
+            self.post_processing_dir = data['post_processing_dir']
             self.output_dir = data['output_dir']
             self.swat_dir = data['swat_dir']
             self.hrus1_dir = data['hrus1_dir']
@@ -712,6 +714,18 @@ class UncertaintyProcess(object):
         # If output directory already exists in web directory, remove it
         if os.path.exists(self.output_dir):
             shutil.rmtree(self.output_dir)
+
+        # Copy the post processing distribution folder over
+        shutil.copytree(
+            os.path.join(self.post_processing_dir, "dist"),
+            os.path.join(self.results_dir, "Output", "dist")
+        )
+
+        # Copy post processing script README.txt
+        shutil.copy(
+            os.path.join(self.post_processing_dir, "README.txt"),
+            os.path.join(self.results_dir, "Output")
+        )
 
         # Copy output over to web directory
         shutil.copytree(self.results_dir, self.output_dir)
