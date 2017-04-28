@@ -34,7 +34,7 @@ class UncertaintyProcess(object):
         else:
             self.results_dir = data['results_dir']
             self.process_root_dir = data['process_root_dir']
-            self.post_processing_dir = data['post_processing_dir']
+            self.post_processing_dir = data['post_processing_dir'][0]
             self.output_dir = data['output_dir']
             self.swat_dir = data['swat_dir']
             self.hrus1_dir = data['hrus1_dir']
