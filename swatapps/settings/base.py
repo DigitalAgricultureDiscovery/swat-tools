@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
+from logging.config import dictConfig
 from unipath import Path
 import os
 
@@ -92,7 +93,7 @@ BROKER_URL = 'redis://127.0.0.1:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-
+CELERY_HIJACK_ROOT_LOGGER = False
 
 # Logging
 LOGGING = {
@@ -273,6 +274,8 @@ LOGGING = {
     },
 }
 
+# Necessary or Celery interfere with Django logging
+dictConfig(LOGGING)
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators

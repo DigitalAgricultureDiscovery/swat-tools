@@ -89,17 +89,17 @@ def clean_up_user_data(logger):
             # Call method that deletes expired tasks' directories
             remove_expired_process_folders(
                 proj_path,
-                obj["email"],
-                obj["taskid"],
+                obj.email,
+                obj.taskid,
                 logger)
 
             try:
                 # Delete the record from the database
                 obj.delete()
-                logger.info("{0} removed.".format(obj["taskid"]))
+                logger.info("{0} removed.".format(obj.taskid))
             except:
                 logger.warning("Unable to remove {0}.".format(
-                    obj["taskid"]))
+                    obj.taskid))
     else:
         logger.info("No expired objects found.")
 
