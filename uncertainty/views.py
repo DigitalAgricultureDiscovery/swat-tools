@@ -753,6 +753,9 @@ def request_process(request):
     # clear previous progress message
     request.session['progress_message'] = []
 
+    proc_dir = "{0}/uncertainty/post_processing_script/".format(
+        settings.PROJECT_DIR),
+
     # put all necessary path info for processing into single dictionary
     data = {
         'user_id': request.user.id,
@@ -760,6 +763,7 @@ def request_process(request):
         'user_first_name': request.user.first_name,
         'task_id': os.path.basename(request.session.get('directory')),
         'process_root_dir': request.session.get('directory'),
+        'post_processing_dir': proc_dir,
         'results_dir': request.session.get('directory') + '/output',
         'output_dir': settings.PROJECT_DIR + '/user_data/' + request.user.email + '/' +
                       request.session['unique_directory_name'] + '/output',
@@ -845,39 +849,15 @@ def download_data(request):
         # Verify user making request is allowed to download the data
         if int(user_id) == int(request.user.id):
             # Construct path to output data
-            output_data = "{0}/user_data/{1}/{2}/output/Output".format(
+            output_data = "{0}/user_data/{1}/{2}/output/".format(
                 settings.PROJECT_DIR,
                 request.user.email,
                 task_id
             )
             # Check if path to output exist
             if os.path.exists(output_data):
-                # Construct path for directory to be zipped
-                dir_to_zip = "{0}/user_data/{1}/{2}/output/Output/".format(
-                    settings.PROJECT_DIR,
-                    request.user.email,
-                    task_id
-                )
-                # If the folder already exists, that means the
-                # user has already used the download link
-                # no need to copy the post processing files over again
-                if not os.path.exists(dir_to_zip + "/dist"):
-                    # Construct path to post processing distribution folder
-                    proc_dir = "{0}/uncertainty/post_processing_script/".format(
-                        settings.PROJECT_DIR
-                    )
-                    # Copy the post processing distribution folder over
-                    shutil.copytree(
-                        os.path.join(proc_dir, "dist"),
-                        os.path.join(dir_to_zip, "dist")
-                    )
-                    # Copy post processing script README.txt
-                    shutil.copy(
-                        os.path.join(proc_dir, "README.txt"),
-                        dir_to_zip
-                    )
                 # Length of path
-                dir_to_zip_len = len(dir_to_zip.rstrip(os.sep)) + 1
+                dir_to_zip_len = len(output_data.rstrip(os.sep)) + 1
                 # Open byte stream
                 file = io.BytesIO()
                 # Compression method
@@ -887,7 +867,7 @@ def download_data(request):
                     # Permissions for zip
                     zf.external_attr = 0o0770
                     # Walk through directory and add files to zip archive
-                    for dirname, subdirs, files in os.walk(dir_to_zip):
+                    for dirname, subdirs, files in os.walk(output_data):
                         for filename in files:
                             path = os.path.join(dirname, filename)
                             entry = path[dir_to_zip_len:]
