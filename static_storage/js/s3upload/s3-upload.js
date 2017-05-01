@@ -6,7 +6,10 @@ var overwriteS3Upload = function (file) {
       overwrite = true;
       getSignedRequest(file);
       $(".overwrite").removeClass("overwrite-active");
+      $("#upload1").prop("disabled", true);
       $("#help1div").hide();
+    } else {
+      $("#upload1").prop("disabled", false);
     }
   });
 };
@@ -30,6 +33,7 @@ function getSignedRequest (file) {
         } else {
           $("#SwatModel").val("");
           $(".overwrite").addClass("overwrite-active");
+          $("#upload1").prop("disabled", false);
           $("#help1div").append('File already exists on server. Choose to overwrite or click Validate to continue.');
           $("#help1div").show();
           overwriteS3Upload(file);
@@ -41,6 +45,9 @@ function getSignedRequest (file) {
   };
   xhr.send();
 }
+
+// Toggle overwrite on/off
+
 
 // Uses pre-signed request to upload file to S3
 function uploadFile (file, s3Data) {
