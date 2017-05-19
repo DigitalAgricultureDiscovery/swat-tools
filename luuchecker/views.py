@@ -83,6 +83,7 @@ def upload_subbasin_shapefile_zip(request):
     request.session['progress_complete'] = []
     request.session['progress_message'] = []
     request.session['error'] = []
+    request.session['error_subbasin'] = []
 
     # If user is submitting a zipped SWAT Model
     if request.method == 'POST':
@@ -98,11 +99,27 @@ def upload_subbasin_shapefile_zip(request):
                 logger.error(
                     "{0}: Unable to receive uploaded shapefile.".format(
                         request.session.get('unique_directory_name')))
-                request.session[
-                    'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
+                error_msg = 'Unable to receive the uploaded ' \
+                            'file, please try again. If the ' \
+                            'issue persists please use the ' \
+                            'Contact Us form to request ' \
+                            'further assistance from the ' \
+                            'site admins.'
+                request.session['error'] = error_msg
+                request.session['error_subbasin'] = error_msg
                 return HttpResponseRedirect(resolve_url('luuchecker'))
+
+            if subbasin_shapefile_file_ext != ".zip":
+                logger.error("{0}: Uploaded file is not a .zip.".format(
+                        request.session.get("unique_directory_name")))
+                error_msg = "Make sure you are uploading your " \
+                            "shapefile in a zip " \
+                            "archive. Please refer " \
+                            "to the user manual if you need " \
+                            "help zipping your shapefile."
+                request.session["error"] = error_msg
+                request.session["error_subbasin"] = error_msg
+                return HttpResponseRedirect(resolve_url("luuchecker"))
 
             try:
                 # Set up the working directory
@@ -112,26 +129,31 @@ def upload_subbasin_shapefile_zip(request):
                 logger.error(
                     "{0}: Unable to create working directory.".format(
                         request.session.get('unique_directory_name')))
-                request.session[
-                    'error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
+                error_msg = 'Unable to set up user workspace, please try ' \
+                            'again. If the issue persists please use the ' \
+                            'Contact Us form to request further assistance ' \
+                            'from the site admins.'
+                request.session["error"] = error_msg
+                request.session["error_subbasin"] = error_msg
                 return HttpResponseRedirect(resolve_url('luuchecker'))
 
             try:
-                # If the shapefile directory already exists, remove it to make way for new upload
-                if os.path.exists(
-                                        unique_path + '/input/' + subbasin_shapefile_filename):
-                    shutil.rmtree(
-                        unique_path + '/input/' + subbasin_shapefile_filename)
+                # If the shapefile directory already exists,
+                # remove it to make way for new upload
+                shp_path = unique_path + '/input/' + subbasin_shapefile_filename
+                if os.path.exists(shp_path):
+                    shutil.rmtree(shp_path)
             except:
                 logger.error(
                     "{0}: Unable to remove previously uploaded file.".format(
                         request.session.get('unique_directory_name')))
-                request.session[
-                    'error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
-                               'to reset the tool. If the issue persists please use the Contact Us ' + \
-                               'form to request further assistance from the site admins.'
+                error_msg = 'Unable to remove previously uploaded file, ' \
+                            'please use the Reset button to reset the tool. ' \
+                            'If the issue persists please use the Contact Us ' \
+                            'form to request further assistance from the ' \
+                            'site admins.'
+                request.session["error"] = error_msg
+                request.session["error_subbasin"] = error_msg
                 return HttpResponseRedirect(resolve_url('luuchecker'))
 
             try:
@@ -144,17 +166,19 @@ def upload_subbasin_shapefile_zip(request):
                 logger.error(
                     "{0}: Unable to write uploaded shapefile to disk.".format(
                         request.session.get('unique_directory_name')))
-                request.session[
-                    'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
+                error_msg = 'Unable to receive the uploaded file, please try ' \
+                            'again. If the issue persists please use the ' \
+                            'Contact Us form to request further assistance ' \
+                            'from the site admins.'
+                request.session["error"] = error_msg
+                request.session["error_subbasin"] = error_msg
                 return HttpResponseRedirect(resolve_url('luuchecker'))
 
             # Uncompress the data
             try:
                 unzip_command = 'unzip -qq ' + unique_path + '/input/' + \
-                                subbasin_shapefile_filename + ' -d ' + unique_path + \
-                                '/input/'
+                                subbasin_shapefile_filename + ' -d ' + \
+                                unique_path + '/input/'
                 os.system(unzip_command)
 
                 # Set permissions for unzipped data
@@ -168,10 +192,12 @@ def upload_subbasin_shapefile_zip(request):
                 logger.error(
                     "{0}: Unable to unzip uploaded shapefile.".format(
                         request.session.get('unique_directory_name')))
-                request.session[
-                    'error'] = 'Unable to unzip the uploaded file, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
+                error_msg = 'Unable to unzip the uploaded file, please try ' \
+                            'again. If the issue persists please use the ' \
+                            'Contact Us form to request further assistance ' \
+                            'from the site admins.'
+                request.session["error"] = error_msg
+                request.session["error_subbasin"] = error_msg
                 return HttpResponseRedirect(resolve_url('luuchecker'))
 
             if not os.path.exists(
@@ -179,15 +205,15 @@ def upload_subbasin_shapefile_zip(request):
                 logger.error(
                     "{0}: Unable to extract subbasin shapefile.".format(
                         request.session.get('unique_directory_name')))
-                request.session['error'] = 'Could not extract the folder "' + \
-                                           subbasin_shapefile_filename + '". ' + \
-                                           'Please check if the file is ' + \
-                                           'compressed in zip format and ' + \
-                                           'has the same name as ' + \
-                                           'compressed folder. If the issue ' + \
-                                           'persists please use the Contact Us ' + \
-                                           'form to request further assistance ' + \
-                                           'from the site admins.'
+                error_msg = 'Could not extract the folder ' \
+                            '"subbasin_shapefile_filename + '". Please check " \
+                            "if the file is compressed in zip format and has " \
+                            "the same name as compressed folder. If the " \
+                            "issue persists please use the Contact Us form " \
+                            "to request further assistance from the site " \
+                            "admins."
+                request.session["error"] = error_msg
+                request.session["error_subbasin"] = error_msg
                 return HttpResponseRedirect(resolve_url('luuchecker'))
 
             subbasin_shapefile_filepath = unique_path + '/input/' + subbasin_shapefile_filename + '/subs1.shp'
@@ -196,13 +222,14 @@ def upload_subbasin_shapefile_zip(request):
                 logger.error(
                     "{0}: Unable upload SWAT model zipfile.".format(
                         request.session.get('unique_directory_name')))
-                request.session['error'] = 'Could not find the folder ' + \
-                                           subbasin_shapefile_filename + '/subs1.shp. Please ' + \
-                                           'check for files in folder and ' + \
-                                           're-upload the zip file. If the issue ' + \
-                                           'persists please use the Contact Us ' + \
-                                           'form to request further assistance ' + \
-                                           'from the site admins.'
+                error_msg = 'Could not find the folder ' + \
+                            subbasin_shapefile_filename + '/subs1.shp. ' \
+                            'Please check for files in folder and re-upload ' \
+                            'the zip file. If the issue persists please use ' \
+                            'the Contact Us form to request further ' \
+                            'assistance from the site admins.'
+                request.session["error"] = error_msg
+                request.session["error_subbasin"] = error_msg
                 return HttpResponseRedirect(resolve_url('luuchecker'))
 
             # Update relevant session variables
@@ -232,6 +259,7 @@ def upload_landuse_folder_zip(request):
     request.session['progress_complete'] = []
     request.session['progress_message'] = []
     request.session['error'] = []
+    request.session['error_landuse'] = []
 
     # If user is submitting a zipped landuse folder
     if request.method == 'POST':
@@ -245,10 +273,12 @@ def upload_landuse_folder_zip(request):
                 logger.error(
                     "{0}: Unable receive uploaded landuse zipfile.".format(
                         request.session.get('unique_directory_name')))
-                request.session[
-                    'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
+                error_msg = 'Unable to receive the uploaded file, please try ' \
+                            'again. If the issue persists please use the ' \
+                            'Contact Us form to request further assistance ' \
+                            'from the site admins.'
+                request.session['error'] = error_msg
+                request.session['error_landuse'] = error_msg
                 return render(request, 'luuchecker/index.html')
 
             # Set up the working directory
@@ -262,10 +292,13 @@ def upload_landuse_folder_zip(request):
                 logger.error(
                     "{0}: Unable to remove previously uploaded landuse zipfile.".format(
                         request.session.get('unique_directory_name')))
-                request.session[
-                    'error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
-                               'to reset the tool. If the issue persists please use the Contact Us ' + \
-                               'form to request further assistance from the site admins.'
+                error_msg = 'Unable to remove previously uploaded file, ' \
+                            'please use the Reset button to reset the tool. ' \
+                            'If the issue persists please use the Contact Us ' \
+                            'form to request further assistance from the ' \
+                            'site admins.'
+                request.session['error'] = error_msg
+                request.session['error_landuse'] = error_msg
                 return render(request, 'luuchecker/index.html')
 
             try:
@@ -278,10 +311,12 @@ def upload_landuse_folder_zip(request):
                 logger.error(
                     "{0}: Unable to write landuse zipfile to disk.".format(
                         request.session.get('unique_directory_name')))
-                request.session[
-                    'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
+                error_msg = 'Unable to receive the uploaded file, please try ' \
+                            'again. If the issue persists please use the ' \
+                            'Contact Us form to request further assistance ' \
+                            'from the site admins.'
+                request.session['error'] = error_msg
+                request.session['error_landuse'] = error_msg
                 return render(request, 'luuchecker/index.html')
 
             # Uncompress the zip
@@ -300,11 +335,11 @@ def upload_landuse_folder_zip(request):
                 logger.error(
                     "{0}: Unable to unzip the landuse zipfile.".format(
                         request.session.get('unique_directory_name')))
-                request.session['error'] = 'Could not unzip the folder. ' + \
-                                           'If the issue ' + \
-                                           'persists please use the Contact ' + \
-                                           'Us form to request further assistance ' + \
-                                           'from the site admins.'
+                error_msg = 'Could not unzip the folder. If the issue ' \
+                            'persists please use the Contact Us form to ' \
+                            'request further assistance from the site admins.'
+                request.session['error'] = error_msg
+                request.session['error_landuse'] = error_msg
                 return render(request, 'luuchecker/index.html')
 
             # Check if unzipped folder exists
@@ -312,14 +347,15 @@ def upload_landuse_folder_zip(request):
                 logger.error(
                     "{0}: Unable to find unzipped landuse folder.".format(
                         request.session.get('unique_directory_name')))
-                request.session['error'] = 'Could not unzip the folder "' + \
-                                           landuse_filename + '". Please ' + \
-                                           'check if the file is compressed ' + \
-                                           'in zip format and has the same ' + \
-                                           'name as compressed folder. If the issue ' + \
-                                           'persists please use the Contact Us ' + \
-                                           'form to request further assistance ' + \
-                                           'from the site admins.'
+                error_msg = 'Could not unzip the folder "' + \
+                            landuse_filename + '". Please check if the file ' \
+                            'is compressed in zip format and has the same '  \
+                            'name as compressed folder. If the issue ' \
+                            'persists please use the Contact Us ' \
+                            'form to request further assistance ' \
+                            'from the site admins.'
+                request.session['error'] = error_msg
+                request.session['error_landuse'] = error_msg
                 return render(request, 'luuchecker/index.html')
 
             # Update relevant session variables
@@ -331,8 +367,10 @@ def upload_landuse_folder_zip(request):
             return render(request, 'luuchecker/index.html')
         else:
             # Couldn't find the required zipped landuse folder, return error msg
-            request.session[
-                'error'] = 'Please select your zipped landuse folder before clicking the Upload button.'
+            error_msg = 'Please select your zipped landuse folder ' \
+                        'before clicking the Upload button.'
+            request.session['error'] = error_msg
+            request.session['error_landuse'] = error_msg
             return render(request, 'luuchecker/index.html')
     else:
         # Nothing was posted, reload main page
@@ -346,6 +384,7 @@ def upload_base_landuse_raster_file(request):
     request.session['progress_complete'] = []
     request.session['progress_message'] = []
     request.session['error'] = []
+    request.session['error_base_landuse'] = []
 
     # If user is submitting a zipped landuse folder
     if request.method == 'POST':
@@ -354,7 +393,9 @@ def upload_base_landuse_raster_file(request):
             base_landuse_raster = request.FILES['base_landuse_raster_file']
 
             if not base_landuse_raster:
-                request.session['error'] = 'Please select the base raster.'
+                error_msg = 'Please select the base raster.'
+                request.session['error'] = error_msg
+                request.session['error_base_landuse'] = error_msg
                 return render(request, 'luuchecker/index.html')
 
             filename = base_landuse_raster.name
@@ -364,6 +405,7 @@ def upload_base_landuse_raster_file(request):
 
             request.session['progress_message'] = []
             request.session['error'] = []
+            request.session['error_base_landuse'] = []
 
             if os.path.exists(base_landuse_raster_location):
                 request.session[
@@ -375,18 +417,21 @@ def upload_base_landuse_raster_file(request):
                     'Landuse file\'s name taken.')
                 return render(request, 'luuchecker/index.html')
             else:
-                request.session['error'] = 'Could not find the location ' + \
-                                           base_landuse_raster_filename + \
-                                           '/w001001.adf in the landuse folder ' + \
-                                           'previously uploaded in step 2. Please ' + \
-                                           'check if the folder exists inside the ' + \
-                                           'zipped landuse folder and upload ' + \
-                                           'the zipped landuse folder again.'
+                error_msg = 'Could not find the location ' + \
+                            base_landuse_raster_filename + '/w001001.adf in ' \
+                            'the landuse folder previously uploaded in ' \
+                            'step 2. Please check if the folder exists ' \
+                            'inside the zipped landuse folder and upload ' \
+                            'the zipped landuse folder again.'
+                request.session['error'] = error_msg
+                request.session['error_base_landuse'] = error_msg
                 return render(request, 'luuchecker/index.html')
         else:
             # Couldn't find the required base landuse layer, return error msg
-            request.session[
-                'error'] = 'Please select your base landuse layer before clicking the Upload button.'
+            error_msg = 'Please select your base landuse layer before ' \
+                        'clicking the Upload button.'
+            request.session['error'] = error_msg
+            request.session['error_base_landuse'] = error_msg
             return render(request, 'luuchecker/index.html')
     else:
         # Nothing was posted, reload main page
@@ -395,11 +440,13 @@ def upload_base_landuse_raster_file(request):
 
 @login_required
 def select_number_of_landuse_layers(request):
-    """ This view gets the number of landuse layers in the landuse zip other than the base layer """
+    """ This view gets the number of landuse layers in the 
+    landuse zip other than the base layer """
     # Clear any existing progress messages
     request.session['progress_complete'] = []
     request.session['progress_message'] = []
     request.session['error'] = []
+    request.session['error_num_of_new_layers'] = []
 
     # If user made a post request
     if request.method == 'POST':
@@ -410,17 +457,23 @@ def select_number_of_landuse_layers(request):
             landuse_layer_count = int(landuse_layer_count)
         except ValueError:
             # If it fails, display error
-            request.session['error'] = 'Please enter a number.'
+            error_msg = 'Please enter a number.'
+            request.session['error'] = error_msg
+            request.session['error_num_of_new_layers'] = error_msg
             return render(request, 'luuchecker/index.html')
 
         # If no value was posted, display error
         if not landuse_layer_count:
-            request.session['error'] = 'Please enter a value greater than 0.'
+            error_msg = 'Please enter a value greater than 0.'
+            request.session['error'] = error_msg
+            request.session['error_num_of_new_layers'] = error_msg
             return render(request, 'luuchecker/index.html')
 
         # If value posted, but less than 1, display error
         if landuse_layer_count < 1:
-            request.session['error'] = 'Please enter a value greater than 0.'
+            error_msg = 'Please enter a value greater than 0.'
+            request.session['error'] = error_msg
+            request.session['error_num_of_new_layers'] = error_msg
             return render(request, 'luuchecker/index.html')
 
         # Update relevant session variable
@@ -446,6 +499,7 @@ def upload_selected_landuse_layers(request):
     request.session['luuc_landuse_layers_filenames'] = []
     request.session['luuc_landuse_layers_filepaths'] = []
     request.session['error'] = []
+    request.session['error_new_layer'] = []
 
     if request.method == 'GET':
         return render(request, 'luuchecker/index.html')
@@ -455,26 +509,30 @@ def upload_selected_landuse_layers(request):
         try:
             landuse_layer_files = request.FILES.getlist('luuc_landuse_layers')
         except:
-            request.session[
-                'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                           'persists please use the Contact Us form to request further assistance ' + \
-                           'from the site admins.'
+            error_msg = 'Unable to receive the uploaded file, please try ' \
+                        'again. If the issue persists please use the ' \
+                        'Contact Us form to request further assistance ' \
+                        'from the site admins.'
+            request.session['error'] = error_msg
+            request.session['error_new_layer'] = error_msg
             return render(request, 'luuchecker/index.html')
 
-        if request.session['luuc_landuse_layer_count'] != len(
-                landuse_layer_files):
-            request.session['error'] = 'Please select ' + str(
-                request.session['luuc_landuse_layer_count']) + \
-                                       ' landuse layers. If you would like to select a different number of ' + \
-                                       'new landuse layers, go back to the previous step and enter the number desired.'
+        if request.session['luuc_landuse_layer_count'] != len(landuse_layer_files):
+            error_msg = 'Please select ' + str(request.session['luuc_landuse_layer_count']) + \
+                        ' landuse layers. If you would like to select a different number of ' + \
+                        'new landuse layers, go back to the previous step and enter the number desired.'
+            request.session['error'] = error_msg
+            request.session['error_new_layer'] = error_msg
             return render(request, 'luuchecker/index.html')
 
         for landuse_layer in landuse_layer_files:
             if not landuse_layer:
-                request.session['error'] = 'Please select ' + str(
+                error_msg = 'Please select ' + str(
                     request.session['luuc_landuse_layer_count']) + \
                                            ' landuse layers. If you would like to select a different number of ' + \
                                            'new landuse layers, go back to the previous step and enter the number desired.'
+                request.session['error'] = error_msg
+                request.session['error_new_layer'] = error_msg
                 request.session['luuc_landuse_layers_filenames'] = []
                 request.session['luuc_landuse_layers_filepaths'] = []
                 return render(request, 'luuchecker/index.html')
@@ -486,6 +544,7 @@ def upload_selected_landuse_layers(request):
 
             request.session['progress_message'] = []
             request.session['error'] = []
+            request.session['error_new_layer'] = []
 
             if os.path.exists(landuse_layer_filepath):
                 request.session['luuc_landuse_layers_filenames'].append(
@@ -497,13 +556,14 @@ def upload_selected_landuse_layers(request):
                     'Landuse file names taken.')
                 return render(request, 'luuchecker/index.html')
             else:
-                request.session[
-                    'error'] = 'Could not find the location of folder ' + \
-                               landuse_layer_filename + '/w001001.adf ' + \
-                               'in the landuse folder previously uploaded ' + \
-                               'in step 2. Please check if the folder exists ' + \
-                               'inside the landuse folder and upload ' + \
-                               'the zipped landuse folder again.'
+                error_msg = 'Could not find the location of folder ' + \
+                            landuse_layer_filename + '/w001001.adf in the ' \
+                            'landuse folder previously uploaded in step 2. ' \
+                            'Please check if the folder exists inside the ' \
+                            'landuse folder and upload the zipped landuse ' \
+                            'folder again.'
+                request.session['error'] = error_msg
+                request.session['error_new_layer'] = error_msg
                 return render(request, 'luuchecker/index.html')
     return render(request, 'luuchecker/index.html')
 
@@ -515,6 +575,7 @@ def select_percentage(request):
     request.session['progress_complete'] = []
     request.session['progress_message'] = []
     request.session['error'] = []
+    request.session['error_lulc_perc'] = []
 
     # If user made a post request
     if request.method == 'GET':
@@ -524,19 +585,24 @@ def select_percentage(request):
         try:
             landuse_percent = request.POST.get('luuc_landuse_percentage')
         except:
-            request.session[
-                'error'] = 'Unable to retrieve submitted percentage value, please try again. If the issue ' + \
-                           'persists please use the Contact Us form to request further assistance ' + \
-                           'from the site admins.'
+            error_msg = 'Unable to retrieve submitted percentage value, ' \
+                        'please try again. If the issue persists please ' \
+                        'use the Contact Us form to request further ' \
+                        'assistance from the site admins.'
+            request.session['error'] = error_msg
+            request.session['error_lulc_perc'] = error_msg
             return render(request, 'luuchecker/index.html')
 
     if not landuse_percent:
-        request.session['error'] = 'Please enter some percentage value.'
+        error_msg = 'Please enter some percentage value.'
+        request.session['error'] = error_msg
+        request.session['error_lulc_perc'] = error_msg
         return render(request, 'luuchecker/index.html')
 
     if not float(landuse_percent):
-        request.session[
-            'error'] = 'Please enter some percentage value in decimal number.'
+        error_msg = 'Please enter some percentage value in decimal number.'
+        request.session['error'] = error_msg
+        request.session['error_lulc_perc'] = error_msg
         return render(request, 'luuchecker/index.html')
 
     request.session['luuc_landuse_percentage'] = landuse_percent
@@ -594,12 +660,14 @@ def request_process(request):
         process_task.delay(data)
 
         # add task id to database
-        add_task_id_to_database(data['user_id'], data['user_email'],
-                                data['task_id'])
+        add_task_id_to_database(
+            data['user_id'],
+            data['user_email'],
+            data['task_id'])
 
         request.session['progress_message'].append(
-            'Job successfully added to queue. You will receive an email with ' + \
-            'a link to your files once the processing has completed.')
+            'Job successfully added to queue. You will receive an email '
+            'with a link to your files once the processing has completed.')
 
     return render(request, 'luuchecker/index.html')
 
