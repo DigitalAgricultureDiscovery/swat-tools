@@ -94,6 +94,7 @@ def upload_swat_model_zip(request):
     request.session['progress_complete'] = []
     request.session['progress_message'] = []
     request.session['error'] = []
+    request.session['error_swatmodel']
 
     # If user is submitting a zipped SWAT Model
     if request.method == 'POST':
@@ -130,9 +131,12 @@ def upload_swat_model_zip(request):
                     logger.error(
                         "{0}: Unable upload SWAT model zipfile.".format(
                             request.session.get('unique_directory_name')))
-                    request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                                               'persists please use the Contact Us form to request further assistance ' + \
-                                               'from the site admins.'
+                    error_msg = 'Unable to receive the uploaded file, please ' \
+                                'try again. If the issue persists please use ' \
+                                'the Contact Us form to request further ' \
+                                'assistance from the site admins.'
+                    request.session['error'] = error_msg
+                    request.session['error_swatmodel'] = error_msg
                     return render(request, 'fieldswat/index.html')
 
                 try:
@@ -143,9 +147,12 @@ def upload_swat_model_zip(request):
                     logger.error(
                         "{0}: Unable to create working directory.".format(
                             request.session.get('unique_directory_name')))
-                    request.session['error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
-                                               'persists please use the Contact Us form to request further assistance ' + \
-                                               'from the site admins.'
+                    error_msg = 'Unable to set up user workspace, please try ' \
+                                'again. If the issue persists please use the ' \
+                                'Contact Us form to request further ' \
+                                'assistance from the site admins.'
+                    request.session['error'] = error_msg
+                    request.session['error_swatmodel'] = error_msg
                     return render(request, 'fieldswat/index.html')
 
                 try:
@@ -161,9 +168,13 @@ def upload_swat_model_zip(request):
                     logger.error(
                         "{0}: Unable to remove previously uploaded files.".format(
                             request.session.get('unique_directory_name')))
-                    request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
-                                               'to reset the tool. If the issue persists please use the Contact Us ' + \
-                                               'form to request further assistance from the site admins.'
+                    error_msg = 'Unable to remove previously uploaded file, ' \
+                                'please use the Reset button to reset the ' \
+                                'tool. If the issue persists please use the ' \
+                                'Contact Us form to request further ' \
+                                'assistance from the site admins.'
+                    request.session['error'] = error_msg
+                    request.session['error_swatmodel'] = error_msg
                     return render(request, 'fieldswat/index.html')
 
                 try:
@@ -175,9 +186,12 @@ def upload_swat_model_zip(request):
                     logger.error(
                         "{0}: Unable to write uploaded data to disk.".format(
                             request.session.get('unique_directory_name')))
-                    request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                                               'persists please use the Contact Us form to request further assistance ' + \
-                                               'from the site admins.'
+                    error_msg = 'Unable to receive the uploaded file, please ' \
+                                'try again. If the issue persists please use ' \
+                                'the Contact Us form to request further ' \
+                                'assistance from the site admins.'
+                    request.session['error'] = error_msg
+                    request.session['error_swatmodel'] = error_msg
                     return render(request, 'fieldswat/index.html')
             else:
                 try:
@@ -188,10 +202,12 @@ def upload_swat_model_zip(request):
                     logger.error(
                         "{0}: Unable to create working directory.".format(
                             request.session.get('unique_directory_name')))
-                    request.session[
-                        'error'] = 'Unable to set up user workspace, please try again. If the issue ' + \
-                                   'persists please use the Contact Us form to request further assistance ' + \
-                                   'from the site admins.'
+                    error_msg = 'Unable to set up user workspace, please try ' \
+                                'again. If the issue persists please use the ' \
+                                'Contact Us form to request further ' \
+                                'assistance from the site admins.'
+                    request.session['error'] = error_msg
+                    request.session['error_swatmodel'] =error_msg
                     return render(request, 'fieldswat/index.html')
 
                 try:
@@ -210,10 +226,12 @@ def upload_swat_model_zip(request):
                     logger.error(
                         "{0}: Unable to obtain SWAT model information.".format(
                             request.session.get('unique_directory_name')))
-                    request.session[
-                        'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                                   'persists please use the Contact Us form to request further assistance ' + \
-                                   'from the site admins.'
+                    error_msg = 'Unable to receive the uploaded file, please ' \
+                                'try again. If the issue persists please use ' \
+                                'the Contact Us form to request further ' \
+                                'assistance from the site admins.'
+                    request.session['error'] = error_msg
+                    request.session['error_swatmodel'] = error_msg
                     return render(request, 'fieldswat/index.html')
 
                 try:
@@ -227,10 +245,12 @@ def upload_swat_model_zip(request):
                     logger.error(
                         "{0}: Unable to retrieve SWAT model from S3.".format(
                             request.session.get('unique_directory_name')))
-                    request.session["error"] = "Unable to retrieve file from " \
+                    error_msg = "Unable to retrieve file from " \
                         "storage. Please try re-uploading. If this issue " \
                         "persists please use the Contact Us form to request " \
                         "further assistance from the site admins."
+                    request.session['error'] = error_msg
+                    request.session['error_swatmodel'] = error_msg
             # Uncompress the data
             try:
                 # Unzip uploaded file in tmp directory
@@ -256,22 +276,24 @@ def upload_swat_model_zip(request):
             except:
                 logger.error("{0}: Unable to unzip uploaded SWAT model.".format(
                     request.session.get('unique_directory_name')))
-                request.session['error'] = 'Unable to unzip the uploaded file, please try again. If the issue ' + \
-                                           'persists please use the Contact Us form to request further assistance ' + \
-                                           'from the site admins.'
+                error_msg = 'Unable to unzip the uploaded file, please try ' \
+                            'again. If the issue persists please use the ' \
+                            'Contact Us form to request further assistance ' \
+                            'from the site admins.'
+                request.session['error'] = error_msg
+                request.session['error_swatmodel'] = error_msg
                 return render(request, 'fieldswat/index.html')
 
             # Check if decompression completed or failed (no folder if failed)
             if not os.path.exists(unique_path + '/input/' + swat_model_filename):
-                request.session['error'] = 'Could not extract the folder "' + \
-                                           swat_model_filename + '". ' + \
-                                           'Please check if the file is ' + \
-                                           'compressed in zip format and ' + \
-                                           'has the same name as ' + \
-                                           'compressed folder. If the issue ' + \
-                                           'persists please use the Contact Us ' + \
-                                           'form to request further assistance ' + \
-                                           'from the site admins.'
+                error_msg = 'Could not extract the folder "' + \
+                            swat_model_filename + '". Please check if the ' \
+                            'file is compressed in zip format and has the ' \
+                            'same name as compressed folder. If the issue ' \
+                            'persists please use the Contact Us form to ' \
+                            'request further assistance from the site admins.'
+                request.session['error'] = error_msg
+                request.session['error_swatmodel'] = error_msg
                 return render(request, 'fieldswat/index.html')
 
             # Check if the required files/folders exist
@@ -289,57 +311,57 @@ def upload_swat_model_zip(request):
                 logger.error(
                     "{0}: Could not extract SWAT model zip folder.".format(
                         request.session.get('unique_directory_name')))
-                request.session['error'] = 'Could not extract the folder "' + \
-                                           swat_model_filename + '". Please ' + \
-                                           'check if the file is compressed ' + \
-                                           'in zip format and has the same ' + \
-                                           'name as compressed folder. If the issue ' + \
-                                           'persists please use the Contact Us ' + \
-                                           'form to request further assistance ' + \
-                                           'from the site admins.'
+                error_msg = 'Could not extract the folder "' + \
+                            swat_model_filename + '". Please check if the ' \
+                            'file is compressed in zip format and has the ' \
+                            'same name as compressed folder. If the issue ' \
+                            'persists please use the Contact Us form to ' \
+                            'request further assistance from the site admins.'
+                request.session['error'] = error_msg
+                request.session['error_swatmodel'] = error_msg
                 return render(request, 'fieldswat/index.html')
 
             # Check if hru files were found
             if not (glob.glob(scenarioloc)):
                 logger.error("{0}: Unable to find TxtInOut directory.".format(
                     request.session.get('unique_directory_name')))
-                request.session['error'] = 'Could not find the folder or ' + \
-                                           'hru files in ' + \
-                                           swat_model_filename + \
-                                           '/Scenarios/Default/TxtInOut/' + \
-                                           '*.hru. Please check for files ' + \
-                                           'in folder and re-upload the ' + \
-                                           'zip file. If the issue ' + \
-                                           'persists please use the Contact Us ' + \
-                                           'form to request further assistance ' + \
-                                           'from the site admins.'
+                error_msg = 'Could not find the folder or hru files in ' + \
+                            swat_model_filename + \
+                            '/Scenarios/Default/TxtInOut/*.hru. Please check ' \
+                            'for files in folder and re-upload the zip file. ' \
+                            'If the issue persists please use the Contact Us ' \
+                            'form to request further assistance from the ' \
+                            'site admins.'
+                request.session['error'] = error_msg
+                request.session['error_swatmodel'] = error_msg
                 return render(request, 'fieldswat/index.html')
 
             # Check if watershed folder was found
             if not os.path.exists(shapeloc):
                 logger.error("{0}: Unable to find hru1.shp.".format(
                     request.session.get('unique_directory_name')))
-                request.session['error'] = 'Could not find the folder ' + \
-                                           swat_model_filename + \
-                                           '/Watershed/Shapes/hru1.shp. ' + \
-                                           'Please check for files in ' + \
-                                           'folder and re-upload the zip file. If the issue ' + \
-                                           'persists please use the Contact Us ' + \
-                                           'form to request further assistance ' + \
-                                           'from the site admins.'
+                error_msg = 'Could not find the folder ' + \
+                            swat_model_filename + \
+                            '/Watershed/Shapes/hru1.shp. Please check for ' \
+                            'files in folder and re-upload the zip file. If ' \
+                            'the issue persists please use the Contact Us ' \
+                            'form to request further assistance from the ' \
+                            'site admins.'
+                request.session['error'] = error_msg
+                request.session['error_swatmodel'] = error_msg
                 return render(request, 'fieldswat/index.html')
             if not glob.glob(swatoutputdbloc):
                 logger.error("{0}: Unable to find SWATOutput.mdb.".format(
                     request.session.get('unique_directory_name')))
-                request.session['error'] = 'Could not find the folder or ' + \
-                                           'SWATOutput.mdb access file in ' + \
-                                           swat_model_filename + \
-                                           '/Scenarios/Default/TablesOut.' + \
-                                           'Please check for files in ' + \
-                                           'folder and re-upload the zip file. If the issue ' + \
-                                           'persists please use the Contact Us ' + \
-                                           'form to request further assistance ' + \
-                                           'from the site admins.'
+                error_msg = 'Could not find the folder or SWATOutput.mdb ' \
+                            'access file in ' + swat_model_filename + \
+                            '/Scenarios/Default/TablesOut. Please check for ' \
+                            'files in folder and re-upload the zip file. If ' \
+                            'the issue persists please use the Contact Us ' \
+                            'form to request further assistance from the ' \
+                            'site admins.'
+                request.session['error'] = error_msg
+                request.session['error_swatmodel'] = error_msg
                 return render(request, 'fieldswat/index.html')
 
             # If there were no issues finding the required SWAT Model paths
@@ -365,16 +387,15 @@ def upload_swat_model_zip(request):
                 except:
                     logger.error("{0}: Missing .hru file or unique year in database.".format(
                         request.session.get('unique_directory_name')))
-                    request.session['error'] = 'Either you are missing .hru ' + \
-                                               'file or unique year in your ' + \
-                                               'database. Please compare your ' + \
-                                               'database with the example data '+ \
-                                               'to assess its compatibility ' + \
-                                               'with the Field_SWAT tool. If ' + \
-                                               'the issue persists then use ' + \
-                                               'the "Contact Us" option to ' + \
-                                               'report your issue to the Site ' + \
-                                               'Administrator.'
+                    error_msg = 'Either you are missing .hru file or unique ' \
+                                'year in your database. Please compare your ' \
+                                'database with the example data to assess ' \
+                                'its compatibility with the Field_SWAT tool. ' \
+                                'If the issue persists then use the ' \
+                                '"Contact Us" option to report your issue to ' \
+                                'the Site Administrator.'
+                    request.session['error'] = error_msg
+                    request.session['error_swatmodel'] = error_msg
                     return render(request, 'fieldswat/index.html')
 
                 request.session['swatoutput_unique_years'] = unique_years
@@ -390,18 +411,22 @@ def upload_swat_model_zip(request):
                 logger.error("{0}: Unable to find hrus1/w001001.adf.".format(
                     request.session.get('unique_directory_name')))
                 # Couldn't find a required SWAT Model folder, return error msg
-                request.session['error'] = 'Could not find the folder ' + \
-                                           swat_model_filename + \
-                                           '/Watershed/Grid/hrus1/w001001.adf.' + \
-                                           ' Please check for files in folder ' + \
-                                           'and re-upload the zip file. If the issue ' + \
-                                           'persists please use the Contact Us ' + \
-                                           'form to request further assistance ' + \
-                                           'from the site admins.'
+                error_msg = 'Could not find the folder ' + \
+                            swat_model_filename + \
+                            '/Watershed/Grid/hrus1/w001001.adf. Please check ' \
+                            'for files in folder and re-upload the zip file. ' \
+                            'If the issue persists please use the Contact Us ' \
+                            'form to request further assistance from the ' \
+                            'site admins.'
+                request.session['error'] = error_msg
+                request.session['error_swatmodel'] = error_msg
                 return render(request, 'fieldswat/index.html')
         else:
             # Couldn't find a required SWAT Model folder, return error msg
-            request.session['error'] = 'Please select your zipped SWAT Model before clicking the Upload button.'
+            error_msg = 'Please select your zipped SWAT Model before ' \
+                        'clicking the Upload button.'
+            request.session['error'] = error_msg
+            request.session['error_swatmodel'] = error_msg
             return render(request, 'fieldswat/index.html')
     else:
         # Nothing was posted, reload main page

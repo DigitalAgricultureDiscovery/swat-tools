@@ -149,6 +149,11 @@
                     <div id="loading" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
                     </div>
+                    {% if request.session.error_swatmodel %}
+                      <div class="alert alert-danger" role="alert">
+                        <b style ="color:#F92E31;">{{ request.session.error_swatmodel }}</b><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -181,6 +186,11 @@
                             {% endif %}
                         </div>
                     {% endbuttons %}
+                    {% if request.session.error_select_year %}
+                      <div class="alert alert-danger" role="alert">
+                        <b style ="color:#F92E31;">{{ request.session.error_select_year }}</b><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -210,6 +220,11 @@
                     <div id="loading2" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
                     </div>
+                    {% if request.session.error_field_shp %}
+                      <div class="alert alert-danger" role="alert">
+                        <b style ="color:#F92E31;">{{ request.session.error_field_shp }}</b><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -264,6 +279,11 @@
                             {% endif %}
                         </div>
                     {% endbuttons %}
+                    {% if request.session.error_agg_out %}
+                      <div class="alert alert-danger" role="alert">
+                        <b style ="color:#F92E31;">{{ request.session.error_agg_out }}</b><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
