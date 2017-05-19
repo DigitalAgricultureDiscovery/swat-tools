@@ -145,6 +145,11 @@
                     <div id="loading" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
                     </div>
+                    {% if request.session.error_subbasin %}
+                      <div class="alert alert-danger" role="alert">
+                        <b style ="color:#F92E31;">{{ request.session.error_subbasin }}</b><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -174,6 +179,11 @@
                     <div id="loading2" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
                     </div>
+                    {% if request.session.error_landuse %}
+                      <div class="alert alert-danger" role="alert">
+                          <b style ="color:#F92E31;">{{ request.session.error_landuse }}</b><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -203,6 +213,11 @@
                     <div id="loading9" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
                     </div>
+                    {% if request.session.error_base_landuse %}
+                      <div class="alert alert-danger" role="alert">
+                          <b style ="color:#F92E31;">{{ request.session.error_base_landuse }}</b><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -232,6 +247,11 @@
                     <div id="loading6" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20" alt="" />
                     </div>
+                    {% if request.session.error_num_of_new_layers %}
+                      <div class="alert alert-danger" role="alert">
+                          <b style ="color:#F92E31;">{{ request.session.error_num_of_new_layers }}</b><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -263,6 +283,11 @@
                     {% else %}
                         <label><b> New Landuse Layer1:</b></label>
                     {% endif %}
+                    {% if request.session.error_new_layer %}
+                      <div class="alert alert-danger" role="alert">
+                        <b style ="color:#F92E31;">{{ request.session.error_new_layer }}</b><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -293,6 +318,11 @@
                     <div id="loading5" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20" alt="" />
                     </div>
+                    {% if request.session.error_lulc_perc %}
+                      <div class="alert alert-danger" role="alert">
+                        <b style ="color:#F92E31;">{{ request.session.error_lulc_perc }}</b><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
