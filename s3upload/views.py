@@ -158,7 +158,7 @@ def check_if_file_already_on_s3(email, file_name, file_size):
     matching_file_url = ""
 
     # Fetch all records with a matching file name
-    s3_objs = S3Upload.objects.filter(
+    s3_objs = S3Upload.objects.get(
         email=email,
         file_name=file_name,
         file_size=file_size,
@@ -168,7 +168,7 @@ def check_if_file_already_on_s3(email, file_name, file_size):
     # If at least one record was found
     if s3_objs:
         file_exists = True
-        matching_file_url = s3_objs[0].s3_url
+        matching_file_url = s3_objs.s3_url
 
     return file_exists, matching_file_url
 
