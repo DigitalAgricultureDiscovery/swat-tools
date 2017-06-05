@@ -76,7 +76,7 @@ function uploadFile (file, s3Data) {
           bar.style.width = "0%";
         }, 2000);
         setTimeout(function () {
-          successfulUpload($("#SwatModel"), file.name);
+          successfulUpload($("#SwatModel"), file.name, file.size);
         }, 2500);
       } else {
         alert("Could not upload file.");
@@ -95,12 +95,22 @@ var progressBar = function(data, showProgress) {
   bar.style.width = pcnt + "%"
 };
 
-var successfulUpload = function(el, fileName) {
+var successfulUpload = function(el, fileName, fileSize) {
   el.val("");
   $("#uploadAlert").append('Successfully uploaded "' + fileName + '". Click Validate to continue.');
   $("#uploadAlert").show();
   $("#upload1").prop("disabled", false);
+
   setTimeout(function () {
     $("#uploadAlert").hide();
   }, 7000);
+
+  $.ajax({
+    url: 's3/update_upload_status',
+    type: 'POST',
+    data: {
+      'file_name': fileName,
+      'file_size': fileSize,
+      'status': 1}
+  });
 };
