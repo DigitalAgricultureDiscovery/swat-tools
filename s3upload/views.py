@@ -7,7 +7,7 @@ import boto3
 import logging
 
 from .models import S3Upload
-from .forms import UploadDestinationForm
+from .forms import UploadDestinationForm, UpdateUploadStatusForm
 
 
 logger = logging.getLogger("django")
@@ -57,7 +57,10 @@ def sign_s3(request):
         logger.error("Boto3 unable to connect to S3 bucket.")
 
     # Check if the file is already on s3
-    match_results = check_if_file_already_on_s3(file_name, file_size)
+    match_results = check_if_file_already_on_s3(
+        request.user.email,
+        file_name,
+        file_size)
 
     if (not match_results[0] or overwrite == "true") and s3:
         # Path and name on bucket
@@ -114,6 +117,7 @@ def sign_s3(request):
                     data_type="swat",
                     file_size=file_size,
                     s3_url=url,
+                    status=0,
                     time_uploaded=timezone.datetime.now(),
                 )
                 s3_upload.save()
@@ -132,7 +136,7 @@ def sign_s3(request):
     return JsonResponse(response)
 
 
-def check_if_file_already_on_s3(file_name, file_size):
+def check_if_file_already_on_s3(email, file_name, file_size):
     """
     This method checks the S3Upload table for any records matching the
     incoming file's name and size. If a match is found True is returned,
@@ -140,6 +144,7 @@ def check_if_file_already_on_s3(file_name, file_size):
     
     Parameters
     ----------
+    email: User's email address.
     file_name: Name of the file the user is uploading.
     file_size: File size (bytes) for the file the user is uploading.
 
@@ -153,7 +158,12 @@ def check_if_file_already_on_s3(file_name, file_size):
     matching_file_url = ""
 
     # Fetch all records with a matching file name
-    s3_objs = S3Upload.objects.filter(file_name=file_name, file_size=file_size)
+    s3_objs = S3Upload.objects.filter(
+        email=email,
+        file_name=file_name,
+        file_size=file_size,
+        status=1
+    )
 
     # If at least one record was found
     if s3_objs:
@@ -161,6 +171,45 @@ def check_if_file_already_on_s3(file_name, file_size):
         matching_file_url = s3_objs[0].s3_url
 
     return file_exists, matching_file_url
+
+
+@login_required
+def update_upload_status(request):
+    """
+    This method updates the upload status in the database to indicate if
+    the upload was a success or an error was encountered.
+
+    Parameters
+    ----------
+    request
+
+    Returns
+    -------
+    None
+    """
+
+    response = {}
+    if request.is_ajax():
+        form = UpdateUploadStatusForm(request.POST)
+
+        if form.is_valid():
+            # Query table for matching file
+            s3_obj = S3Upload.objects.get(
+                email=request.user.email,
+                file_name=form.cleaned_data["file_name"],
+                file_size=form.cleaned_data["file_size"]
+            )
+
+            if s3_obj:
+                try:
+                    # Update matching file's status to match posted status
+                    s3_obj.status = int(form.cleaned_data["status"])
+                    s3_obj.save()
+                    response["status"] = "success"
+                except:
+                    response["status"] = "fail"
+
+    return JsonResponse(response)
 
 
 @login_required
