@@ -94,7 +94,7 @@ def upload_swat_model_zip(request):
     request.session['progress_complete'] = []
     request.session['progress_message'] = []
     request.session['error'] = []
-    request.session['error_swatmodel']
+    request.session['error_swatmodel'] = []
 
     # If user is submitting a zipped SWAT Model
     if request.method == 'POST':
@@ -251,6 +251,20 @@ def upload_swat_model_zip(request):
                         "further assistance from the site admins."
                     request.session['error'] = error_msg
                     request.session['error_swatmodel'] = error_msg
+
+            # Make sure the file has the .zip extension
+            if swat_model_file_ext != ".zip":
+                logger.error(
+                    "{0}: Uploaded swat model file does not have .zip "
+                    "extension.".format(request.session.get("unique_directory_name")))
+                error_msg = "The file you are uploading does not have a .zip " \
+                            "extension. Make sure the file you are uploading " \
+                            "is a compressed zipfile. Please refer to the " \
+                            "user manual if you need help creating a zipfile."
+                request.session["error"] = error_msg
+                request.session["error_swatmodel"] = error_msg
+                return render(request, "fieldswat/index.html")
+
             # Uncompress the data
             try:
                 # Unzip uploaded file in tmp directory
@@ -524,7 +538,7 @@ def upload_fields_shapefile_zip(request):
                 # Get the uploaded file and store the name of the zip
                 file = request.FILES['fields_shapefile_zip']
                 filename = file.name
-                fields_shapefile_foldername = os.path.splitext(filename)[0]
+                fields_shapefile_foldername, fields_shapefile_ext = os.path.splitext(filename)
             except:
                 logger.error("{0}: Unable to receive the uploaded shapefile.".format(
                     request.session.get('unique_directory_name')))
@@ -560,6 +574,20 @@ def upload_fields_shapefile_zip(request):
                                            'persists please use the Contact Us form to request further assistance ' + \
                                            'from the site admins.'
                 return render(request, 'fieldswat/index.html')
+
+            # Make sure the file has the .zip extension
+            if fields_shapefile_ext != ".zip":
+                logger.error(
+                    "{0}: Uploaded shapefile does not have .zip extension.".format(
+                        request.session.get("unique_directory_name")))
+                request.session[
+                    "error"] = "The file you are uploading does " \
+                               "not have a .zip extension. Make " \
+                               "sure the file you are uploading " \
+                               "is a compressed zipfile. Please " \
+                               "refer to the user manual if you " \
+                               "need help creating a zipfile."
+                return render(request, "fieldswat/index.html")
 
             # Uncompress the data
             try:
