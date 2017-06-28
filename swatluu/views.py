@@ -248,7 +248,9 @@ def upload_swat_model_zip(request):
                 request.session["error"] = "The file you are uploading does " \
                                            "not have a .zip extension. Make " \
                                            "sure the file you are uploading " \
-                                           "is a compressed zipfile."
+                                           "is a compressed zipfile. Please " \
+                                           "refer to the user manual if you " \
+                                           "need help creating a zipfile."
                 return render(request, "swatluu/index.html")
             try:
                 # Unzip uploaded file in tmp directory
@@ -414,11 +416,12 @@ def upload_landuse_zip(request):
                 logger.error(
                     "{0}: Uploaded landuse file does not have .zip extension.".format(
                         request.session.get("unique_directory_name")))
-                request.session[
-                    "error"] = "The file you are uploading does " \
-                               "not have a .zip extension. Make " \
-                               "sure the file you are uploading " \
-                               "is a compressed zipfile."
+                request.session["error"] = "The file you are uploading does " \
+                                           "not have a .zip extension. Make " \
+                                           "sure the file you are uploading " \
+                                           "is a compressed zipfile. Please " \
+                                           "refer to the user manual if you " \
+                                           "need help creating a zipfile."
                 return render(request, "swatluu/index.html")
 
             try:

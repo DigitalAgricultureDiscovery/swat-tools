@@ -45,7 +45,8 @@
             $("#Help1").mouseover(function() {
                 $("#help1div").show();
                 $("#help1div").append(
-                    "<p id='message1'>The input should be a zip folder with " +
+                    "<p id='message1'>The input should be a zip folder " +
+                    "(<strong>single file with .zip extension</strong>) with " +
                     "name same as the Shapes folder that is compressed. " +
                     "The input folder should contain all shape files which " +
                     "includes .shp,.shx... et al.</p>");
@@ -59,9 +60,11 @@
             $("#Help2").mouseover(function() {
                 $("#help2div").show();
                 $("#help2div").append(
-                    "<p id='message2'>The input should be a zip folder with name " +
-                    "same as the Landuse folder that is compressed. The input " +
-                    "folder should contain all required data.</p>");
+                    "<p id='message2'>The input should be a zip folder " +
+                    "(<strong>single file with .zip extension</strong>) " +
+                    "with name same as the Landuse folder that is " +
+                    "compressed. The input folder should contain all " +
+                    "required data.</p>");
             });
         
             $("#Help2").mouseout(function() {
