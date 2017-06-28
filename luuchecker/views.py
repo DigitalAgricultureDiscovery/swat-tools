@@ -110,13 +110,14 @@ def upload_subbasin_shapefile_zip(request):
                 return HttpResponseRedirect(resolve_url('luuchecker'))
 
             if subbasin_shapefile_file_ext != ".zip":
-                logger.error("{0}: Uploaded file is not a .zip.".format(
+                logger.error(
+                    "{0}: Uploaded shapefile does not have .zip "
+                    "extension.".format(
                         request.session.get("unique_directory_name")))
-                error_msg = "Make sure you are uploading your " \
-                            "shapefile in a zip " \
-                            "archive. Please refer " \
-                            "to the user manual if you need " \
-                            "help zipping your shapefile."
+                error_msg = "The file you are uploading does not have a .zip " \
+                            "extension. Make sure the file you are uploading " \
+                            "is a compressed zipfile. Please refer to the " \
+                            "user manual if you need help creating a zipfile."
                 request.session["error"] = error_msg
                 request.session["error_subbasin"] = error_msg
                 return HttpResponseRedirect(resolve_url("luuchecker"))
@@ -268,7 +269,7 @@ def upload_landuse_folder_zip(request):
                 # Get uploaded file and store the name of the zip
                 file = request.FILES['landuse_folder_zip']
                 filename = file.name
-                landuse_filename = os.path.splitext(filename)[0]
+                landuse_filename, landuse_ext = os.path.splitext(filename)
             except:
                 logger.error(
                     "{0}: Unable receive uploaded landuse zipfile.".format(
@@ -318,6 +319,19 @@ def upload_landuse_folder_zip(request):
                 request.session['error'] = error_msg
                 request.session['error_landuse'] = error_msg
                 return render(request, 'luuchecker/index.html')
+
+            if landuse_ext != ".zip":
+                logger.error(
+                    "{0}: Uploaded landuse file does not have .zip "
+                    "extension.".format(
+                        request.session.get("unique_directory_name")))
+                error_msg = "The file you are uploading does not have a .zip " \
+                            "extension. Make sure the file you are uploading " \
+                            "is a compressed zipfile. Please refer to the " \
+                            "user manual if you need help creating a zipfile."
+                request.session["error"] = error_msg
+                request.session["error_landuse"] = error_msg
+                return render(request, "luuchecker/index.html")
 
             # Uncompress the zip
             try:
