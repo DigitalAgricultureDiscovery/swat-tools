@@ -238,6 +238,19 @@ def upload_swat_model_zip(request):
                         'storage. Please try re-uploading. If this issue ' \
                         'persists please use the Contact Us form to request ' \
                         'further assistance from the site admins.'
+
+            # Make sure the file has the .zip extension
+            if swat_model_file_ext != ".zip":
+                logger.error(
+                    "{0}: Uploaded swat model file does not have .zip extension.".format(
+                        request.session.get("unique_directory_name")))
+                request.session["error"] = "The file you are uploading does " \
+                               "not have a .zip extension. Make " \
+                               "sure the file you are uploading " \
+                               "is a compressed zipfile. Please " \
+                               "refer to the user manual if you " \
+                               "need help creating a zipfile."
+                return render(request, "uncertainty/index.html")
             try:
                 # Unzip uploaded file in tmp directory
                 subprocess.call([
@@ -378,7 +391,7 @@ def upload_landuse_zip(request):
             try:
                 file = request.FILES['landuse_zip']
                 filename = file.name
-                landuse_filename = os.path.splitext(filename)[0]
+                landuse_filename, landuse_ext = os.path.splitext(filename)
             except:
                 logger.error(
                     "{0}: Unable upload landuse zipfile.".format(
@@ -423,10 +436,24 @@ def upload_landuse_zip(request):
                     "{0}: Unable to write landuse zipfile to disk.".format(
                         request.session.get('unique_directory_name')))
                 request.session[
-                    'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
+                    'error'] = 'Unable to receive the uploaded file, please ' \
+                               'try again. If the issue persists please use ' \
+                               'the Contact Us form to request further ' \
+                               'assistance from the site admins.'
                 return render(request, 'uncertainty/index.html')
+
+            # Make sure the file has the .zip extension
+            if landuse_ext != ".zip":
+                logger.error(
+                    "{0}: Uploaded landuse file does not have .zip extension.".format(
+                        request.session.get("unique_directory_name")))
+                request.session["error"] = "The file you are uploading does " \
+                                           "not have a .zip extension. Make " \
+                                           "sure the file you are uploading " \
+                                           "is a compressed zipfile. Please " \
+                                           "refer to the user manual if you " \
+                                           "need help creating a zipfile."
+                return render(request, "uncertainty/index.html")
 
             # Uncompress the zip
             try:
