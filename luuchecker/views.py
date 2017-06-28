@@ -12,6 +12,7 @@ import io
 import logging
 import os
 import shutil
+import subprocess
 import zipfile
 
 
@@ -27,11 +28,14 @@ def index(request):
         # Clear progress message
         request.session['progress_message'] = []
         # Set user's unique directory that will hold their uploaded files
-        unique_directory_name = 'uid_' + str(request.user.id) + '_luuchecker_' + \
-                                timezone.datetime.now().strftime(
-                                    "%Y%m%dT%H%M%S")
-        unique_path = settings.UPLOAD_DIR + request.user.email + \
-                      '/' + unique_directory_name
+        unique_directory_name = "uid_{0}_{1}_{2}".format(
+            str(request.user.id),
+            "luuchecker",
+            timezone.datetime.now().strftime("%Y%m%dT%H%M%S"))
+        unique_path = "{0}{1}/{2}".format(
+            settings.UPLOAD_DIR,
+            request.user.email,
+            unique_directory_name)
         request.session['unique_directory_name'] = unique_directory_name
         request.session['directory'] = unique_path
         # Render main LUU Checker view
@@ -42,7 +46,9 @@ def fix_file_permissions(path):
     """ Starts at a base directory and moves through all of its
         files changing the directory permissions to 775 and file
         permissions to 664. """
-    # Change directory and file permissions for "path" to 775 and 664 respectively
+
+    # Change directory and file permissions for "path"
+    # to 775 and 664 respectively
     if os.path.isfile(path):
         os.chmod(path, 0o664)
     else:
@@ -177,18 +183,22 @@ def upload_subbasin_shapefile_zip(request):
 
             # Uncompress the data
             try:
-                unzip_command = 'unzip -qq ' + unique_path + '/input/' + \
-                                subbasin_shapefile_filename + ' -d ' + \
-                                unique_path + '/input/'
-                os.system(unzip_command)
+                filepath = "{0}/input/{1}".format(
+                    unique_path,
+                    subbasin_shapefile_filename)
+                subprocess.call([
+                    "unzip",
+                    "-qq",
+                    filepath,
+                    "-d",
+                    unique_path + "/input/"
+                ])
 
                 # Set permissions for unzipped data
-                fix_file_permissions(
-                    unique_path + '/input/' + subbasin_shapefile_filename)
+                fix_file_permissions(filepath)
 
                 # Remove uploaded zip file
-                os.remove(
-                    unique_path + '/input/' + subbasin_shapefile_filename + subbasin_shapefile_file_ext)
+                os.remove(filepath + subbasin_shapefile_file_ext)
             except:
                 logger.error(
                     "{0}: Unable to unzip uploaded shapefile.".format(
@@ -201,8 +211,7 @@ def upload_subbasin_shapefile_zip(request):
                 request.session["error_subbasin"] = error_msg
                 return HttpResponseRedirect(resolve_url('luuchecker'))
 
-            if not os.path.exists(
-                                    unique_path + '/input/' + subbasin_shapefile_filename):
+            if not os.path.exists(filepath):
                 logger.error(
                     "{0}: Unable to extract subbasin shapefile.".format(
                         request.session.get('unique_directory_name')))
@@ -245,8 +254,9 @@ def upload_subbasin_shapefile_zip(request):
             return render(request, 'luuchecker/index.html')
         else:
             # Couldn't find a required subbasin shapefile, return error msg
-            request.session[
-                'error'] = 'Please select your zipped subbasin shapefile before clicking the Upload button.'
+            request.session['error'] = 'Please select your zipped subbasin ' \
+                                       'shapefile before clicking the Upload ' \
+                                       'button.'
             return HttpResponseRedirect(resolve_url('luuchecker'))
     else:
         # Nothing was posted, reload main page
