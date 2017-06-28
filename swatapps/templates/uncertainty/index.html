@@ -216,6 +216,11 @@
                     <div id="loading" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
                     </div>
+                    {% if request.session.error_swat_model %}
+                      <div class="alert alert-danger" role="alert">
+                        <strong style="color:#F92E31;">{{ request.session.error_swat_model }}</strong><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -245,6 +250,11 @@
                     <div id="loading1" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
                     </div>
+                    {% if request.session.error_landuse %}
+                      <div class="alert alert-danger" role="alert">
+                        <strong style="color:#F92E31;">{{ request.session.error_landuse }}</strong><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -277,6 +287,11 @@
                     <div id="loading6" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
                     </div>
+                    {% if request.session.error_landuse_layers %}
+                      <div class="alert alert-danger" role="alert">
+                        <strong style="color:#F92E31;">{{ request.session.error_landuse_layers }}</strong><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -305,6 +320,11 @@
                     <div id="loading2" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
                     </div>
+                    {% if request.session.error_lookup %}
+                      <div class="alert alert-danger" role="alert">
+                        <strong style="color:#F92E31;">{{ request.session.error_lookup }}</strong><br/>
+                      </div>
+                    {% endif %}
                 </form>
                 {% if request.session.uncertainty_lookup_file_data %}
                     <div id="accordion" class="panel-group">

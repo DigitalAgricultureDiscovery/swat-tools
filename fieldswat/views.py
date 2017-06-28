@@ -32,10 +32,14 @@ def index(request):
         # Clear progress message
         request.session['progress_message'] = []
         # Set user's unique directory that will hold their uploaded files
-        unique_directory_name = 'uid_' + str(request.user.id) + '_fieldswat_' + \
-                                timezone.datetime.now().strftime("%Y%m%dT%H%M%S")
-        unique_path = settings.UPLOAD_DIR + request.user.email + \
-              '/' + unique_directory_name
+        unique_directory_name = "uid_{0}_{1}_{2}".format(
+            str(request.user.id),
+            "fieldswat",
+            timezone.datetime.now().strftime("%Y%m%dT%H%M%S"))
+        unique_path = "{0}{1}/{2}".format(
+            settings.UPLOAD_DIR,
+            request.user.email,
+            unique_directory_name)
         request.session['directory'] = unique_path
         request.session['on_s3'] = {}
         request.session['unique_directory_name'] = unique_directory_name
@@ -530,6 +534,7 @@ def upload_fields_shapefile_zip(request):
     request.session['progress_complete'] = []
     request.session['progress_message'] = []
     request.session['error'] = []
+    request.session['error_field_shp'] = []
 
     # If user is submitting a zipped SWAT Model
     if request.method == 'POST':
@@ -542,9 +547,12 @@ def upload_fields_shapefile_zip(request):
             except:
                 logger.error("{0}: Unable to receive the uploaded shapefile.".format(
                     request.session.get('unique_directory_name')))
-                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                                           'persists please use the Contact Us form to request further assistance ' + \
-                                           'from the site admins.'
+                error_msg = 'Unable to receive the uploaded file, please ' \
+                            'try again. If the issue persists please use ' \
+                            'the Contact Us form to request further ' \
+                            'assistance from the site admins.'
+                request.session['error'] = error_msg
+                request.session['error_field_shp'] = error_msg
                 return render(request, 'fieldswat/index.html')
 
             # Set up the working directory
@@ -557,9 +565,13 @@ def upload_fields_shapefile_zip(request):
             except:
                 logger.error("{0}: Unable to remove previously uploaded shapefile.".format(
                     request.session.get('unique_directory_name')))
-                request.session['error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
-                                           'to reset the tool. If the issue persists please use the Contact Us ' + \
-                                           'form to request further assistance from the site admins.'
+                error_msg = 'Unable to remove previously uploaded file, ' \
+                            'please use the Reset button to reset the tool. ' \
+                            'If the issue persists please use the Contact Us ' \
+                            'form to request further assistance from the ' \
+                            'site admins.'
+                request.session['error'] = error_msg
+                request.session['error_field_shp'] = error_msg
                 return render(request, 'fieldswat/index.html')
 
             try:
@@ -570,9 +582,12 @@ def upload_fields_shapefile_zip(request):
             except:
                 logger.error("{0}: Unable to write uploaded shapefile to disk.".format(
                     request.session.get('unique_directory_name')))
-                request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                                           'persists please use the Contact Us form to request further assistance ' + \
-                                           'from the site admins.'
+                error_msg = 'Unable to receive the uploaded file, please try ' \
+                            'again. If the issue persists please use the ' \
+                            'Contact Us form to request further assistance ' \
+                            'from the site admins.'
+                request.session['error'] = error_msg
+                request.session['error_field_shp'] = error_msg
                 return render(request, 'fieldswat/index.html')
 
             # Make sure the file has the .zip extension
@@ -580,13 +595,12 @@ def upload_fields_shapefile_zip(request):
                 logger.error(
                     "{0}: Uploaded shapefile does not have .zip extension.".format(
                         request.session.get("unique_directory_name")))
-                request.session[
-                    "error"] = "The file you are uploading does " \
-                               "not have a .zip extension. Make " \
-                               "sure the file you are uploading " \
-                               "is a compressed zipfile. Please " \
-                               "refer to the user manual if you " \
-                               "need help creating a zipfile."
+                error_msg = "The file you are uploading does not have a .zip " \
+                            "extension. Make sure the file you are uploading " \
+                            "is a compressed zipfile. Please refer to the " \
+                            "user manual if you need help creating a zipfile."
+                request.session['error'] = error_msg
+                request.session['error_field_shp'] = error_msg
                 return render(request, "fieldswat/index.html")
 
             # Uncompress the data
@@ -603,40 +617,44 @@ def upload_fields_shapefile_zip(request):
             except:
                 logger.error("{0}: Unable to extract zipped shapefile.".format(
                     request.session.get('unique_directory_name')))
-                request.session['error'] = 'Could not unzip the folder. ' + \
-                                           'Please contact administrator'
+                error_msg = 'Could not unzip the folder. Please contact ' \
+                            'administrator'
+                request.session['error'] = error_msg
+                request.session['error_field_shp'] = error_msg
                 return render(request, 'fieldswat/index.html')
 
             if not os.path.exists(unique_path + '/input/' + fields_shapefile_foldername):
                 logger.error("{0}: Unable to locate extracted shapefile's directory.".format(
                     request.session.get('unique_directory_name')))
-                request.session['error'] = 'Could not extract the folder "' + \
-                                           fields_shapefile_foldername + '". ' + \
-                                           'Please check if the file is ' + \
-                                           'compressed in zip format and ' + \
-                                           'has the same name as ' + \
-                                           'compressed folder.'
+                error_msg = 'Could not extract the folder "{0}". Please ' \
+                            'check if the file is compressed in zip format ' \
+                            'and has the same name as compressed ' \
+                            'folder.'.format(fields_shapefile_foldername)
+                request.session['error'] = error_msg
+                request.session['error_field_shp'] = error_msg
                 return render(request, 'fieldswat/index.html')
 
             # directory path for the unzipped shapefile folder
             fields_shapefile_filepath = unique_path + '/input/' + fields_shapefile_foldername
 
-            # loop through folder and grab any file ending with the .shp extension
+            # loop through folder and grab any file ending with the .shp
             shapefiles = []
             for shapefile in glob.glob(fields_shapefile_filepath + '/*.shp'):
                 shapefiles.append(shapefile)
 
             # too many .shp present
             if len(shapefiles) > 1:
-                request.session['error'] = 'More than one shapefile found ' + \
-                                           'in the zipped folder. Please ' + \
-                                           're-upload with only one shapefile.'
+                error_msg = 'More than one shapefile found in the zipped ' \
+                            'folder. Please re-upload with only one shapefile.'
+                request.session['error'] = error_msg
+                request.session['error_field_shp'] = error_msg
                 return render(request, 'fieldswat/index.html')
             # no .shp present
             elif len(shapefiles) < 1:
-                request.session['error'] = 'No shapefiles found in the ' + \
-                                           'zipped folder. Please ' + \
-                                           're-upload with a single shapefile.'
+                error_msg = 'No shapefiles found in the zipped folder. ' \
+                            'Please re-upload with a single shapefile.'
+                request.session['error'] = error_msg
+                request.session['error_field_shp'] = error_msg
                 return render(request, 'fieldswat/index.html')
             # single .shp present
             else:
@@ -652,9 +670,12 @@ def upload_fields_shapefile_zip(request):
         else:
             logger.error("{0}: Unable to find uploaded shapefile.".format(
                 request.session.get('unique_directory_name')))
-            request.session['error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                                       'persists please use the Contact Us form to request further assistance ' + \
-                                       'from the site admins.'
+            error_msg = 'Unable to receive the uploaded file, please try ' \
+                        'again. If the issue persists please use the ' \
+                        'Contact Us form to request further assistance from ' \
+                        'the site admins.'
+            request.session['error'] = error_msg
+            request.session['error_field_shp'] = error_msg
             return render(request, 'fieldswat/index.html')
     else:
         # Nothing was posted, reload main page
@@ -672,6 +693,7 @@ def confirm_output_and_agg(request):
     request.session['progress_complete'] = []
     request.session['progress_message'] = []
     request.session['error'] = []
+    request.session['error_agg_out'] = []
 
     # if user is submitting a zipped SWAT Model
     if request.method == 'POST':
@@ -680,24 +702,29 @@ def confirm_output_and_agg(request):
             output_type = request.POST.get('fieldswat_output')
             aggregation_method = request.POST.get('fieldswat_agg')
         except:
-            request.session['error'] = 'Unable to find selected output and aggregation methods. ' + \
-                                       'Please make sure you have selected an option for both of these ' + \
-                                       'methods and then try again.'
+            error_msg = 'Unable to find selected output and aggregation ' \
+                        'methods. Please make sure you have selected an ' \
+                        'option for both of these methods and then try again.'
+            request.session['error'] = error_msg
+            request.session['error_agg_out'] = error_msg
             return render(request, 'fieldswat/index.html')
 
         # verify the value matches what we would expect
         if output_type != u'runoff' and output_type != u'sediment':
-            request.session['error'] = 'Output type is not recognized. ' + \
-                                       'Please make sure a radio button ' + \
-                                       'is selected under Output.'
+            error_msg = 'Output type is not recognized. Please make sure a ' \
+                        'radio button is selected under Output.'
+            request.session['error'] = error_msg
+            request.session['error_agg_out'] = error_msg
             return render(request, 'fieldswat/index.html')
 
         # verify the value matches what we would expect
         if aggregation_method != 'mean' and aggregation_method != 'mode' and \
                 aggregation_method != 'geomean' and aggregation_method != 'area_weighted_mean':
-            request.session['error'] = 'Aggregation method is not recognized. ' + \
-                                       'Please make sure a radio button ' + \
-                                       'is selected under Aggregation method.'
+            error_msg = 'Aggregation method is not recognized. Please make ' \
+                        'sure a radio button is selected under ' \
+                        'Aggregation method.'
+            request.session['error'] = error_msg
+            request.session['error_agg_out'] = error_msg
             return render(request, 'fieldswat/index.html')
 
         # add selected values to session variables
