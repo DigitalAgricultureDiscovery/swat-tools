@@ -48,7 +48,8 @@
                 $("#help1div").show();
                 $("#help1div").append(
                     "<p id='message1'>" +
-                    "The input should be a zip folder with name same " +
+                    "The input should be a zip folder (<strong>single file " +
+                    "with .zip extension</strong>) with name same " +
                     "as the Swat folder that is compressed. The input " +
                     "folder should contain all required data." +
                     "<br /><br />" +
@@ -67,7 +68,8 @@
                 $("#help2div").show();
                 $("#help2div").append(
                     "<p id='message2'>" +
-                    "The input should be a zip folder with name same as " +
+                    "The input should be a zip folder (<strong>single file " +
+                    "with .zip extension</strong>) with name same as " +
                     "the Landuse folder that is compressed. The input " +
                     "folder should contain all required data.</p>");
             });
@@ -174,6 +176,11 @@
                     <div id="loading" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
                     </div>
+                    {% if request.session.error_swat_model %}
+                      <div class="alert alert-danger" role="alert">
+                        <strong style="color:#F92E31;">{{ request.session.error_swat_model }}</strong><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -203,6 +210,11 @@
                     <div id="loading1" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
                     </div>
+                    {% if request.session.error_landuse %}
+                      <div class="alert alert-danger" role="alert">
+                          <b style ="color:#F92E31;">{{ request.session.error_landuse }}</b><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -233,6 +245,11 @@
                     <div id="loading6" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20" alt="" />
                     </div>
+                    {% if request.session.error_no_of_landuse %}
+                      <div class="alert alert-danger" role="alert">
+                          <b style ="color:#F92E31;">{{ request.session.error_no_of_landuse }}</b><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -265,6 +282,11 @@
                     {% else %}
                         <label><b> Landuse layer1:</b></label>
                     {% endif %}
+                    {% if request.session.error_validate_landuse %}
+                      <div class="alert alert-danger" role="alert">
+                          <b style ="color:#F92E31;">{{ request.session.error_validate_landuse }}</b><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -294,6 +316,11 @@
                     <div id="loading2" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20" alt="" />
                     </div>
+                    {% if request.session.error_lookup %}
+                      <div class="alert alert-danger" role="alert">
+                          <b style ="color:#F92E31;">{{ request.session.error_lookup }}</b><br/>
+                      </div>
+                    {% endif %}
                 </form>
             </div>
         </div>

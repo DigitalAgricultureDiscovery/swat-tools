@@ -130,10 +130,12 @@ def upload_swat_model_zip(request):
                     logger.error(
                         "{0}: Unable upload SWAT model zipfile.".format(
                             request.session.get('unique_directory_name')))
-                    request.session['error'] = 'Unable to receive the ' \
-                        'uploaded file, please try again. If the issue ' \
-                        'persists please use the Contact Us form to request ' \
-                        'further assistance from the site admins.'
+                    error_msg = 'Unable to receive the uploaded file, ' \
+                                'please try again. If the issue persists ' \
+                                'please use the Contact Us form to request ' \
+                                'further assistance from the site admins.'
+                    request.session['error'] = error_msg
+                    request.session['error_swat_model'] = error_msg
                     return render(request, 'swatluu/index.html')
 
                 try:
@@ -145,10 +147,12 @@ def upload_swat_model_zip(request):
                     logger.error(
                         "{0}: Unable to create working directory.".format(
                             request.session.get('unique_directory_name')))
-                    request.session['error'] = 'Unable to set up user ' \
-                        'workspace, please try again. If the issue persists ' \
-                        'please use the Contact Us form to request further ' \
-                        'assistance from the site admins.'
+                    error_msg = 'Unable to set up user workspace, please ' \
+                                'try again. If the issue persists please use ' \
+                                'the Contact Us form to request further ' \
+                                'assistance from the site admins.'
+                    request.session['error'] = error_msg
+                    request.session['error_swat_model'] = error_msg
                     return render(request, 'swatluu/index.html')
 
                 try:
@@ -164,11 +168,13 @@ def upload_swat_model_zip(request):
                     logger.error(
                         "{0}: Unable to remove previously uploaded files.".format(
                             request.session.get('unique_directory_name')))
-                    request.session['error'] = 'Unable to remove previously ' \
-                        'uploaded file, please use the Reset button to reset ' \
-                        'the tool. If the issue persists please use the ' \
-                        'Contact Us form to request further assistance from ' \
-                        'the site admins.'
+                    error_msg = 'Unable to remove previously uploaded file, ' \
+                                'please use the Reset button to reset the ' \
+                                'tool. If the issue persists please use the ' \
+                                'Contact Us form to request further ' \
+                                'assistance from the site admins.'
+                    request.session['error'] = error_msg
+                    request.session['error_swat_model'] = error_msg
                     return render(request, 'swatluu/index.html')
 
                 try:
@@ -181,10 +187,12 @@ def upload_swat_model_zip(request):
                     logger.error(
                         "{0}: Unable to write uploaded data to disk.".format(
                             request.session.get('unique_directory_name')))
-                    request.session['error'] = 'Unable to receive the ' \
-                        'uploaded file, please try again. If the issue ' \
-                        'persists please use the Contact Us form to request ' \
-                        'further assistance from the site admins.'
+                    error_msg = 'Unable to receive the uploaded file, please ' \
+                                'try again. If the issue persists please use ' \
+                                'the Contact Us form to request further ' \
+                                'assistance from the site admins.'
+                    request.session['error'] = error_msg
+                    request.session['error_swat_model'] = error_msg
                     return render(request, 'swatluu/index.html')
             else:
                 try:
@@ -196,10 +204,12 @@ def upload_swat_model_zip(request):
                     logger.error(
                         "{0}: Unable to create working directory.".format(
                             request.session.get('unique_directory_name')))
-                    request.session['error'] = 'Unable to set up user ' \
-                       'workspace, please try again. If the issue persists ' \
-                       'please use the Contact Us form to request further ' \
-                       'assistance from the site admins.'
+                    error_msg = 'Unable to set up user workspace, please ' \
+                                'try again. If the issue persists please use ' \
+                                'the Contact Us form to request further ' \
+                                'assistance from the site admins.'
+                    request.session['error'] = error_msg
+                    request.session['error_swat_model'] = error_msg
                     return render(request, 'swatluu/index.html')
 
                 try:
@@ -218,11 +228,13 @@ def upload_swat_model_zip(request):
                     logger.error(
                         "{0}: Unable to obtain SWAT model information.".format(
                             request.session.get('unique_directory_name')))
-                    request.session['error'] = 'Unable to remove previously ' \
-                       'uploaded file, please use the Reset button to reset ' \
-                       'the tool. If the issue persists please use the ' \
-                       'Contact Us form to request further assistance from ' \
-                       'the site admins.'
+                    error_msg = 'Unable to remove previously uploaded file, ' \
+                                'please use the Reset button to reset the ' \
+                                'tool. If the issue persists please use the ' \
+                                'Contact Us form to request further ' \
+                                'assistance from the site admins.'
+                    request.session['error'] = error_msg
+                    request.session['error_swat_model'] = error_msg
                     return render(request, 'swatluu/index.html')
 
                 try:
@@ -235,10 +247,27 @@ def upload_swat_model_zip(request):
                     logger.error(
                         "{0}: Unable to retrieve SWAT model from S3.".format(
                             request.session.get('unique_directory_name')))
-                    request.session["error"] = "Unable to retrieve file from " \
-                        "storage. Please try re-uploading. If this issue " \
-                        "persists please use the Contact Us form to request " \
-                        "further assistance from the site admins."
+                    error_msg = "Unable to retrieve file from storage. " \
+                                "Please try re-uploading. If this issue " \
+                                "persists please use the Contact Us form to " \
+                                "request further assistance from the site " \
+                                "admins."
+                    request.session['error'] = error_msg
+                    request.session['error_swat_model'] = error_msg
+
+            # Make sure the file has the .zip extension
+            if swat_model_file_ext != ".zip":
+                logger.error("{0}: Uploaded swat model file does not "
+                             "have .zip extension.".format(
+                    request.session.get("unique_directory_name")))
+                error_msg = "The file you are uploading does not have a " \
+                            ".zip extension. Make sure the file you are " \
+                            "uploading is a compressed zipfile. Please refer " \
+                            "to the user manual if you need help creating a " \
+                            "zipfile."
+                request.session['error'] = error_msg
+                request.session['error_swat_model'] = error_msg
+                return render(request, "swatluu/index.html")
             try:
                 # Unzip uploaded file in tmp directory
                 subprocess.call([
@@ -261,22 +290,26 @@ def upload_swat_model_zip(request):
             except:
                 logger.error("{0}: Unable to unzip uploaded SWAT model.".format(
                     request.session.get('unique_directory_name')))
-                request.session['error'] = 'Unable to unzip the uploaded ' \
-                    'file, please try again. If the issue persists please ' \
-                    'use the Contact Us form to request further assistance ' \
-                    'from the site admins.'
+                error_msg = 'Unable to unzip the uploaded file, please ' \
+                            'try again. If the issue persists please use ' \
+                            'the Contact Us form to request further ' \
+                            'assistance from the site admins.'
+                request.session['error'] = error_msg
+                request.session['error_swat_model'] = error_msg
                 return render(request, 'swatluu/index.html')
 
             # Check if decompression completed or failed (no folder if failed)
             if not os.path.exists(model_path):
                 logger.error("{0}: Could not extract SWAT model zip folder.".format(
                     request.session.get('unique_directory_name')))
-                request.session['error'] = 'Could not extract the folder "' + \
-                    swat_model_filename + '". Please check if the file is ' \
-                    'compressed in zip format and has the same name as ' \
-                    'compressed folder. If the issue persists please use the ' \
-                    'Contact Us form to request further assistance from the ' \
-                    'site admins.'
+                error_msg = 'Could not extract the folder "{0}". Please ' \
+                            'check if the file is compressed in zip format ' \
+                            'and has the same name as compressed folder. If ' \
+                            'the issue persists please use the Contact Us ' \
+                            'form to request further assistance from the ' \
+                            'site admins.'.format(swat_model_filename)
+                request.session['error'] = error_msg
+                request.session['error_swat_model'] = error_msg
                 return render(request, 'swatluu/index.html')
 
             # Check if the required files/folders exist
@@ -291,23 +324,28 @@ def upload_swat_model_zip(request):
             if not (glob.glob(scenarioloc)):
                 logger.error("{0}: Unable to find TxtInOut directory.".format(
                     request.session.get('unique_directory_name')))
-                request.session['error'] = 'Could not find the folder or hru ' \
-                    'files in ' + swat_model_filename + '/Scenarios/Default/' \
-                    'TxtInOut/*.hru. Please check for files in folder and ' \
-                    're-upload the zip file. If the issue persists please ' \
-                    'use the Contact Us form to request further assistance ' \
-                    'from the site admins.'
+                error_msg = 'Could not find the folder or hru files in "{0}" ' \
+                            '/Scenarios/Default/TxtInOut/*.hru. Please check ' \
+                            'for files in folder and re-upload the zip file. ' \
+                            'If the issue persists please use the Contact Us ' \
+                            'form to request further assistance from the ' \
+                            'site admins.'.format(swat_model_filename)
+                request.session['error'] = error_msg
+                request.session['error_swat_model'] = error_msg
                 return render(request, 'swatluu/index.html')
 
             # Check if watershed folder was found
             if not os.path.exists(shapeloc):
                 logger.error("{0}: Unable to find hru1.shp.".format(
                     request.session.get('unique_directory_name')))
-                request.session['error'] = 'Could not find the folder ' + \
-                    swat_model_filename + '/Watershed/Shapes/hru1.shp. ' \
-                    'Please check for files in folder and re-upload the zip ' \
-                    'file. If the issue persists please use the Contact Us ' \
-                    'form to request further assistance from the site admins.'
+                error_msg = 'Could not find the folder "{0}" ' \
+                            '/Watershed/Shapes/hru1.shp. Please check for ' \
+                            'files in folder and re-upload the zip file. If ' \
+                            'the issue persists please use the Contact Us ' \
+                            'form to request further assistance from the ' \
+                            'site admins.'.format(swat_model_filename)
+                request.session['error'] = error_msg
+                request.session['error_swat_model'] = error_msg
                 return render(request, 'swatluu/index.html')
 
             # If there were no issues finding the required SWAT Model paths
@@ -323,15 +361,19 @@ def upload_swat_model_zip(request):
                 logger.error("{0}: Unable find hrus1/w001001.adf.".format(
                     request.session.get('unique_directory_name')))
                 # Couldn't find a required SWAT Model folder, return error msg
-                request.session['error'] = 'Could not find the folder ' + \
-                    swat_model_filename + '/Watershed/Grid/hrus1/w001001.adf.' \
-                    ' Please check for files in folder and re-upload ' \
-                    'the zip file.'
+                error_msg = 'Could not find the folder "{0}" ' \
+                            '/Watershed/Grid/hrus1/w001001.adf. Please check ' \
+                            'for files in folder and re-upload ' \
+                            'the zip file.'.format(swat_model_filename)
+                request.session['error'] = error_msg
+                request.session['error_swat_model'] = error_msg
                 return render(request, 'swatluu/index.html')
         else:
             # Couldn't find a required SWAT Model folder, return error msg
-            request.session['error'] = 'Please select your zipped SWAT Model ' \
-                'before clicking the Upload button.'
+            error_msg = 'Please select your zipped SWAT Model before ' \
+                        'clicking the Upload button.'
+            request.session['error'] = error_msg
+            request.session['error_swat_model'] = error_msg
             return render(request, 'swatluu/index.html')
     else:
         # Nothing was posted, reload main page
@@ -345,6 +387,7 @@ def upload_landuse_zip(request):
     request.session['progress_complete'] = []
     request.session['progress_message'] = []
     request.session['error'] = []
+    request.session['error_landuse'] = []
 
     # If user is submitting a zipped landuse folder
     if request.method == 'POST':
@@ -353,15 +396,17 @@ def upload_landuse_zip(request):
             try:
                 file = request.FILES['landuse_zip']
                 filename = file.name
-                landuse_filename = os.path.splitext(filename)[0]
+                landuse_filename, landuse_ext = os.path.splitext(filename)
             except:
                 logger.error(
                     "{0}: Unable upload landuse zipfile.".format(
                         request.session.get('unique_directory_name')))
-                request.session['error'] = 'Unable to receive the uploaded ' \
-                   'file, please try again. If the issue persists please use ' \
-                   'the Contact Us form to request further assistance from ' \
-                   'the site admins.'
+                error_msg = 'Unable to receive the uploaded file, please try ' \
+                            'again. If the issue persists please use the ' \
+                            'Contact Us form to request further assistance ' \
+                            'from the site admins.'
+                request.session['error'] = error_msg
+                request.session['error_landuse'] = error_msg
                 return render(request, 'swatluu/index.html')
 
             # Set up the working directory
@@ -375,11 +420,13 @@ def upload_landuse_zip(request):
                 logger.error(
                     "{0}: Unable to remove existing landuse directory.".format(
                         request.session.get('unique_directory_name')))
-                request.session['error'] = 'Unable to remove previously ' \
-                    'uploaded file, please use the Reset button to reset ' \
-                    'the tool. If the issue persists please use the Contact ' \
-                    'Us form to request further assistance from the site ' \
-                    'admins.'
+                error_msg = 'Unable to remove previously uploaded file, ' \
+                            'please use the Reset button to reset the tool. ' \
+                            'If the issue persists please use the Contact Us ' \
+                            'form to request further assistance from the ' \
+                            'site admins.'
+                request.session['error'] = error_msg
+                request.session['error_landuse'] = error_msg
                 return render(request, 'swatluu/index.html')
 
             # Copy the data to the path
@@ -392,11 +439,27 @@ def upload_landuse_zip(request):
                 logger.error(
                     "{0}: Unable to write landuse zipfile to disk.".format(
                         request.session.get('unique_directory_name')))
-                request.session['error'] = 'Unable to receive the uploaded ' \
-                    'file, please try again. If the issue persists please ' \
-                    'use the Contact Us form to request further assistance ' \
-                    'from the site admins.'
+                error_msg = 'Unable to receive the uploaded file, please ' \
+                            'try again. If the issue persists please use the ' \
+                            'Contact Us form to request further assistance ' \
+                            'from the site admins.'
+                request.session['error'] = error_msg
+                request.session['error_landuse'] = error_msg
                 return render(request, 'swatluu/index.html')
+
+            # Make sure the file has the .zip extension
+            if landuse_ext != ".zip":
+                logger.error(
+                    "{0}: Uploaded landuse file does not have .zip extension.".format(
+                        request.session.get("unique_directory_name")))
+                error_msg = "The file you are uploading does not have a " \
+                            ".zip extension. Make sure the file you are " \
+                            "uploading is a compressed zipfile. Please refer " \
+                            "to the user manual if you need help creating " \
+                            "a zipfile."
+                request.session['error'] = error_msg
+                request.session['error_landuse'] = error_msg
+                return render(request, "swatluu/index.html")
 
             try:
                 # Unzip the landuse data
@@ -418,9 +481,11 @@ def upload_landuse_zip(request):
                     "{0}: Unable extract landuse zipfile.".format(
                         request.session.get('unique_directory_name')))
                 # Create error message if unzip failed
-                request.session['error'] = 'Could not unzip the folder. ' + \
-                    'If the issue persists please use the Contact Us form ' \
-                    'to request further assistance from the site admins.'
+                error_msg = 'Could not unzip the folder. If the issue ' \
+                            'persists please use the Contact Us form to ' \
+                            'request further assistance from the site admins.'
+                request.session['error'] = error_msg
+                request.session['error_landuse'] = error_msg
                 return render(request, 'swatluu/index.html')
 
             # Check if unzipped folder exists
@@ -428,12 +493,14 @@ def upload_landuse_zip(request):
                 logger.error(
                     "{0}: Unable to find extracted landuse directory.".format(
                         request.session.get('unique_directory_name')))
-                request.session['error'] = 'Could not unzip the folder "' + \
-                    landuse_filename + '". Please check if the file is ' \
-                    'compressed in zip format and has the same name as ' \
-                    'compressed folder. If the issue persists please use ' \
-                    'the Contact Us form to request further assistance ' + \
-                    'from the site admins.'
+                error_msg = 'Could not unzip the folder "{0}". Please check ' \
+                            'if the file is compressed in zip format and has ' \
+                            'the same name as compressed folder. If the ' \
+                            'issue persists please use the Contact Us form ' \
+                            'to request further assistance from the ' \
+                            'site admins.'.format(landuse_filename)
+                request.session['error'] = error_msg
+                request.session['error_landuse'] = error_msg
                 return render(request, 'swatluu/index.html')
 
             # Update relevant session variables
@@ -445,8 +512,10 @@ def upload_landuse_zip(request):
             return render(request, 'swatluu/index.html')
         else:
             # Couldn't find the required zipped landuse folder, return error msg
-            request.session['error'] = 'Please select your zipped landuse ' \
-                'folder before clicking the Upload button.'
+            error_msg = 'Please select your zipped landuse folder before ' \
+                        'clicking the Upload button.'
+            request.session['error'] = error_msg
+            request.session['error_landuse'] = error_msg
             return render(request, 'swatluu/index.html')
     else:
         # Nothing was posted, reload main page
@@ -460,6 +529,7 @@ def select_number_of_landuse_layers(request):
     request.session['progress_complete'] = []
     request.session['progress_message'] = []
     request.session['error'] = []
+    request.session['error_no_of_landuse'] = []
 
     # If user made a post request
     if request.method == 'POST':
@@ -467,10 +537,11 @@ def select_number_of_landuse_layers(request):
             # Get the posted landuse layer count value
             landuse_layer_count = request.POST.get('landuse_layer_count')
         except:
-            request.session[
-                'error'] = 'Error with submitted value, please try again. If the issue ' + \
-                           'persists please use the Contact Us form to request further assistance ' + \
-                           'from the site admins.'
+            error_msg = 'Error with submitted value, please try again. If ' \
+                        'the issue persists please use the Contact Us form ' \
+                        'to request further assistance from the site admins.'
+            request.session['error'] = error_msg
+            request.session['error_no_of_landuse'] = error_msg
             return render(request, 'swatluu/index.html')
 
         try:
@@ -478,12 +549,16 @@ def select_number_of_landuse_layers(request):
             landuse_layer_count = int(landuse_layer_count)
         except ValueError:
             # If it fails, display error
-            request.session['error'] = 'Please enter an integer.'
+            error_msg = 'Please enter an integer.'
+            request.session['error'] = error_msg
+            request.session['error_no_of_landuse'] = error_msg
             return render(request, 'swatluu/index.html')
 
         # If no value was posted, display error
         if landuse_layer_count < 1:
-            request.session['error'] = 'Please enter an integer greater than 0.'
+            error_msg = 'Please enter an integer greater than 0.'
+            request.session['error'] = error_msg
+            request.session['error_no_of_landuse'] = error_msg
             return render(request, 'swatluu/index.html')
 
         # Update relevant session variable
@@ -512,6 +587,7 @@ def validate_selected_landuse_layers(request):
     request.session['months'] = []
     request.session['day'] = []
     request.session['landuse_layers_names'] = []
+    request.session['error_validate_landuse'] = []
 
     # If user made a post request
     if request.method == 'POST':
@@ -520,17 +596,19 @@ def validate_selected_landuse_layers(request):
             dates = request.POST.getlist('dates')
             landuse_layer_count = request.session.get('landuse_layer_count')
         except:
-            request.session[
-                'error'] = 'Unable to receive the dates, please try again. If the issue ' + \
-                           'persists please use the Contact Us form to request further assistance ' + \
-                           'from the site admins.'
+            error_msg = 'Unable to receive the dates, please try again. If ' \
+                        'the issue persists please use the Contact Us form ' \
+                        'to request further assistance from the site admins.'
+            request.session['error'] = error_msg
+            request.session['error_validate_landuse'] = error_msg
             return render(request, 'swatluu/index.html')
 
         # Confirm that the number of submitted dates matches the
         # number of selected landuse layers
         if landuse_layer_count != len(dates):
-            request.session['error'] = 'Please select a date for ' + \
-                                       'each landuse layer.'
+            error_msg = 'Please select a date for each landuse layer.'
+            request.session['error'] = error_msg
+            request.session['error_validate_landuse'] = error_msg
             return render(request, 'swatluu/index.html')
 
         # Split dates into years, months, and days
@@ -542,21 +620,24 @@ def validate_selected_landuse_layers(request):
                         int(day[0]),
                         int(day[1]))).days < 0:
 
-                    request.session[
-                        'error'] = 'Please do not select a date that has not occurred yet. ' + \
-                                   'The selected date should be the start date for the ' + \
-                                   'corresponding landuse layer.'
+                    error_msg = 'Please do not select a date that has not ' \
+                                'occurred yet. The selected date should be ' \
+                                'the start date for the corresponding ' \
+                                'landuse layer.'
+                    request.session['error'] = error_msg
+                    request.session['error_validate_landuse'] = error_msg
                     return render(request, 'swatluu/index.html')
                 else:
                     request.session['years'].append(day[2])
                     request.session['months'].append(day[0])
                     request.session['day'].append(day[1])
         except IndexError:
-            request.session[
-                'error'] = 'Please make sure the date you are entering ' + \
-                           'is in the required format: MM/DD/YYYY. Click the ' + \
-                           'calendar icon and select your date from the popup calendar ' + \
-                           'to guarantee the correct format is used.'
+            error_msg = 'Please make sure the date you are entering is in ' \
+                        'the required format: MM/DD/YYYY. Click the calendar ' \
+                        'icon and select your date from the popup calendar ' \
+                        'to guarantee the correct format is used.'
+            request.session['error'] = error_msg
+            request.session['error_validate_landuse'] = error_msg
             return render(request, 'swatluu/index.html')
 
         # Collect the selected landuse layers (.aux) if they are available
@@ -567,15 +648,18 @@ def validate_selected_landuse_layers(request):
             # Make sure the number of uploaded landuse layer files matches
             # the previously provided landuse layer count
             if landuse_layer_count != len(landuse_layer_files):
-                request.session['error'] = 'Please select a landuse file ' + \
-                                           'for each input box.'
+                error_msg = 'Please select a landuse file for each input box.'
+                request.session['error'] = error_msg
+                request.session['error_validate_landuse'] = error_msg
                 return render(request, 'swatluu/index.html')
 
             # Loop through each landuse layer file
             for landuse_layer in landuse_layer_files:
                 if not landuse_layer:
-                    request.session['error'] = 'Please select a landuse file ' + \
-                                               'for each input box.'
+                    error_msg = 'Please select a landuse file ' \
+                                'for each input box.'
+                    request.session['error'] = error_msg
+                    request.session['error_validate_landuse'] = error_msg
                     request.session['landuse_layers_names'] = []
                     return render(request, 'swatluu/index.html')
 
@@ -587,11 +671,11 @@ def validate_selected_landuse_layers(request):
                         'landuse_filepath') + '/' + landuse_layer_filename + \
                                              '/w001001.adf'
                 except:
-                    request.session[
-                        'error'] = 'Unable to match selected layers with layers uploaded ' + \
-                                   'in the Landuse Folder input. Make sure you are selecting ' + \
-                                   'the .aux files.'
-
+                    error_msg = 'Unable to match selected layers with layers ' \
+                                'uploaded in the Landuse Folder input. Make ' \
+                                'sure you are selecting the .aux files.'
+                    request.session['error'] = error_msg
+                    request.session['error_validate_landuse'] = error_msg
                 # Reset progress messages
                 request.session['progress_message'] = []
                 request.session['error'] = []
@@ -622,8 +706,10 @@ def validate_selected_landuse_layers(request):
             except:
                 validated = {
                     'status': 'error',
-                    'msg': 'Unable to validate landuse layers. Refer to the manual for help with this issue. ' +
-                           'If the problem persists, please contact us so we may offer further assistance.'
+                    'msg': 'Unable to validate landuse layers. Refer to '
+                           'the manual for help with this issue. If the '
+                           'problem persists, please contact us so we may '
+                           'offer further assistance.'
                 }
 
             if validated['status'] == 'error':
@@ -645,6 +731,7 @@ def upload_lookup_file(request):
     request.session['progress_complete'] = []
     request.session['progress_message'] = []
     request.session['error'] = []
+    request.session['error_lookup'] = []
 
     # If user made post request
     if request.method == 'POST':
@@ -656,14 +743,18 @@ def upload_lookup_file(request):
             unique_path = request.session['directory']
 
             try:
-                # Check if path to lookup file already exists and if so remove it
+                # Check if path to lookup file already exists
+                # and if so remove it
                 if os.path.exists(unique_path + '/input/' + lookup_filename):
                     os.remove(unique_path + '/input/' + lookup_filename)
             except:
-                request.session[
-                    'error'] = 'Unable to remove previously uploaded file, please use the Reset button ' + \
-                               'to reset the tool. If the issue persists please use the Contact Us ' + \
-                               'form to request further assistance from the site admins.'
+                error_msg = 'Unable to remove previously uploaded file, ' \
+                            'please use the Reset button to reset the tool. ' \
+                            'If the issue persists please use the Contact Us ' \
+                            'form to request further assistance from the ' \
+                            'site admins.'
+                request.session['error'] = error_msg
+                request.session['error_lookup'] = error_msg
                 return render(request, 'swatluu/index.html')
 
             try:
@@ -673,10 +764,12 @@ def upload_lookup_file(request):
                     for chunk in lookup_file.chunks():
                         destination.write(chunk)
             except:
-                request.session[
-                    'error'] = 'Unable to receive the uploaded file, please try again. If the issue ' + \
-                               'persists please use the Contact Us form to request further assistance ' + \
-                               'from the site admins.'
+                error_msg = 'Unable to receive the uploaded file, please ' \
+                            'try again. If the issue persists please use the ' \
+                            'Contact Us form to request further assistance ' \
+                            'from the site admins.'
+                request.session['error'] = error_msg
+                request.session['error_lookup'] = error_msg
                 return render(request, 'swatluu/index.html')
 
             # Set file permissions
@@ -695,11 +788,11 @@ def upload_lookup_file(request):
                     open(unique_path + '/input/' + lookup_filename, 'r'),
                     delimiter=',')
             except:
-                request.session['error'] = 'Error reading the uploaded ' + \
-                                           'lookup file, ' + \
-                                           lookup_filename + '. Please ' + \
-                                           'check that the file is not ' + \
-                                           'empty and is in the csv format.'
+                error_msg = 'Error reading the uploaded lookup file, "{0}". ' \
+                            'Please check that the file is not empty and is ' \
+                            'in the csv format.'.format(lookup_filename)
+                request.session['error'] = error_msg
+                request.session['error_lookup'] = error_msg
                 return render(request, 'swatluu/index.html')
 
             # Read lookup contents into list
@@ -707,19 +800,19 @@ def upload_lookup_file(request):
                 lookup_info = []
                 for row in reader:
                     if row[:][0] == '0':
-                        request.session['error'] = 'Cannot use "0" as a ' + \
-                                                   'landuse value. Please ' + \
-                                                   'verify it is not being ' + \
-                                                   'used with your landuse ' + \
-                                                   'layers and lookup file.'
+                        error_msg = 'Cannot use "0" as a landuse value. ' \
+                                    'Please verify it is not being used with ' \
+                                    'your landuse layers and lookup file.'
+                        request.session['error'] = error_msg
+                        request.session['error_lookup'] = error_msg
                         return render(request, 'swatluu/index.html')
                     lookup_info.append(row)
             except:
-                request.session['error'] = 'Error reading the uploaded ' + \
-                                           'lookup file, ' + \
-                                           lookup_filename + '. Please ' + \
-                                           'check that the file is not ' + \
-                                           'empty and is in the csv format.'
+                error_msg = 'Error reading the uploaded lookup file, "{0}". ' \
+                            'Please check that the file is not empty and is ' \
+                            'in the csv format.'.format(lookup_filename)
+                request.session['error'] = error_msg
+                request.session['error_lookup'] = error_msg
                 return render(request, 'swatluu/index.html')
 
             try:
@@ -730,18 +823,21 @@ def upload_lookup_file(request):
                         int(lookup_info[i][0].strip())
                     lookup_info[i][1] = lookup_info[i][1].strip()
             except:
-                request.session[
-                    'error'] = 'Error occurred while trying to find the lookup ' + \
-                               'codes and class names in the uploaded file. Please ' + \
-                               'make sure the lookup file is in the csv format (see ' + \
-                               'guide for help).'
+                error_msg = 'Error occurred while trying to find the lookup ' \
+                            'codes and class names in the uploaded file. ' \
+                            'Please make sure the lookup file is in the csv ' \
+                            'format (see guide for help).'
+                request.session['error'] = error_msg
+                request.session['error_lookup'] = error_msg
                 return render(request, 'swatluu/index.html')
 
             # Add lookup content to session variable
             request.session['lookup_file_data'] = lookup_info
             return render(request, 'swatluu/index.html')
         else:
-            request.session['error'] = 'Please selet a file before uploading.'
+            error_msg = 'Please selet a file before uploading.'
+            request.session['error'] = error_msg
+            request.session['error_lookup'] = error_msg
             return render(request, 'swatluu/index.html')
     else:
         # Nothing was posted, reload main page
