@@ -111,3 +111,7 @@ urlpatterns = [
     url(r'^fieldswat/download_data$', fieldswat_views.download_data, name='fieldswat/download_data'),
 ]
 
+handler404 = 'swatapps.views.page_not_found'
+handler500 = 'swatapps.views.error'
+handler403 = 'swatapps.views.permission_denied'
+handler400 = 'swatapps.views.bad_request'
