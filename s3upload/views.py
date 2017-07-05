@@ -158,7 +158,7 @@ def check_if_file_already_on_s3(email, file_name, file_size):
     matching_file_url = ""
 
     # Fetch all records with a matching file name
-    s3_objs = S3Upload.objects.get(
+    s3_objs = S3Upload.objects.filter(
         email=email,
         file_name=file_name,
         file_size=file_size,
@@ -168,7 +168,7 @@ def check_if_file_already_on_s3(email, file_name, file_size):
     # If at least one record was found
     if s3_objs:
         file_exists = True
-        matching_file_url = s3_objs.s3_url
+        matching_file_url = s3_objs[0].s3_url
 
     return file_exists, matching_file_url
 
@@ -194,7 +194,7 @@ def update_upload_status(request):
 
         if form.is_valid():
             # Query table for matching file
-            s3_obj = S3Upload.objects.get(
+            s3_obj = S3Upload.objects.filter(
                 email=request.user.email,
                 file_name=form.cleaned_data["file_name"],
                 file_size=form.cleaned_data["file_size"]
@@ -203,8 +203,8 @@ def update_upload_status(request):
             if s3_obj:
                 try:
                     # Update matching file's status to match posted status
-                    s3_obj.status = int(form.cleaned_data["status"])
-                    s3_obj.save()
+                    s3_obj[0].status = int(form.cleaned_data["status"])
+                    s3_obj[0].save()
                     response["status"] = "success"
                 except:
                     response["status"] = "fail"
