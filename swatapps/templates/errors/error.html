@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% block meta_description %}
+    <meta name="description" content="Request has generated an error." />
+{% endblock %}
+
+{% block title %}Error - {% endblock %}
+
+{% load static %}
+
+{% block content %}
+  <div style="margin-bottom: 200px;">
+    <h2>Request has generated an error.</h2>
+    <p>
+      If this issue persists, please contact us through the
+      <a href="{% url 'contact_us' %}">Contact Us</a> form or email
+      <a href="mailto:saraswat@purdue.com">Dharmendra Saraswat</a>.
+      Assistance will be provided as quickly as possible.</p>
+  </div>
+{% endblock %}
