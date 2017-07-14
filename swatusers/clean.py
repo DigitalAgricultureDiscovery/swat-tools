@@ -63,9 +63,9 @@ def remove_unfinished_process_folders(path, logger):
 
 def clean_up_user_data(logger, expired_objs):
     """
-    Responsible for calls to methods that will remove temporary and processed
-    user data that is older than 48 hours. Also removes records of expired
-    tasks from the database.
+    Responsible for calls to methods that will remove temporary older than 12
+    hours and processed user data that is older than 48 hours. Also removes
+    records of expired tasks from the database.
     
     Returns
     -------
@@ -106,19 +106,19 @@ def clean_up_user_data(logger, expired_objs):
             # Loop through each task in the user directory
             for task in user_tasks:
                 # Check if task id matches record in the database
-                # and if it is over 48 hours old
+                # and if it is over 12 hours old
                 obj = UserTask.objects.filter(task_id=task)
 
                 if not obj:
-                    # Check if task is older than 48 hours
+                    # Check if task is older than 12 hours
                     task_path = "{0}user_data/{1}/{2}".format(tmp_path, user, task)
                     last_modified = os.stat(task_path).st_mtime
                     task_last_modified_time = timezone.datetime.fromtimestamp(last_modified)
                     server_current_time = timezone.datetime.now()
                     time_diff = server_current_time - task_last_modified_time
 
-                    # If the folder has not been modified in over 48 hours
-                    if divmod(time_diff.days * 86400 + time_diff.seconds, 60)[0] / (60*24*2) > 1:
+                    # If the folder has not been modified in over 12 (60 * 12) hours
+                    if divmod(time_diff.days * 86400 + time_diff.seconds, 60)[0] / (60*12) > 1:
                         logger.info("Removing {0}.".format(task))
                         remove_unfinished_process_folders(tmp_path + 'user_data/' + user + '/' + task, logger)
     except:
