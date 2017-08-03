@@ -14,7 +14,11 @@
   <div class="row">
     <div class="col-sm-12 col-md-12 col-lg-12">
       <p>
-        Please provide us with your upload speed so we may better transfer your data.
+        Please provide us with your upload speed. This will help us determine
+        the optimum method for uploading your data.
+        <br />This <a href="https://speedtest.net" target="_blank">tool</a>
+        will help measure your upload speed if you are unsure of which speed
+        range to select.
       </p>
       <form role="form" method="post" action="{% url 'speed' %}" enctype="multipart/form-data">
         {% csrf_token %}
