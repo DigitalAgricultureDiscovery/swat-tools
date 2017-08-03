@@ -93,7 +93,7 @@ def authenticate_user(request):
 
 
 @login_required
-def set_internet_speed(request):
+def set_upload_speed(request):
 
     if request.method == 'POST':
 
@@ -104,14 +104,14 @@ def set_internet_speed(request):
             request.user.save()
             return render(
                 request,
-                "swatusers/internet_speed.html", {
+                "swatusers/upload_speed.html", {
                     "form": InternetSpeedForm(request),
                     "status": "success"
                 },
                 content_type="text/html")
         else:
             return render(
-                request, "swatusers/internet_speed.html", {
+                request, "swatusers/upload_speed.html", {
                     "form": form
                 },
                 content_type="text/html")
@@ -120,7 +120,7 @@ def set_internet_speed(request):
 
     return render(
         request,
-        "swatusers/internet_speed.html", {
+        "swatusers/upload_speed.html", {
             "form": form})
 
 
