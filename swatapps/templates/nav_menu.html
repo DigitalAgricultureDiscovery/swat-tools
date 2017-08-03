@@ -18,7 +18,7 @@
       </ul>
       <ul class="nav navbar-nav navbar-right">
         {% if user.is_authenticated %}
-          {% if request.path != "/tool_selection" %}
+          {% if request.path != "/tool_selection" and request.path != "/" %}
             <li><a title="Tool Selection" href="{% url 'tool_selection' %}">Return to Tool Selection</a></li>
           {% else %}
             <li><a title="Set Upload Speed" href="{% url 'speed' %}">Set Upload Speed</a></li>
