@@ -74,17 +74,33 @@ class LoginForm(forms.Form):
 class InternetSpeedForm(forms.Form):
     """ Form for the user to set their internet speed. """
 
-    UPLOAD_SPEED_CHOICES = (
-        (0, 'Not Provided'),
-        (1, '<= 256 Kbps'),
-        (2, '> 256 Kbps <= 1 Mbps'),
-        (3, '> 1 Mbps <= 10 Mbps'),
-        (4, '> 10 Mbps <= 25 Mbps'),
-        (5, '> 25 Mbps')
-    )
+    def __init__(self, request, *args, **kwargs):
+        super(InternetSpeedForm, self).__init__(*args, **kwargs)
+        current_upload_speed = request.user.upload_speed
 
-    upload_speed = forms.ChoiceField(
-        label="Upload Speed (Optional)",
-        widget=forms.RadioSelect,
-        choices=UPLOAD_SPEED_CHOICES
-    )
+        if (int(current_upload_speed) > 0):
+            # Remove "Not Provided" option if user has
+            # already selected a speed range
+            UPLOAD_SPEED_CHOICES = (
+                (1, '<= 256 Kbps'),
+                (2, '> 256 Kbps <= 1 Mbps'),
+                (3, '> 1 Mbps <= 10 Mbps'),
+                (4, '> 10 Mbps <= 25 Mbps'),
+                (5, '> 25 Mbps')
+            )
+        else:
+            UPLOAD_SPEED_CHOICES = (
+                (0, 'Not Provided'),
+                (1, '<= 256 Kbps'),
+                (2, '> 256 Kbps <= 1 Mbps'),
+                (3, '> 1 Mbps <= 10 Mbps'),
+                (4, '> 10 Mbps <= 25 Mbps'),
+                (5, '> 25 Mbps')
+            )
+
+        self.fields["upload_speed"] = forms.ChoiceField(
+            label="Upload Speed (Optional)",
+            widget=forms.RadioSelect,
+            choices=UPLOAD_SPEED_CHOICES,
+            initial=current_upload_speed
+        )

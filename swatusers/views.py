@@ -51,7 +51,10 @@ def authenticate_user(request):
                     if user.is_active:
                         request.session['name'] = user.email
                         login(request, user)
-                        if next == "":
+                        if user.upload_speed == 0:
+                            return HttpResponseRedirect(
+                            resolve_url('speed'))
+                        elif next == "":
                             return HttpResponseRedirect(
                                 resolve_url('tool_selection'))
                         else:
@@ -90,29 +93,35 @@ def authenticate_user(request):
 
 
 @login_required
-def set_internet_speed(request):
+def set_upload_speed(request):
 
     if request.method == 'POST':
 
-        form = InternetSpeedForm(request.POST)
+        form = InternetSpeedForm(request, request.POST or None)
 
         if form.is_valid():
             request.user.upload_speed = form.cleaned_data["upload_speed"]
             request.user.save()
-            return render(request, 'swatusers/internet_speed.html',
-                          {'form': form, 'status': "success"})
+            return render(
+                request,
+                "swatusers/upload_speed.html", {
+                    "form": InternetSpeedForm(request),
+                    "status": "success"
+                },
+                content_type="text/html")
         else:
-            return render(request, 'swatusers/internet_speed.html',
-                          {'form': form})
+            return render(
+                request, "swatusers/upload_speed.html", {
+                    "form": form
+                },
+                content_type="text/html")
     else:
-        form = InternetSpeedForm(initial={
-            "upload_speed": request.user.upload_speed
-        })
+        form = InternetSpeedForm(request)
 
     return render(
         request,
-        'swatusers/internet_speed.html',
-        {'form': form})
+        "swatusers/upload_speed.html", {
+            "form": form})
 
 
 def validate_recaptcha_response(recaptcha_response):
@@ -381,7 +390,7 @@ def contact_us_done(request):
 
 
 def contact_us_error(request):
-    """ Renders page indicating there was an error while sending 
+    """ Renders page indicating there was an error while sending
         the contact email """
 
     context = {'title': ('Contact email failed to send')}
