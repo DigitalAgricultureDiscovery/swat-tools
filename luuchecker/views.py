@@ -230,7 +230,7 @@ def upload_subbasin_shapefile_zip(request):
 
             if not os.path.exists(subbasin_shapefile_filepath):
                 logger.error(
-                    "{0}: Unable upload SWAT model zipfile.".format(
+                    "{0}: Unable upload subbasin shapefile.".format(
                         request.session.get('unique_directory_name')))
                 error_msg = 'Could not find the folder ' + \
                             subbasin_shapefile_filename + '/subs1.shp. ' \
@@ -464,7 +464,7 @@ def upload_base_landuse_raster_file(request):
 
 @login_required
 def select_number_of_landuse_layers(request):
-    """ This view gets the number of landuse layers in the 
+    """ This view gets the number of landuse layers in the
     landuse zip other than the base layer """
     # Clear any existing progress messages
     request.session['progress_complete'] = []
@@ -644,7 +644,7 @@ def request_process(request):
     2) Get all directory and uploaded information through session
     3) Convert subbasin file and adf files to tiff files
     4) Check for landuses available in layers that are not present in base layer. Print this information in EMERGING_LULC.txt file
-    5) modify and update that information in base layer 
+    5) modify and update that information in base layer
     6) convert and copy the updated base layer into the output.
     """
     request.session['error'] = []
