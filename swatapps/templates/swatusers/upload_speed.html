@@ -24,7 +24,7 @@
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary" value="Confirm">Confirm</button>
-        <a href="{% url 'tool_selection'%}" class="btn btn-default" role="button" style="font-size: 14px; font-weight: 400; text-decoration: none;">Back</a>
+        <a href="{% url 'tool_selection'%}" class="btn btn-default" role="button" style="font-size: 14px; font-weight: 400; text-decoration: none;">Return to Tool Selection</a>
         {% if status == "success" %}
           <div class="alert alert-success" role="alert" style="margin-top: 10px;">Upload speed set.</div>
         {% endif %}
