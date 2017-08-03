@@ -37,6 +37,15 @@ a:link {
   padding: 5px 15px;
 }
 
+/* Set Upload Speed page */
+#upload_form > ul {
+  display: inline-block;
+}
+
+#upload_form > ul > li > label {
+  float: left;
+}
+
 /* Acknowledgements */
 #acknowledgements {
     background-color: #F0F0F0;
