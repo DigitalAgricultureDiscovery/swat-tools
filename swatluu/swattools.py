@@ -106,7 +106,7 @@ def read_hru_files(txt_in_out_dir):
     # loop through hru files
     for hru_filepath in hru_filepaths:
         # open the hru file, read the first line and close the file
-        hru_file = open(hru_filepath, 'r')
+        hru_file = open(hru_filepath, 'r', errors="surrogateescape")
         first_line = hru_file.readline()
         hru_file.close()
 
@@ -198,8 +198,8 @@ def validate_raster_properties(hrus1_path, lu_path, lu_layers):
         lu_pres = lu.GetGeoTransform()[1]
         lu_extent = lu.RasterYSize, lu.RasterXSize
 
-        # test if pixel resolution matches hrus1
-        if hrus1_pres != lu_pres:
+        # test if pixel resolution matches hrus1 (only compare to hundredths)
+        if round(hrus1_pres, 2) != round(lu_pres, 2):
             validated['status'] = 'error'
             validated[
                 'msg'] = 'The resolution of hrus1 and ' + layer_name + ' do not match. ' + \
