@@ -79,7 +79,7 @@ class InternetSpeedForm(forms.Form):
         current_upload_speed = request.user.upload_speed
 
         if (int(current_upload_speed) > 0):
-            # Remove Not Provided option if user has
+            # Remove "Not Provided" option if user has
             # already selected a speed range
             UPLOAD_SPEED_CHOICES = (
                 (1, '<= 256 Kbps'),

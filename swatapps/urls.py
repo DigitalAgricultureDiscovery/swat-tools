@@ -31,7 +31,7 @@ urlpatterns = [
     url(r'^s3/', include('s3upload.urls')),
 
     # internet speed page
-    url(r'^set_internet_speed$', swatusers_views.set_internet_speed, name='speed'),
+    url(r'^set_upload_speed$', swatusers_views.set_upload_speed, name='speed'),
 
     # Registration view from swatusers views
     url(r'^register$', swatusers_views.register_user, name='register'),
