@@ -11,29 +11,31 @@
 {% block title %}Set Upload Speed - {% endblock %}
 
 {% block content %}
-  <div class="row">
-    <div class="col-sm-12 col-md-12 col-lg-12">
-      <p style="max-width: 600px;">
-        Please provide us with your upload speed. This will help us determine
-        the optimum method for uploading your data.
-        This <a href="https://speedtest.net" target="_blank">tool</a>
-        will help measure your upload speed if you are unsure of which speed
-        range to select. You may update your upload speed at any time by
-        returning to this page via the <em>Set Upload Speed</em> link found
-        on SWAT Tool's homepage.
-      </p>
-      <form role="form" method="post" action="{% url 'speed' %}" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary" value="Confirm">Confirm</button>
-        <a href="{% url 'tool_selection'%}" class="btn btn-default" role="button" style="font-size: 14px; font-weight: 400; text-decoration: none;">Return to Tool Selection</a>
-        {% if status == "success" %}
-          <div class="alert alert-success" role="alert" style="margin-top: 10px; max-width: 600px;">
-            Your upload speed has been set and you may continue using the site by
-            returning to the Tool Selection page and opening a tool.
-          </div>
-        {% endif %}
-      </form>
+  <div class="row" style="padding: 15px;">
+    <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
+      <div class="inner-block">
+        <p style="max-width: 787px;">
+          Please provide us with your upload speed. This will help us determine
+          the optimum method for uploading your data.
+          This <a href="https://speedtest.net" target="_blank">tool</a>
+          will help measure your upload speed if you are unsure of which speed
+          range to select. You may update your upload speed at any time by
+          returning to this page via the <em>Set Upload Speed</em> link found
+          on SWAT Tool's homepage.
+        </p>
+        <form id="upload_form" role="form" method="post" action="{% url 'speed' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-primary" value="Confirm">Confirm</button>
+          <a href="{% url 'tool_selection'%}" class="btn btn-default" role="button" style="font-size: 14px; font-weight: 400; text-decoration: none;">Return to Tool Selection</a>
+          {% if status == "success" %}
+            <div class="alert alert-success" role="alert" style="margin-top: 10px; max-width: 787px;">
+              Your upload speed has been set and you may continue using the site by
+              returning to the Tool Selection page and opening a tool.
+            </div>
+          {% endif %}
+        </form>
+      </div>
     </div>
   </div>
 {% endblock content %}
