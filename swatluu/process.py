@@ -529,17 +529,18 @@ class SWATLUUProcess(object):
             soil_codes_from_hru_files = hru_files_read[3]
             slope_ranges_from_hru_files = hru_files_read[4]
         except Exception:
-            self.logger.info('Unable to read the hru files in TxtInOut.')
+            self.logger.error('Unable to read the hru files in TxtInOut.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
         # verify the length (count) of the list matches our dominant hrus
         if len(hru_ids_from_hru_files) != len(self.dominant_hrus):
             # halt function
-            self.logger.info('Number of HRU ids (' + str(
+            self.logger.error('Number of HRU ids (' + str(
                 len(
                     hru_ids_from_hru_files)) + ') found in *.hru files does not match number of dominant HRUs (' + str(
                 len(self.dominant_hrus)) + ').')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
+            raise Exception('Number of HRU ids does not match number of dominant HRUS.')
 
         self.logger.info(
             'Collecting subbasin ids, landuse codes, soil codes, slope ranges, and subbasin ids.')

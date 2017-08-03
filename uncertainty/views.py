@@ -741,7 +741,8 @@ def upload_lookup_file(request):
             except:
                 error_msg = 'Error reading the uploaded lookup file, {0}. ' \
                             'Please check that the file is not empty and is ' \
-                            'in the csv format.'.format(lookup_filename)
+                            'in the csv format. Remove any empty lines from ' \
+                            'the bottom of the file'.format(lookup_filename)
                 request.session['error'] = error_msg
                 request.session['error_lookup'] = error_msg
                 return render(request, 'uncertainty/index.html')
