@@ -143,38 +143,7 @@
             </div>
         </div>
 
-        <nav class="navbar navbar-default" style="background-color: #b1810b; border-radius: 0px; border: none;">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                </div>
-                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                    <ul class="nav navbar-nav">
-                        {% if user.is_authenticated %}
-                            <li class="dropdown">
-                                <a href="{% url 'index' %}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Home <span class="caret"></span></a>
-                                <ul class="dropdown-menu">
-                                    <li><a title="Tool Selection" href="{% url 'tool_selection' %}">Return to Tool Selection</a></li>
-                                    <li><a title="Set Upload Speed" href="{% url 'speed' %}">Set Upload Speed</a></li>
-                                    <li><a title="Change Password" target="_blank" href="{% url 'password_change' %}">Change Password</a></li>
-                                    <li><a title="Logoff" href="{% url 'logout' %}">Logoff</a></li>
-                                </ul>
-                            </li>
-                            <li><a title="Task Status" href="{% url 'task_status' %}">Task Status</a></li>
-                            <li><a title="Contact Us" href="{% url 'contact_us' %}">Contact Us</a></li>
-                        {% else %}
-                            <li><a title="Login" href="{% url 'login' %}">Log In</a></li>
-                            <li><a title="Register" href="{% url 'register' %}">Register</a></li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
-        </nav>
+        {% include "nav_menu.html" %}
 
         <div class="container-fluid">
             <div class="topspace"></div>
