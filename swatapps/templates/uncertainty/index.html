@@ -23,9 +23,9 @@
         function showProcess() {
             document.getElementById(
                 'message_process')
-                    .innerHTML = 
+                    .innerHTML =
                         'Processing may take several minutes. ' +
-                        'Please wait. Do not refresh or close tab'; 
+                        'Please wait. Do not refresh or close tab';
         }
 
         function executeQuery() {
@@ -101,7 +101,7 @@
             $("#Help2").mouseout(function() {
                 $("#help2div").hide();
                 $("#message2").remove();
-                
+
             });
 
             $("#Help3").mouseover(function() {
@@ -114,7 +114,7 @@
             $("#Help3").mouseout(function() {
                 $("#help3div").hide();
                 $("#message3").remove();
-                
+
             });
 
             $("#Help4").mouseover(function() {
@@ -124,7 +124,7 @@
                     "Select the land use files along with dates. The files " +
                     "selected should be available in Landuse folder in " +
                     "grid format.</p>");
-            });            
+            });
             $("#Help4").mouseout(function() {
                 $("#help4div").hide();
                 $("#message4").remove();
@@ -146,13 +146,14 @@
             //     $("#help6div").append(
             //         "<p id='message6'>" +
             //         "Select the swat executable file (ex: swat2009.exe). " +
-            //         "The file should be available in TxtInOut Folder</p>");                
+            //         "The file should be available in TxtInOut Folder</p>");
             // });
             // $("#Help6").mouseout(function() {
             //     $("#help6div").hide();
             //     $("#message6").remove();
             // });
 
+            var isS3Upload = false;
             function determineDestination (file) {
               $.ajax({
                 url: "s3/determine_upload_destination",
@@ -162,12 +163,37 @@
                 },
                 success: function (data) {
                   if (data.status === "true") {
+                    isS3Upload = true;
                     getSignedRequest(file);
                   } else {
                     $("#upload1").prop("disabled", false);
                   }
                 }
               });
+            }
+
+            /* Reminder user about upload speed page */
+            var uploadCounter = [];
+            function startUploadCounter () {
+              uploadDuration = 0;
+              uploadCounter = setInterval(function () {
+                uploadDuration++;
+                if (uploadDuration > 60 && !isS3Upload) {
+                  $("#help1div").empty();
+                  $("#help1div").append("If you are on a slow connection or " +
+                                        "uploading a very large file, make sure " +
+                                        "your upload speed is set to the " +
+                                        "appropriate range. You can find a link " +
+                                        "to the Set Upload Speed page on the Tool " +
+                                        "Selection page.");
+                  $("#help1div").show();
+                  stopUploadCounter();
+                }
+              }, 1000);
+            }
+
+            function stopUploadCounter () {
+              clearInterval(uploadCounter);
             }
 
             $(function () {
@@ -178,6 +204,7 @@
                   return alert("No file selected.");
                 }
                 determineDestination(file);
+                startUploadCounter();
               };
             });
         });
@@ -211,11 +238,11 @@
                       <label class="radio-inline"><input type="radio" name="upload-overwrite" checked="checked" value="no">No</label>
                       <label class="radio-inline"><input type="radio" name="upload-overwrite" value="yes">Yes</label>
                     </div>
-                    <div id="uploadAlert" class="alert alert-success" role="alert"></div>
-                    <div id="help1div" class="alert alert-info" role="alert"></div>
                     <div id="loading" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
                     </div>
+                    <div id="uploadAlert" class="alert alert-success" role="alert"></div>
+                    <div id="help1div" class="alert alert-info" role="alert"></div>
                     {% if request.session.error_swat_model %}
                       <div class="alert alert-danger" role="alert">
                         <strong style="color:#F92E31;">{{ request.session.error_swat_model }}</strong><br/>
@@ -232,12 +259,12 @@
                 <form id="form2" role="form" method="post" action="{% url 'uncertainty/upload_landuse_zip' %}" enctype="multipart/form-data" style="text-align: left">
                     {% csrf_token %}
                     <label><b>Landuse Folder: </b>&nbsp;</label>
-                    
+
                     {% buttons %}
                         <div align="left">
                             <input style="display: inline; padding-bottom: 5px" id="Landuse" type="file" name="landuse_zip">
                             <button id="upload2" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading1').show();" {% if not request.session.uncertainty_swat_model_dir %}disabled{% endif %}>Upload</button>
-                            <button id="Help2" type="button">?</button>         
+                            <button id="Help2" type="button">?</button>
                         {% if request.session.uncertainty_landuse_dir %}
                             <span class="icon" style="color: #33CC33; margin-left: 15px">
                                 <i class="glyphicon glyphicon glyphicon-ok"></i>
@@ -266,7 +293,7 @@
                 <form id="form4" role="form" method="post" action="{% url 'uncertainty/upload_landuse_layer' %}" enctype="multipart/form-data" style="text-align: left">
                     {% csrf_token %}
                     <label><b>Landuse layer: </b>&nbsp;</label>
-                    
+
                     {% buttons %}
                         <div align="left">
                             <input style="display: inline; padding-bottom: 5px" id="Landuse_layer" type="file" name="landuse_layer">
@@ -303,12 +330,12 @@
                 <form id="form5" role="form" method="post" action="{% url 'uncertainty/upload_lookup_file' %}" enctype="multipart/form-data" style="text-align: left">
                     {% csrf_token %}
                     <label><b>Lookup file: </b>&nbsp;</label>
-                    
+
                     {% buttons %}
                         <div align="left">
                             <input style="display: inline; padding-bottom: 5px" id="Lookup" type="file" name="lookup_file">
                             <button id="upload5" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading2').show();" {% if not request.session.uncertainty_landuse_layer_filename %}disabled{% endif %}>Upload</button>
-                            <button id="Help5" type="button">?</button>         
+                            <button id="Help5" type="button">?</button>
                             {% if request.session.uncertainty_lookup_file_data %}
                                 <span class="icon" style="color: #33CC33; margin-left: 15px">
                                     <i class="glyphicon glyphicon glyphicon-ok"></i>
@@ -342,10 +369,10 @@
                             <div id="collapseOne" class="panel-collapse collapse">
                                 <div class="panel-body">
                                     <p>For the landuses you are interested in
-                                    updating, set the Error (%) value to the 
+                                    updating, set the Error (%) value to the
                                     categorical error percentage. In the No. Realizations
                                     column, provide the number of realizations. Once
-                                    you have finished making your adjustments click 
+                                    you have finished making your adjustments click
                                     the Update button.</p>
                                 </div>
                                 {% if uncertainty_lookup_loop_times %}
@@ -357,7 +384,7 @@
                                             <th style="text-align: center"><strong>Error (%)</strong></th>
                                             <th style="text-align: center"><strong>No. Realizations</strong></th>
                                         </tr>
-                                        {% for row in request.session.uncertainty_lookup_file_data %}                                  
+                                        {% for row in request.session.uncertainty_lookup_file_data %}
                                             {% ifnotequal row.0 'Value' %}
                                                 <tr>
                                                     <td width="150px">
@@ -409,7 +436,7 @@
                 <button id="reset" type="submit" class="btn btn-warning" value="Reset">Reset</button>
             {% endbuttons %}
         </form>
-    
+
         <form id="form7" role="form" method="post" action="{% url 'uncertainty/process' %}" enctype="multipart/form-data" style="display: inline-block">
         {% csrf_token %}
             {% buttons %}
