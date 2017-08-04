@@ -101,10 +101,6 @@ var successfulUpload = function(el, fileName, fileSize) {
   $("#uploadAlert").show();
   $("#upload1").prop("disabled", false);
 
-  setTimeout(function () {
-    $("#uploadAlert").hide();
-  }, 7000);
-
   $.ajax({
     url: 's3/update_upload_status',
     type: 'POST',
