@@ -25,9 +25,9 @@
         function showProcess() {
             document.getElementById(
                 'message_process')
-                    .innerHTML = 
+                    .innerHTML =
                         'Processing may take several minutes. ' +
-                        'Please wait. Do not refresh or close tab'; 
+                        'Please wait. Do not refresh or close tab';
         }
 
         // Load jquery date picker input
@@ -77,7 +77,7 @@
                 $("#help2div").hide();
                 $("#message2").remove();
             });
-        
+
             $("#Help3").mouseover(function() {
                 $("#help3div").show();
                 $("#help3div").append(
@@ -115,6 +115,7 @@
             });
         });
 
+        var isS3Upload = false;
         function determineDestination (file) {
           $.ajax({
             url: "s3/determine_upload_destination",
@@ -124,12 +125,37 @@
             },
             success: function (data) {
               if (data.status === "true") {
+                isS3Upload = true;
                 getSignedRequest(file);
               } else {
                 $("#upload1").prop("disabled", false);
               }
             }
           });
+        }
+
+        /* Reminder user about upload speed page */
+        var uploadCounter = [];
+        function startUploadCounter () {
+          uploadDuration = 0;
+          uploadCounter = setInterval(function () {
+            uploadDuration++;
+            if (uploadDuration > 60 && !isS3Upload) {
+              $("#help1div").empty();
+              $("#help1div").append("If you are on a slow connection or " +
+                                    "uploading a very large file, make sure " +
+                                    "your upload speed is set to the " +
+                                    "appropriate range. You can find a link " +
+                                    "to the Set Upload Speed page on the Tool " +
+                                    "Selection page.");
+              $("#help1div").show();
+              stopUploadCounter();
+            }
+          }, 1000);
+        }
+
+        function stopUploadCounter () {
+          clearInterval(uploadCounter);
         }
 
         $(function () {
@@ -140,6 +166,7 @@
               return alert("No file selected.");
             }
             determineDestination(file);
+            startUploadCounter();
           };
         });
     </script>
@@ -171,11 +198,11 @@
                       <label class="radio-inline"><input type="radio" name="upload-overwrite" checked="checked" value="no">No</label>
                       <label class="radio-inline"><input type="radio" name="upload-overwrite" value="yes">Yes</label>
                     </div>
-                    <div id="uploadAlert" class="alert alert-success" role="alert"></div>
-                    <div id="help1div" class="alert alert-info" role="alert"></div>
                     <div id="loading" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
                     </div>
+                    <div id="uploadAlert" class="alert alert-success" role="alert"></div>
+                    <div id="help1div" class="alert alert-info" role="alert"></div>
                     {% if request.session.error_swat_model %}
                       <div class="alert alert-danger" role="alert">
                         <strong style="color:#F92E31;">{{ request.session.error_swat_model }}</strong><br/>
@@ -192,12 +219,12 @@
                 <form id="form2" role="form" method="post" action="{% url 'swatluu/upload_landuse_zip' %}" enctype="multipart/form-data" style="text-align: left">
                     {% csrf_token %}
                     <label><b>Landuse Folder: </b>&nbsp;</label>
-                    
+
                     {% buttons %}
                         <div align="left">
                             <input style="display: inline; padding-bottom: 5px" id="Landuse" type="file" name="landuse_zip">
                             <button id="upload2" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading1').show();" {% if not request.session.swat_model_filepath %}disabled{% endif %}>Upload</button>
-                            <button id="Help2" type="button">?</button>         
+                            <button id="Help2" type="button">?</button>
                         {% if request.session.landuse_filepath %}
                             <span class="icon" style="color: #33CC33; margin-left: 15px">
                                 <i class="glyphicon glyphicon glyphicon-ok"></i>
@@ -220,14 +247,14 @@
         </div>
     </div>
 
-    
+
     <div class="row" style="padding-top: 5px">
         <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
             <div class="inner-block" style="max-width: 650px; min-width: 610px; width: 45%;">
                 <form id="form3" role="form" method="post" action="{% url 'swatluu/select_number_of_landuse_layers' %}" enctype="multipart/form-data" style="text-align: left">
                     {% csrf_token %}
                     <label><b>No. of Landuse layers:</b> &nbsp;</label>
-                    
+
                     {% buttons %}
                         <div align="left">
                             <input style="display: inline; padding-bottom: 5px" id="layersCount" type="text" name="landuse_layer_count" size="5"/>
@@ -240,7 +267,7 @@
                         {% endif %}
                         </div>
                     {% endbuttons %}
-                    
+
                     <div id="help3div" class="alert alert-info" role="alert"></div>
                     <div id="loading6" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20" alt="" />
@@ -260,7 +287,7 @@
             <div class="inner-block" style="max-width: 650px; min-width: 610px; width: 45%;">
                 <form id="form4" role="form" method="post" action="{% url 'swatluu/validate_selected_landuse_layers' %}" enctype="multipart/form-data" style="text-align: left">
                     {% csrf_token %}
-                    {% if loop_times %} 
+                    {% if loop_times %}
                         {% for i in loop_times %}
                             <label><b>Landuse layer{{ i }}: </b>&nbsp;</label>
                             <div class="row" style="padding-bottom: 10px">
@@ -277,7 +304,7 @@
                                 <button id="Help4" type="button">?</button>
                             </div>
                         {% endbuttons %}
-                    
+
                         <div id="help4div" class="alert alert-info" role="alert"></div>
                     {% else %}
                         <label><b> Landuse layer1:</b></label>
@@ -298,12 +325,12 @@
                 <form id="form5" role="form" method="post" action="{% url 'swatluu/upload_lookup_file' %}" enctype="multipart/form-data" style="text-align: left">
                     {% csrf_token %}
                     <label><b>Lookup File: </b>&nbsp;</label>
-                    
+
                     {% buttons %}
                         <div align="left">
                             <input style="display: inline; padding-bottom: 5px" id="lookup_file" type="file" name="lookup_file">
                             <button id="upload5" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading2').show();" {% if not request.session.landuse_layers_names %}disabled{% endif %}/>Upload</button>
-                            <button id="Help5" type="button">?</button>         
+                            <button id="Help5" type="button">?</button>
                         {% if request.session.lookup_filepath %}
                             <span class="icon" style="color: #33CC33; margin-left: 15px">
                                 <i class="glyphicon glyphicon glyphicon-ok"></i>
@@ -333,7 +360,7 @@
                 <button id="reset" type="submit" class="btn btn-warning" value="Reset">Reset</button>
             {% endbuttons %}
         </form>
-    
+
         <form id="form7" role="form" method="post" action="{% url 'swatluu/process' %}" enctype="multipart/form-data" style="display: inline-block">
         {% csrf_token %}
             {% buttons %}
@@ -363,5 +390,5 @@
             </div>
         </div>
     </div>
-    
+
 {% endblock content %}

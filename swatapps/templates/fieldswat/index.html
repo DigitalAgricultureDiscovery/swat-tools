@@ -89,6 +89,7 @@
             });
         });
 
+        var isS3Upload = false;
         function determineDestination (file) {
           $.ajax({
             url: "s3/determine_upload_destination",
@@ -98,12 +99,37 @@
             },
             success: function (data) {
               if (data.status === "true") {
+                isS3Upload = true;
                 getSignedRequest(file);
               } else {
                 $("#upload1").prop("disabled", false);
               }
             }
           });
+        }
+
+        /* Reminder user about upload speed page */
+        var uploadCounter = [];
+        function startUploadCounter () {
+          uploadDuration = 0;
+          uploadCounter = setInterval(function () {
+            uploadDuration++;
+            if (uploadDuration > 60 && !isS3Upload) {
+              $("#help1div").empty();
+              $("#help1div").append("If you are on a slow connection or " +
+                                    "uploading a very large file, make sure " +
+                                    "your upload speed is set to the " +
+                                    "appropriate range. You can find a link " +
+                                    "to the Set Upload Speed page on the Tool " +
+                                    "Selection page.");
+              $("#help1div").show();
+              stopUploadCounter();
+            }
+          }, 1000);
+        }
+
+        function stopUploadCounter () {
+          clearInterval(uploadCounter);
         }
 
         $(function () {
@@ -114,6 +140,7 @@
               return alert("No file selected.");
             }
             determineDestination(file);
+            startUploadCounter();
           };
         });
 
