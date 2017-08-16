@@ -272,7 +272,7 @@ def upload_swat_model_zip(request):
                 # Unzip uploaded file in tmp directory
                 subprocess.call([
                     'unzip',
-                    '-qq',
+                    '-qq', '-o',
                     unique_path + '/input/' + swat_model_filename,
                     '-d',
                     unique_path + '/input'
@@ -491,7 +491,7 @@ def upload_landuse_zip(request):
                     landuse_filename)
                 subprocess.call([
                     "unzip",
-                    "-qq",
+                    "-qq", "-o",
                     filepath,
                     "-d",
                     unique_path + "/input/"
