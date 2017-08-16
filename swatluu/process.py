@@ -766,7 +766,10 @@ class SWATLUUProcess(object):
     def clean_up_input_data(self):
         """ Removes input data from tmp directory. """
         self.logger.info('Removing input files from tmp.')
-        shutil.rmtree(self.process_root_dir)
+        try:
+            shutil.rmtree(self.process_root_dir)
+        except PermissionError:
+            logger.warning("Unable to remove the input data from /tmp.")
 
     def email_user_link_to_results(self):
         """
