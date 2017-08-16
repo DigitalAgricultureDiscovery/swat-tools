@@ -274,7 +274,7 @@ def upload_swat_model_zip(request):
                 # Unzip uploaded file in tmp directory
                 subprocess.call([
                     "unzip",
-                    "-qq",
+                    "-qq", "-o",
                     unique_path + "/input/" + swat_model_filename,
                     "-d",
                     unique_path + "/input/"
@@ -605,9 +605,17 @@ def upload_fields_shapefile_zip(request):
 
             # Uncompress the data
             try:
-                unzip_command = 'unzip -qq ' + unique_path + '/input/' + \
-                                fields_shapefile_foldername + ' -d ' + unique_path + '/input/'
-                os.system(unzip_command)
+                filepath = "{0}/input/{1}".format(
+                    unique_path,
+                    fields_shapefile_foldername
+                )
+                subprocess.call([
+                    "unzip",
+                    "-qq", "-o",
+                    filepath,
+                    "-d",
+                    unique_path + "/input/"
+                ])
 
                 # Set permissions for unzipped data
                 fix_file_permissions(unique_path + '/input/' + fields_shapefile_foldername)

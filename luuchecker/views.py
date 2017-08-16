@@ -188,7 +188,7 @@ def upload_subbasin_shapefile_zip(request):
                     subbasin_shapefile_filename)
                 subprocess.call([
                     "unzip",
-                    "-qq",
+                    "-qq", "-o",
                     filepath,
                     "-d",
                     unique_path + "/input/"
@@ -345,9 +345,17 @@ def upload_landuse_folder_zip(request):
 
             # Uncompress the zip
             try:
-                unzip_command = 'unzip -qq ' + unique_path + '/input/' + landuse_filename + \
-                                ' -d ' + unique_path + '/input'
-                os.system(unzip_command)
+                filepath = "{0}/input/{1}".format(
+                    unique_path,
+                    landuse_filename
+                )
+                subprocess.call([
+                    "unzip",
+                    "-qq", "-o",
+                    filepath,
+                    "-d",
+                    unique_path + "/input/"
+                ])
 
                 # Set permissions for unzipped data
                 fix_file_permissions(unique_path + '/input/' + landuse_filename)
