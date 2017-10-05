@@ -124,7 +124,6 @@ def set_upload_speed(request):
             "form": form})
 
 
-@user_passes_test(lambda u: u.is_superuser)
 def infographic(request):
     # Return the infographic template
 
