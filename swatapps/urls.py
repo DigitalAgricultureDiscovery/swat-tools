@@ -30,6 +30,9 @@ urlpatterns = [
     # presign s3 upload
     url(r'^s3/', include('s3upload.urls')),
 
+    # google data studio infographic
+    url(r'^infographic$', swatusers_views.infographic, name='infographic'),
+
     # internet speed page
     url(r'^set_upload_speed$', swatusers_views.set_upload_speed, name='speed'),
 
