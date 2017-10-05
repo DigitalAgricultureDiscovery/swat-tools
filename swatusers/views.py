@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.core.mail import send_mail
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, resolve_url
 from django.template.response import TemplateResponse
@@ -122,6 +122,16 @@ def set_upload_speed(request):
         request,
         "swatusers/upload_speed.html", {
             "form": form})
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def infographic(request):
+    # Return the infographic template
+
+    return render(
+        request,
+        'swatusers/infographic.html',
+    )
 
 
 def validate_recaptcha_response(recaptcha_response):
