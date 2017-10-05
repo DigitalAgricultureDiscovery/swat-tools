@@ -19,6 +19,13 @@
                 located in the above navigation bar or clicking "Get started" below. Once signed up,
                 you will gain access to detailed manuals for each tool and a contact form if further assistance is required.</p>
                 <p><a style="text-decoration: none; color: white" class="btn btn-primary btn-lg" href="{% url 'register' %}" role="button">Get started</a></p>
+                <div class="info-tooltip">
+                  <a style="text-decoration:none" href="{% url 'infographic' %}">Click here to view latest user statistics
+                    <span class="info-tooltiptext">
+                      <img src="{% static 'Images\infographic_preview.png' %}" />
+                    </span>
+                  </a>
+                </div>
             </div>
         </div>
     </div>
