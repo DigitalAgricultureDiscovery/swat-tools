@@ -134,16 +134,6 @@ def infographic(request):
     )
 
 
-@user_passes_test(lambda u: u.is_superuser)
-def infographic(request):
-    # Return the infographic template
-
-    return render(
-        request,
-        'swatusers/infographic.html',
-    )
-
-
 def validate_recaptcha_response(recaptcha_response):
     """ Verifies the g-recaptcha-response payload with Google. """
 
