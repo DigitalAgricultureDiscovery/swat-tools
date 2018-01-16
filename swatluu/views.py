@@ -720,6 +720,10 @@ def validate_selected_landuse_layers(request):
             request.session['progress_message'].append(
                 'Landuse layers selected.')
             return render(request, 'swatluu/index.html')
+        else:
+            error_msg = 'Please select landuse layers before continuing.'
+            request.session['error'] = error_msg
+            return render(request, 'swatluu/index.html')
     else:
         return render(request, 'swatluu/index.html')
 
