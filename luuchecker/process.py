@@ -222,6 +222,10 @@ class LUUCheckerProcess(object):
 
         self.logger.info('Begin looping through new landuse layers.\n\n')
 
+        # Keep track of indices already used for new code injection
+        # Key: subbasin id, Val: indices
+        injection_history = {}
+
         try:
             # loop through each new landuse layer selected by the user
             for landuse_layer in self.new_landuse_raster_filepaths:
@@ -267,10 +271,12 @@ class LUUCheckerProcess(object):
                     emerging_lulc_report.write(str(new_lulc_codes) + '\n\n')
 
                     # inject new lulc codes into the base raster array
-                    base_raster_array = self.inject_new_lulc_codes(
+                    base_raster_array, injection_history = self.inject_new_lulc_codes(
+                        i + 1,
                         idx,
                         new_lulc_codes,
-                        base_raster_array)
+                        base_raster_array,
+                        injection_history)
 
                 self.logger.info('End looping through subbasins.')
         except:
@@ -373,7 +379,7 @@ class LUUCheckerProcess(object):
 
         return new_lulc_codes
 
-    def inject_new_lulc_codes(self, idx, new_lulc_codes, base_raster_array):
+    def inject_new_lulc_codes(self, subid, idx, new_lulc_codes, base_raster_array, injection_history):
         """
         Takes the lulc codes that emerged in the new landuse raster and then
         injects instances of each code into the base landuse raster. The
@@ -382,7 +388,9 @@ class LUUCheckerProcess(object):
 
         Parameters
         ----------
-        idx: tuple
+        subid: int
+            Subbasin id
+
             Contains row and column indicies for the subbasin
 
         new_lulc_codes: array
@@ -391,6 +399,10 @@ class LUUCheckerProcess(object):
 
         base_raster_array: array
             Original base landuse raster as numpy array
+            idx: tuple
+
+        injection_history: dictionary
+            Contains randomized indices used by each subbasin
 
         Returns
         -------
@@ -411,17 +423,32 @@ class LUUCheckerProcess(object):
             # while len(valBase) + len(new_lulc_codes) != len(np.unique(base_raster_array[row, col])):
             index_array = list(range(0, np.shape(idx)[1]))
             np.random.shuffle(index_array)
+            # If key does not already exist in dictionary, add it
+            if subid not in injection_history.keys():
+                injection_history[subid] = index_array
+
+            # Number of new code injections to make
+            number_of_new_lulc_cells = int(round(
+                (float(self.landuse_percent) / 100.0) * np.shape(idx)[1]))
+
+            # Make sure we have enough randomized indices to handle request
+            if len(injection_history[subid]) < number_of_new_lulc_cells:
+                # Resets randomized indices
+                injection_history[subid] = index_array
+
             previous_new_lulc_ending_index = 0
             for j in range(0, len(new_lulc_codes)):
-                number_of_new_lulc_cells = int(round(
-                    (float(self.landuse_percent) / 100.0) * np.shape(idx)[1]))
-                newLULC_idx = index_array[
+
+                newLULC_idx = injection_history[subid][
                               previous_new_lulc_ending_index:number_of_new_lulc_cells + previous_new_lulc_ending_index]
                 previous_new_lulc_ending_index = previous_new_lulc_ending_index + number_of_new_lulc_cells
                 base_raster_array[row[newLULC_idx], col[newLULC_idx]] = \
                 new_lulc_codes[j]
+                # Remove index from injection history to prevent its re-use
+                for injection_index in range(0, len(newLULC_idx)):
+                    injection_history[subid].pop(injection_index)
 
-        return base_raster_array
+        return base_raster_array, injection_history
 
     def create_composite_raster(self, base_raster_array,
                                 base_landuse_raster_adf_filepath,
