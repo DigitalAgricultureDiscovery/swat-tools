@@ -570,7 +570,12 @@ def upload_selected_landuse_layers(request):
                 return render(request, 'luuchecker/index.html')
 
             filename = landuse_layer.name
-            landuse_layer_filename = os.path.splitext(filename)[0]
+            landuse_layer_filename, landuse_layer_ext = os.path.splitext(
+                landuse_layer.name)
+            # Check for .xml extension
+            if landuse_layer_ext == ".xml":
+                landuse_layer_filename = \
+                os.path.splitext(landuse_layer_filename)[0]
             landuse_layer_filepath = request.session.get(
                 'luuc_landuse_dir') + '/' + landuse_layer_filename + '/w001001.adf'
 

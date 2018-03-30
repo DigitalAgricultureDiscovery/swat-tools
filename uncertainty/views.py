@@ -600,7 +600,12 @@ def upload_landuse_layer(request):
                 return render(request, 'uncertainty/index.html')
 
             # Get filenames and filepaths
-            landuse_layer_filename = os.path.splitext(landuse_layer.name)[0]
+            landuse_layer_filename, landuse_layer_ext = os.path.splitext(
+                landuse_layer.name)
+            # Check for .xml extension
+            if landuse_layer_ext == ".xml":
+                landuse_layer_filename = \
+                os.path.splitext(landuse_layer_filename)[0]
             landuse_layer_filepath = request.session.get(
                 'uncertainty_landuse_dir') + '/' + landuse_layer_filename \
                                      + '/w001001.adf'

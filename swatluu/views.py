@@ -665,8 +665,10 @@ def validate_selected_landuse_layers(request):
 
                 # Get filenames and filepaths
                 try:
-                    landuse_layer_filename = \
-                    os.path.splitext(landuse_layer.name)[0]
+                    landuse_layer_filename, landuse_layer_ext = os.path.splitext(landuse_layer.name)
+                    # Check for .xml extension
+                    if landuse_layer_ext == ".xml":
+                        landuse_layer_filename = os.path.splitext(landuse_layer_filename)[0]
                     landuse_layer_filepath = request.session.get(
                         'landuse_filepath') + '/' + landuse_layer_filename + \
                                              '/w001001.adf'
@@ -891,7 +893,6 @@ def runit(request):
         'landuse_days': request.session.get('day'),
         'landuse_layers_names': request.session.get('landuse_layers_names'),
     }
-
     if not request.session['error']:
         # run task
         process_task.delay(data)
