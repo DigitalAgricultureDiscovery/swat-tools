@@ -23,6 +23,8 @@ ADMINS = get_admins()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_DIR = Path(__file__).ancestor(3)
+DJANGO_DIR = Path(__file__).ancestor(4)
+LOGS_DIR = os.path.join(DJANGO_DIR, 'logs/django/')
 SETTINGS_DIR = os.path.dirname(__file__)
 UPLOAD_DIR = "/tmp/user_data/"
 
@@ -122,7 +124,7 @@ LOGGING = {
         'debug_logger': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'log/debug.log'),
+            'filename': os.path.join(LOGS_DIR, 'debug.log'),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 100,
             'backupCount': 20,
@@ -131,7 +133,7 @@ LOGGING = {
         'info_logger': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'log/info.log'),
+            'filename': os.path.join(LOGS_DIR, 'info.log'),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 100,
             'backupCount': 20,
@@ -140,7 +142,7 @@ LOGGING = {
         'error_logger': {
             'level': 'ERROR',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'log/error.log'),
+            'filename': os.path.join(LOGS_DIR, 'error.log'),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 100,
             'backupCount': 20,
@@ -153,7 +155,7 @@ LOGGING = {
         'fieldswat_logger': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'log/fieldswat.log'),
+            'filename': os.path.join(LOGS_DIR, 'fieldswat.log'),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 100,
             'backupCount': 20,
@@ -162,7 +164,7 @@ LOGGING = {
         'luuchecker_logger': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'log/luuchecker.log'),
+            'filename': os.path.join(LOGS_DIR, 'luuchecker.log'),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 100,
             'backupCount': 20,
@@ -171,7 +173,7 @@ LOGGING = {
         's3upload_logger': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'log/s3upload.log'),
+            'filename': os.path.join(LOGS_DIR, 's3upload.log'),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 100,
             'backupCount': 20,
@@ -180,7 +182,7 @@ LOGGING = {
         'swatluu_logger': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'log/swatluu.log'),
+            'filename': os.path.join(LOGS_DIR, 'swatluu.log'),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 100,
             'backupCount': 20,
@@ -189,7 +191,7 @@ LOGGING = {
         'swatusers_logger': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'log/swatusers.log'),
+            'filename': os.path.join(LOGS_DIR, 'swatusers.log'),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 100,
             'backupCount': 20,
@@ -198,7 +200,7 @@ LOGGING = {
         'uncertainty_logger': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'log/uncertainty.log'),
+            'filename': os.path.join(LOGS_DIR, 'uncertainty.log'),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 100,
             'backupCount': 20,
@@ -319,10 +321,10 @@ MEDIA_URL = '/media/'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATIC_ROOT = PROJECT_DIR + '/static/'
+STATIC_ROOT = DJANGO_DIR + '/static/'
 STATIC_URL = '/static/'
 STATIC_PATH = '/static/'
-STATIC_PATH_DIR = os.path.join(PROJECT_DIR, 'static')
+STATIC_PATH_DIR = os.path.join(DJANGO_DIR, 'static')
 STATICFILES_DIRS = (
     os.path.join(PROJECT_DIR, 'static_storage'),
 )
