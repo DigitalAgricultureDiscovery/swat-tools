@@ -321,10 +321,8 @@ MEDIA_URL = '/media/'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATIC_ROOT = DJANGO_DIR + '/static/'
+STATIC_ROOT = os.path.join(DJANGO_DIR, 'static')
 STATIC_URL = '/static/'
-STATIC_PATH = '/static/'
-STATIC_PATH_DIR = os.path.join(DJANGO_DIR, 'static')
 STATICFILES_DIRS = (
     os.path.join(PROJECT_DIR, 'static_storage'),
 )
@@ -338,9 +336,8 @@ AUTHENTICATION_BACKENDS = (
 
 # File upload settings
 FILE_UPLOAD_TEMP_DIR = '/tmp'
-FILE_UPLOAD_DIRECTORY_PERMISSIONS = '0o664'
-FILE_UPLOAD_PERMISSIONS = '0o664'
-MAX_UPLOAD_SIZE = '2684354560'
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o775
+FILE_UPLOAD_PERMISSIONS = 0o664
 
 # Login url
 LOGIN_URL = '/login'
