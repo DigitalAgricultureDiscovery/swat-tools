@@ -113,7 +113,7 @@ def create_raster_array(hrus1_filepath, landuse_filepath):
             y_offset = abs(int((y - y_origin) / hrus1_data['cell_size']))
             if hrus1_data['array'][i][j] != hrus1_data['nodata']:
                 landuse_array[i][j] = \
-                lulc_band.ReadAsArray(x_offset, y_offset, 1, 1)[0, 0]
+                    lulc_band.ReadAsArray(x_offset, y_offset, 1, 1)[0, 0]
             else:
                 landuse_array[i][j] = hrus1_data['nodata']
 

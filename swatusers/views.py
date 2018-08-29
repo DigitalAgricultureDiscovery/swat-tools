@@ -151,7 +151,7 @@ def validate_recaptcha_response(recaptcha_response):
         urllib.parse.urlencode(verification_data).encode("utf-8"))
 
     # Read response from verification post
-    content = json.loads(response.readall().decode("utf-8"))
+    content = json.loads(response.read().decode("utf-8"))
 
     return content["success"]
 
