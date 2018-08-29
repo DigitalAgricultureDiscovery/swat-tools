@@ -93,6 +93,7 @@ def upload_subbasin_shapefile_zip(request):
 
     # If user is submitting a zipped SWAT Model
     if request.method == 'POST':
+        logger.info('Receiving the subbasin shapefile zip')
         if 'subbasin_shapefile_zip' in request.FILES:
             try:
                 # Get the uploaded file and store the name of the zip
@@ -182,6 +183,7 @@ def upload_subbasin_shapefile_zip(request):
                 return HttpResponseRedirect(resolve_url('luuchecker'))
 
             # Uncompress the data
+            logger.info('Unzipping the uploaded file')
             try:
                 filepath = "{0}/input/{1}".format(
                     unique_path,
@@ -249,6 +251,7 @@ def upload_subbasin_shapefile_zip(request):
                 'luuc_subbasin_shapefile_filepath'] = subbasin_shapefile_filepath
             request.session['progress_message'].append(
                 'Subbasin shapefile uploaded.')
+            logger.info('Subbasin shapefile successfully uploaded and extracted from zip')
 
             # Render the main page
             return render(request, 'luuchecker/index.html')
@@ -274,6 +277,7 @@ def upload_landuse_folder_zip(request):
 
     # If user is submitting a zipped landuse folder
     if request.method == 'POST':
+        logger.info('Receiving the landuse zip')
         if 'landuse_folder_zip' in request.FILES:
             try:
                 # Get uploaded file and store the name of the zip
@@ -344,6 +348,7 @@ def upload_landuse_folder_zip(request):
                 return render(request, "luuchecker/index.html")
 
             # Uncompress the zip
+            logger.info('Unzipping the uploaded file')
             try:
                 filepath = "{0}/input/{1}".format(
                     unique_path,
@@ -396,6 +401,7 @@ def upload_landuse_folder_zip(request):
                                                   landuse_filename
             request.session['progress_message'].append(
                 'Landuse zip folder uploaded.')
+            logger.info('Landuse rasters successfully uploaded and extracted from zip')
             return render(request, 'luuchecker/index.html')
         else:
             # Couldn't find the required zipped landuse folder, return error msg
@@ -420,6 +426,7 @@ def upload_base_landuse_raster_file(request):
 
     # If user is submitting a zipped landuse folder
     if request.method == 'POST':
+        logger.info('Receiving base landuse raster file')
         if 'base_landuse_raster_file' in request.FILES:
             # Get uploaded file and store the name of the zip
             base_landuse_raster = request.FILES['base_landuse_raster_file']
@@ -447,6 +454,7 @@ def upload_base_landuse_raster_file(request):
                     'luuc_landuse_dir') + '/' + base_landuse_raster_filename
                 request.session['progress_message'].append(
                     'Landuse file\'s name taken.')
+                logger.info('Base landuse raster successfully uploaded')
                 return render(request, 'luuchecker/index.html')
             else:
                 error_msg = 'Could not find the location ' + \
@@ -482,6 +490,7 @@ def select_number_of_landuse_layers(request):
 
     # If user made a post request
     if request.method == 'POST':
+        logger.info('Receiving number of landuse layers to analyze')
         # Get the posted landuse layer count value
         landuse_layer_count = request.POST.get('luuc_landuse_layer_count')
         try:
@@ -516,6 +525,7 @@ def select_number_of_landuse_layers(request):
         context = {
             'luuc_loop_times': [i + 1 for i in range(landuse_layer_count)]
         }
+        logger.info('Landuse layer count validated')
         return render(request, 'luuchecker/index.html', context)
     else:
         # No data posted, reload main page
@@ -538,6 +548,7 @@ def upload_selected_landuse_layers(request):
 
     # If user made a post request
     if request.method == 'POST':
+        logger.info('Receiving selected landuse layers for analysis')
         try:
             landuse_layer_files = request.FILES.getlist('luuc_landuse_layers')
         except:
@@ -602,6 +613,7 @@ def upload_selected_landuse_layers(request):
                 request.session['error'] = error_msg
                 request.session['error_new_layer'] = error_msg
                 return render(request, 'luuchecker/index.html')
+        logger.info('Selected landuse layers successfully processed')
     return render(request, 'luuchecker/index.html')
 
 
@@ -619,6 +631,7 @@ def select_percentage(request):
         return render(request, 'luuchecker/index.html')
 
     if request.method == 'POST':
+        logger.info('Receiving landuse percentage')
         try:
             landuse_percent = request.POST.get('luuc_landuse_percentage')
         except:
@@ -644,7 +657,7 @@ def select_percentage(request):
 
     request.session['luuc_landuse_percentage'] = landuse_percent
     request.session['progress_message'].append('Percentage value taken.')
-
+    logger.info('Landuse percentage validated')
     return render(request, 'luuchecker/index.html')
 
 
@@ -662,7 +675,7 @@ def request_process(request):
     """
     request.session['error'] = []
     request.session['progress_message'] = []
-
+    logger.info('Preparing process request for Celery task')
     # put all necessary path info for processing into single dictionary
     data = {
         'user_id': request.user.id,
@@ -694,13 +707,17 @@ def request_process(request):
 
     if not request.session['error']:
         # run task
+        logger.info('Sending task to Celery worker')
         process_task.delay(data)
+        logger.info('Task received by Celery worker')
 
         # add task id to database
+        logger.info('Adding task to database to track progress')
         add_task_id_to_database(
             data['user_id'],
             data['user_email'],
             data['task_id'])
+        logger.info('Task added to database')
 
         request.session['progress_message'].append(
             'Job successfully added to queue. You will receive an email '
