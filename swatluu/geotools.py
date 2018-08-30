@@ -1,8 +1,12 @@
 from osgeo import gdal, ogr
 from subprocess import check_call
 
+import os
 import numpy as np
 import shapefile
+
+env = os.environ.copy()
+env['PATH'] = '{0}{1}{2}'.format('/usr/local/bin', os.pathsep, env['PATH'])
 
 
 def get_raster_coords(raster_filepath):
@@ -290,7 +294,7 @@ def convert_adf_to_tif(raster_filepath, output_filepath):
     # convert base raster into tif file
     check_call([
         'gdal_translate', '-co', 'compress=lzw', '-a_nodata', str(adf_nodata),
-        '-of', 'GTiff', adf_raster, output_filepath])
+        '-of', 'GTiff', adf_raster, output_filepath], env=env)
 
 
 def rasterize_shapefile(layer_info, shp_filepath, new_tif_filepath):
@@ -326,7 +330,8 @@ def rasterize_shapefile(layer_info, shp_filepath, new_tif_filepath):
         '-ot', 'Byte',  # type
         '-co', 'COMPRESS=LZW',  # compression
         '-l', layer_info['layername'],  # layername
-        shp_filepath, new_tif_filepath])  # shapefile, new raster
+        shp_filepath, new_tif_filepath],
+    env=env)  # shapefile, new raster
 
 
 def matplotlib_pip(points, polygon):
