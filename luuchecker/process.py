@@ -8,6 +8,9 @@ import numpy as np
 import os
 import shutil
 
+env = os.environ.copy()
+env['PATH'] = '{0}{1}{2}'.format('/usr/local/bin', os.pathsep, env['PATH'])
+
 
 class LUUCheckerProcess(object):
     def __init__(self, logger, data=""):
@@ -463,7 +466,7 @@ class LUUCheckerProcess(object):
                 ['gdal_translate', '-co', 'compress=lzw', '-a_nodata', '255',
                  '-of', 'GTiff',
                  self.temp_output_directory + '/base_new1.tif',
-                 self.output_directory + '/base_new.tif'])
+                 self.output_directory + '/base_new.tif'], env=env)
         except Exception:
             self.logger.error(
                 'Error converting new base raster to geotiff.')
