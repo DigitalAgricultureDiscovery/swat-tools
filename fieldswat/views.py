@@ -10,10 +10,10 @@ from swatusers.models import UserTask
 from .tasks import process_task
 
 import glob
+import jaydebeapi
 import logging
 import io
 import os
-import pypyodbc
 import shutil
 import subprocess
 import zipfile
@@ -465,12 +465,26 @@ def get_unique_years_from_mdb(swat_model_dir):
     swat_mdb_data: list of lists
         List of years, runoff, and sediment data stored in their own lists
     """
+    # java jdbc driver for reading access databases
+    ucanaccess_jars = [
+        "/opt/UCanAccess/ucanaccess-4.0.4.jar",
+        "/opt/UCanAccess/lib/commons-lang-2.6.jar",
+        "/opt/UCanAccess/lib/commons-logging-1.1.3.jar",
+        "/opt/UCanAccess/lib/hsqldb.jar",
+        "/opt/UCanAccess/lib/jackcess-2.1.11.jar",
+    ]
+    classpath = ":".join(ucanaccess_jars)
 
     # create path to SWATOutput.mdb
     swat_mdb_filepath = swat_model_dir + '/Scenarios/Default/TablesOut/SWATOutput.mdb'
 
     # open SWATOutput.mdb using pyodbc and MDBTools driver
-    dbcon = pypyodbc.connect('DRIVER={MDBTools};DBQ=' + swat_mdb_filepath + ';')
+    dbcon = jaydebeapi.connect(
+        "net.ucanaccess.jdbc.UcanaccessDriver",
+        f"jdbc:ucanaccess://{swat_mdb_filepath};",
+        ["", ""],
+        classpath
+    )
     cursor = dbcon.cursor()
 
     # construct sql query and execute
