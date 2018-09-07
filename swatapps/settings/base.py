@@ -26,7 +26,7 @@ PROJECT_DIR = Path(__file__).ancestor(3)
 DJANGO_DIR = Path(__file__).ancestor(4)
 LOGS_DIR = os.path.join(DJANGO_DIR, 'logs/django/')
 SETTINGS_DIR = os.path.dirname(__file__)
-UPLOAD_DIR = "/tmp/user_data/"
+UPLOAD_DIR = os.path.join(DJANGO_DIR, 'user_data/')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_secret_key()
