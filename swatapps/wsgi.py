@@ -11,8 +11,8 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-SETTING_ENV = os.environ['SWATAPPS_SETTING_ENV']
+SETTINGS_ENV = os.environ['SETTINGS_ENV']
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", f"swatapps.settings.{SWATAPPS_SETTING_ENV}")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", f"swatapps.settings.{SETTINGS_ENV}")
 
 application = get_wsgi_application()
