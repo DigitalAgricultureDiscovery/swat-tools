@@ -32,3 +32,11 @@ def get_norecaptcha_secret_key():
 
 def get_apikey():
     return 'APIKEY'
+
+
+def get_aws_access_key():
+    return 'AWS_ACCESS_KEY'
+
+
+def get_aws_access_secret():
+    return 'AWS_ACCESS_SECRET'
