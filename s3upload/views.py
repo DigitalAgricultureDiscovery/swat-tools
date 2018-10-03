@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.utils import timezone
@@ -18,10 +19,10 @@ def sign_s3(request):
     """
     This method is responsible for generating and returning the signature
     the client requires before sending the file selected for upload to S3. A
-    unique name is assigned to the user file to prevent it from being 
-    overwritten by other users or the same user. Also saves info about 
+    unique name is assigned to the user file to prevent it from being
+    overwritten by other users or the same user. Also saves info about
     uploaded file to database table S3Upload.
-    
+
     Parameters
     ----------
     request: Contains metadata about the http request.
@@ -42,7 +43,7 @@ def sign_s3(request):
         file_type = request.GET["file_type"]
         file_size = request.GET["file_size"]
         overwrite = request.GET["overwrite"]
-    except:
+    except KeyError:
         file_name = ""
         file_type = ""
         file_size = ""
@@ -51,7 +52,11 @@ def sign_s3(request):
 
     try:
         # Connect to bucket
-        s3 = boto3.client("s3")
+        s3 = boto3.client(
+            "s3",
+            aws_access_key_id=settings.AWS_ACCESS_KEY,
+            aws_secret_access_key=settings.AWS_ACCESS_SECRET
+        )
     except:
         s3 = None
         logger.error("Boto3 unable to connect to S3 bucket.")
@@ -99,7 +104,7 @@ def sign_s3(request):
             # Track in session
             request.session["on_s3"] = {
                 request.session.get("unique_directory_name"): (
-                file_name, file_size)
+                    file_name, file_size)
             }
         except:
             presigned_post = None
@@ -121,7 +126,7 @@ def sign_s3(request):
                     time_uploaded=timezone.datetime.now(),
                 )
                 s3_upload.save()
-        except:
+        except ValidationError:
             logger.warning("Unable to save S3 object to database.")
     else:
         response = {
@@ -130,7 +135,8 @@ def sign_s3(request):
         }
 
         request.session["on_s3"] = {
-            request.session.get("unique_directory_name"): (file_name, file_size)
+            request.session.get("unique_directory_name"): (
+                file_name, file_size)
         }
 
     return JsonResponse(response)
@@ -141,7 +147,7 @@ def check_if_file_already_on_s3(email, file_name, file_size):
     This method checks the S3Upload table for any records matching the
     incoming file's name and size. If a match is found True is returned,
     otherwise False is returned to indicate no match.
-    
+
     Parameters
     ----------
     email: User's email address.
@@ -206,7 +212,7 @@ def update_upload_status(request):
                     s3_obj[0].status = int(form.cleaned_data["status"])
                     s3_obj[0].save()
                     response["status"] = "success"
-                except:
+                except (ValueError, ValidationError):
                     response["status"] = "fail"
 
     return JsonResponse(response)
@@ -216,9 +222,9 @@ def update_upload_status(request):
 def determine_upload_destination(request):
     """
     This method uses the user's upload speed and size of the file to
-    determine whether or not the file should be uploaded to S3 or 
+    determine whether or not the file should be uploaded to S3 or
     through nginx and Apache.
-    
+
     Parameters
     ----------
     request: Contains metadata about the http request.

@@ -30,6 +30,8 @@ UPLOAD_DIR = os.path.join(DJANGO_DIR, 'user_data/')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_secret_key()
+AWS_ACCESS_KEY = get_aws_access_key()
+AWS_ACCESS_SECRET = get_aws_access_secret()
 
 # Application definition
 INSTALLED_APPS = [
