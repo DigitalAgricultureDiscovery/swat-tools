@@ -23,6 +23,7 @@ Shapely = "~=1.6"
 Unipath = "==1.1"
 XlsxWriter = "==0.9.6"
 jaydebeapi = "*"
+gdal = "==2.2.4"
 
 [dev-packages]
 
