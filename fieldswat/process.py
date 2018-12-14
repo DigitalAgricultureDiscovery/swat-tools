@@ -291,7 +291,7 @@ class FieldSWATProcess(object):
 
     def copy_shapefile_to_output_directory(self):
         """
-        Copies the hru1 and fields shapefiles (all components of it) to the output 
+        Copies the hru1 and fields shapefiles (all components of it) to the output
         directory. It also makes two new copies of hru1.prj and renames
         the copies to Field_Response.prj and HRU_Response.prj.
         """
@@ -468,42 +468,45 @@ class FieldSWATProcess(object):
 
         hru_id = np.reshape(np.transpose(self.hrus),
                             len(self.hrus) * len(self.hrus[0]), 0)
+        hru_id = hru_id.astype(np.uint16)
 
         # find indexes where the nodata value is present in hrus
         nodata_indexes = np.nonzero(hru_id == hrus1_nodata)
 
-        # update the nodata value to 999
-        hru_id[nodata_indexes] = 999
+        # update the nodata value to 9999
+        hru_id[nodata_indexes] = 9999
 
-        output_data = np.zeros(999, dtype=float)
-        output_data[np.nonzero(data)] = data
+        # Create dictionary lookup for data values {hru_id: data_value}
+        # Exclude last unique hru which is the nodata value
+        output_data = {}
+        for idx, hru_num in enumerate(np.unique(hru_id)):
+            if hru_num != hrus1_nodata:
+                output_data[hru_num] = data[idx]
+            else:
+                output_data[hru_num] = np.nan
+
+        # output_data = np.zeros(len(self.hrus) * len(self.hrus[0]), dtype=float)
+        # output_data[np.nonzero(data)] = data
 
         for i in range(0, len(water)):
             water[i] = output_data[hru_id[i]]
 
-        hru_two = np.reshape(np.transpose(clu),
-                             (len(self.hrus), len(self.hrus[0])))
-        hru_three = np.reshape(np.transpose(water),
-                               (len(self.hrus), len(self.hrus[0])))
+        hru_two = np.reshape(clu, self.hrus.shape)
+        hru_three = np.reshape(water, self.hrus.shape)
 
-        cl = np.reshape(np.transpose(hru_two), len(hru_two) * len(hru_two[0]),
-                        0)
-        wt = np.reshape(np.transpose(hru_three),
-                        len(hru_three) * len(hru_three[0]), 0)
+        cl = np.reshape(np.transpose(hru_two), hru_two.size, 0)
+        wt = np.reshape(np.transpose(hru_three), hru_three.size, 0)
 
         aggregation_method = self.fieldswat_aggregation_method
+
+        field_output = np.zeros(len(field_shapefile.shapes()), dtype=float)
 
         if aggregation_method == 'mean':
 
             for i in range(0, len(field_shapefile.shapes())):
-
-                output_data[i] = np.nanmean((wt[np.nonzero(cl == i + 1)]))
-
-                if output_data[i] == '':
-                    output_data[i] = 0
-
-                if np.isnan(output_data[i]):
-                    output_data[i] = 0
+                field_output[i] = np.nanmean((wt[np.nonzero(cl == i + 1)]))
+                if np.isnan(field_output[i]):
+                    field_output[i] = 0
 
         elif aggregation_method == 'mode':
 
@@ -557,7 +560,7 @@ class FieldSWATProcess(object):
             if np.isnan(output_data[i]):
                 field_output[i] = output_data[i]
 
-        return field_shapefile, output_data, data_for_year
+        return field_shapefile, field_output, data_for_year
 
     def create_new_field_shapefile(self, field_shapefile, output_data):
 
