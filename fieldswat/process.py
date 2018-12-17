@@ -276,15 +276,6 @@ class FieldSWATProcess(object):
         # merge non-dominant hrus into nearby dominant hrus
         hrus = swattools.merge(hrus, dominant_hrus, hrus_info[1])
 
-        # self.logger.info('Creating final_HRU.tif from merged hrus array.')
-        # try:
-        #     geotools.create_raster(
-        #         hrus,
-        #         self.results_dir + '/Raster/hrus1/w001001.adf',
-        #         self.results_dir + '/Raster/final_HRU.tif')
-        # except Exception:
-        #     self.logger.info('Failed to create final_HRU.tif.')
-
         self.hrus = hrus
         self.dominant_hrus = dominant_hrus
         self.hrus_info = hrus_info
@@ -408,6 +399,8 @@ class FieldSWATProcess(object):
             grid_xy_reshape.append((grid_x_reshape[i], grid_y_reshape[i]))
 
         # iterate through the field shapefile records (i.e. fields)
+        sheet.write(0, 0, 'Field')
+        sheet.write(0, 1, 'HRUs')
         for i in range(0, len(field_shapefile.shapes())):
             # ultimately collect hru ids that are in the current field poly
             in_list = np.zeros(len(grid_x_reshape), dtype=int)
@@ -432,7 +425,8 @@ class FieldSWATProcess(object):
             unique_hrus.sort()
 
             # write to the spreadsheet
-            sheet.write_row(i, 0, unique_hrus)
+            sheet.write(i + 1, 0, i + 1)
+            sheet.write_row(i + 1, 1, unique_hrus)  # row, col, data
 
         workbook.close()
         self.logger.info('Closing HRU_FIELD.xlsx workbook.')
@@ -440,7 +434,6 @@ class FieldSWATProcess(object):
         return clu
 
     def update_field_info(self, hrus1_nodata, clu):
-
         field_shapefile = shapefile.Reader(
             self.fieldswat_fields_shapefile_filename)
 
@@ -463,18 +456,7 @@ class FieldSWATProcess(object):
         # collect data for that year
         data_for_year = data[year_index_position]
 
-        water = np.zeros(len(self.hrus) * len(self.hrus[0]), dtype=float)
-        field_output = np.zeros(len(self.hrus) * len(self.hrus[0]), dtype=float)
-
-        hru_id = np.reshape(np.transpose(self.hrus),
-                            len(self.hrus) * len(self.hrus[0]), 0)
-        hru_id = hru_id.astype(np.uint16)
-
-        # find indexes where the nodata value is present in hrus
-        nodata_indexes = np.nonzero(hru_id == hrus1_nodata)
-
-        # update the nodata value to 9999
-        hru_id[nodata_indexes] = 9999
+        hru_id = np.reshape(np.transpose(self.hrus), self.hrus.size, 0)
 
         # Create dictionary lookup for data values {hru_id: data_value}
         # Exclude last unique hru which is the nodata value
@@ -485,30 +467,31 @@ class FieldSWATProcess(object):
             else:
                 output_data[hru_num] = np.nan
 
-        # output_data = np.zeros(len(self.hrus) * len(self.hrus[0]), dtype=float)
-        # output_data[np.nonzero(data)] = data
-
+        # Create flat water array with appropriate runoff or sediment values
+        water = np.zeros(self.hrus.size, dtype=float)
         for i in range(0, len(water)):
             water[i] = output_data[hru_id[i]]
 
+        # Reshape grids to match hrus grid
         hru_two = np.reshape(clu, self.hrus.shape)
         hru_three = np.reshape(water, self.hrus.shape)
 
+        # Flatten reshaped grids
         cl = np.reshape(np.transpose(hru_two), hru_two.size, 0)
         wt = np.reshape(np.transpose(hru_three), hru_three.size, 0)
 
-        aggregation_method = self.fieldswat_aggregation_method
-
+        # Stores calculated field outputs
         field_output = np.zeros(len(field_shapefile.shapes()), dtype=float)
 
-        if aggregation_method == 'mean':
+        if self.fieldswat_aggregation_method == 'mean':
 
             for i in range(0, len(field_shapefile.shapes())):
                 field_output[i] = np.nanmean((wt[np.nonzero(cl == i + 1)]))
+                
                 if np.isnan(field_output[i]):
                     field_output[i] = 0
 
-        elif aggregation_method == 'mode':
+        elif self.fieldswat_aggregation_method == 'mode':
 
             for i in range(0, len(field_shapefile.shapes())):
 
@@ -516,17 +499,14 @@ class FieldSWATProcess(object):
                 resp[np.nonzero(resp == 0)] = np.NaN
                 temp = np.ma.masked_array(resp, np.isnan(resp))
                 try:
-                    output_data[i] = stats.mode(temp).mode[0]
+                    field_output[i] = stats.mode(temp).mode[0]
                 except AttributeError:
-                    output_data[i] = np.nan
+                    field_output[i] = np.nan
 
-                if output_data[i] == '':
-                    output_data[i] = 0
+                if np.isnan(field_output[i]):
+                    field_output[i] = 0
 
-                if np.isnan(output_data[i]):
-                    output_data[i] = 0
-
-        elif aggregation_method == 'geomean':
+        elif self.fieldswat_aggregation_method == 'geomean':
 
             for i in range(0, len(field_shapefile.shapes())):
 
@@ -534,31 +514,21 @@ class FieldSWATProcess(object):
                 resp = wt[index]
                 resp[np.nonzero(resp == 0)] = np.NaN
                 temp = np.ma.masked_array(resp, np.isnan(resp))
-                output_data[i] = stats.gmean(temp)
+                field_output[i] = stats.gmean(temp)
 
-                if output_data[i] == '':
-                    output_data[i] = 0
+                if np.isnan(field_output[i]):
+                    field_output[i] = 0
 
-                if np.isnan(output_data[i]):
-                    output_data[i] = 0
-
-        elif aggregation_method == 'area_weighted_mean':
+        elif self.fieldswat_aggregation_method == 'area_weighted_mean':
 
             for i in range(0, len(field_shapefile.shapes())):
 
                 resp = wt[np.nonzero(cl == i + 1)]
-                output_data[i] = stats.nanmean(resp)
+                field_output[i] = np.nanmean(resp)
 
-                if output_data[i] == '':
-                    output_data[i] = 0
+                if np.isnan(field_output[i]):
+                    field_output[i] = 0
 
-                if np.isnan(output_data[i]):
-                    output_data[i] = 0
-
-        for i in range(0, len(output_data)):
-
-            if np.isnan(output_data[i]):
-                field_output[i] = output_data[i]
 
         return field_shapefile, field_output, data_for_year
 
