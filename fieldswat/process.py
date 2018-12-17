@@ -487,7 +487,7 @@ class FieldSWATProcess(object):
 
             for i in range(0, len(field_shapefile.shapes())):
                 field_output[i] = np.nanmean((wt[np.nonzero(cl == i + 1)]))
-                
+
                 if np.isnan(field_output[i]):
                     field_output[i] = 0
 
