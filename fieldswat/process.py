@@ -146,7 +146,8 @@ class FieldSWATProcess(object):
                 'An error occurred while setting the gridx and gridy matrices.')
 
         try:
-            clu = self.create_hru_field_workbook(grid_x_reshape, grid_y_reshape)
+            clu = self.create_hru_field_workbook(
+                grid_x_reshape, grid_y_reshape, hrus1_info['nodata'])
         except Exception:
             self.logger.error(
                 'An error occurred while creating the hru field workbook.')
@@ -371,7 +372,7 @@ class FieldSWATProcess(object):
 
         return grid_x_reshape, grid_y_reshape
 
-    def create_hru_field_workbook(self, grid_x_reshape, grid_y_reshape):
+    def create_hru_field_workbook(self, grid_x_reshape, grid_y_reshape, nodata):
         self.logger.info('Creating HRU_FIELD.xlsx workbook.')
 
         # initialize a layer to store field ids in the next for loop
@@ -423,6 +424,9 @@ class FieldSWATProcess(object):
             # get unique, sorted list of hrus found in the field
             unique_hrus = list(set(hru_id[np.nonzero(in_list == 1)]))
             unique_hrus.sort()
+
+            # remove the nodata value from the list of hrus
+            unique_hrus.remove(nodata)
 
             # write to the spreadsheet
             sheet.write(i + 1, 0, i + 1)
