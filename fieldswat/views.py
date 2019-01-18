@@ -14,6 +14,7 @@ import jaydebeapi
 import logging
 import io
 import os
+import pandas as pd
 import shutil
 import subprocess
 import zipfile
@@ -395,12 +396,12 @@ def upload_swat_model_zip(request):
                     # fetch data from SWATOutput.mdb
                     swatoutput_mdb_data = get_unique_years_from_mdb(request.session['fieldswat_swat_model_dir'])
 
-                    request.session['swatoutput_years'] = swatoutput_mdb_data[0]
-                    request.session['swatoutput_runoff'] = swatoutput_mdb_data[1]
-                    request.session['swatoutput_sediment'] = swatoutput_mdb_data[2]
+                    request.session['swatoutput_years'] = swatoutput_mdb_data['years']
+                    request.session['swatoutput_runoff'] = swatoutput_mdb_data['runoff']
+                    request.session['swatoutput_sediment'] = swatoutput_mdb_data['sediment']
 
                     # get unique_years
-                    unique_years = list(set(swatoutput_mdb_data[0]))
+                    unique_years = list(set(swatoutput_mdb_data['years']))
                     unique_years.sort()
                 except:
                     logger.error("{0}: Missing .hru file or unique year in database.".format(
@@ -451,6 +452,27 @@ def upload_swat_model_zip(request):
         return render(request, 'fieldswat/index.html')
 
 
+def calculate_annual_means_from_mdb(records):
+    """
+    Calculates annual sediment and runoff means for monthly data.
+
+    Parameters
+    ----------
+    records: list
+        Data fetched from SWAT mdb
+
+    Returns
+    -------
+    updated_records: list
+        SWAT mdb data with annual means
+    """
+    # Convert records from list of tuples to Pandas DataFrame
+    df = pd.DataFrame.from_records(records)
+
+    # Calculate runoff (3) and sediment (4) means based on year (0) and hru (2)
+    return df.groupby([0, 2], as_index=False)[3, 4].mean()
+
+
 def get_unique_years_from_mdb(swat_model_dir):
     """
     Reads SWATOutput.mdb and queries all of the runoff and sediment data.
@@ -476,7 +498,10 @@ def get_unique_years_from_mdb(swat_model_dir):
     classpath = ":".join(ucanaccess_jars)
 
     # create path to SWATOutput.mdb
-    swat_mdb_filepath = swat_model_dir + '/Scenarios/Default/TablesOut/SWATOutput.mdb'
+    swat_mdb_filepath = os.path.join(
+        swat_model_dir,
+        'Scenarios/Default/TablesOut/SWATOutput.mdb'
+    )
 
     # open SWATOutput.mdb using pyodbc and MDBTools driver
     dbcon = jaydebeapi.connect(
@@ -488,7 +513,7 @@ def get_unique_years_from_mdb(swat_model_dir):
     cursor = dbcon.cursor()
 
     # construct sql query and execute
-    sql_query = 'SELECT YEAR, SURQ_GENmm, SYLDt_ha FROM hru'
+    sql_query = 'SELECT YEAR, MON, HRU, SURQ_GENmm, SYLDt_ha FROM hru'
     cursor.execute(sql_query)
 
     # fetch query results
@@ -497,21 +522,34 @@ def get_unique_years_from_mdb(swat_model_dir):
     # close database connection
     dbcon.close()
 
-    # store query results in list objects
-    years = []
-    runoff = []
-    sediment = []
+    # check if data is at annual or monthly intervals
+    # we will assume if the first MON value is less
+    # than 4 digits that we have monthly data
+    if len(str(query_records[0][1])) < 4:
+        query_records = calculate_annual_means_from_mdb(query_records)
+        return {
+            'years': query_records[0].values.tolist(),
+            'runoff': query_records[3].values.tolist(),
+            'sediment': query_records[4].values.tolist()
+        }
+    else:
+        # store query results in list objects
+        years = []
+        runoff = []
+        sediment = []
 
-    # loop through records and append to lists
-    for record in query_records:
-        years.append(record[0])
-        runoff.append(record[1])
-        sediment.append(record[2])
+        # loop through records and append to lists
+        for record in query_records:
+            years.append(record[0])
+            runoff.append(record[3])
+            sediment.append(record[4])
 
-    # convert lists to numpy arrays
-    swat_mdb_data = [years, runoff, sediment]
-
-    return swat_mdb_data
+        # convert lists to numpy arrays
+        return {
+            'years': years,
+            'runoff': runoff,
+            'sediment': sediment
+        }
 
 
 @login_required
