@@ -52,6 +52,10 @@ def get_raster_coords(raster_filepath):
     for i in range(0, rows):
         x_coords[i] = np.arange(xmin, xmin + (cols * cell_size), cell_size)
 
+    # Remove any extra columns
+    while len(x_coords[0]) > cols:
+        x_coords = np.delete(x_coords, [len(x_coords[0]) - 1], axis=1)
+
     # starting with the ymin, generate the first row of y coords by
     # adding the cell size to the previous Y coord. do this for the
     # number of columns in the raster. after the first row is completed,
