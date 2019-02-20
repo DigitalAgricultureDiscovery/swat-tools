@@ -18,10 +18,17 @@
     "default": {
         "amqp": {
             "hashes": [
+<<<<<<< HEAD
                 "sha256:16056c952e8029ce8db097edf0d7c2fe2ba9de15d30ba08aee2c5221273d8e23",
                 "sha256:6816eed27521293ee03aa9ace300a07215b11fee4e845588a9b863a7ba30addb"
             ],
             "version": "==2.4.1"
+=======
+                "sha256:9f181e4aef6562e6f9f45660578fc1556150ca06e836ecb9e733e6ea10b48464",
+                "sha256:c3d7126bfbc640d076a01f1f4f6e609c0e4348508150c1f61336b0d83c738d2b"
+            ],
+            "version": "==2.4.0"
+>>>>>>> 581bbc7b0ede6432b4128bc65c46d75d83d98b96
         },
         "awscli": {
             "hashes": [
@@ -98,11 +105,19 @@
         },
         "django": {
             "hashes": [
+<<<<<<< HEAD
                 "sha256:0a73696e0ac71ee6177103df984f9c1e07cd297f080f8ec4dc7c6f3fb74395b5",
                 "sha256:43a99da08fee329480d27860d68279945b7d8bf7b537388ee2c8938c709b2041"
             ],
             "index": "pypi",
             "version": "==1.11.20"
+=======
+                "sha256:73cca1dac154e749b39cc91a54dc876109eb0512a5c6804986495305047066a5",
+                "sha256:7ee7d93d407f082e3849c8d10da50ff5b488af37ed1b0066a22dee5f2709ed16"
+            ],
+            "index": "pypi",
+            "version": "==1.11.18"
+>>>>>>> 581bbc7b0ede6432b4128bc65c46d75d83d98b96
         },
         "django-bootstrap3": {
             "hashes": [
@@ -207,10 +222,17 @@
         },
         "kombu": {
             "hashes": [
+<<<<<<< HEAD
                 "sha256:529df9e0ecc0bad9fc2b376c3ce4796c41b482cf697b78b71aea6ebe7ca353c8",
                 "sha256:7a2cbed551103db9a4e2efafe9b63222e012a61a18a881160ad797b9d4e1d0a1"
             ],
             "version": "==4.3.0"
+=======
+                "sha256:1ef049243aa05f29e988ab33444ec7f514375540eaa8e0b2e1f5255e81c5e56d",
+                "sha256:3c9dca2338c5d893f30c151f5d29bfb81196748ab426d33c362ab51f1e8dbf78"
+            ],
+            "version": "==4.2.2.post1"
+>>>>>>> 581bbc7b0ede6432b4128bc65c46d75d83d98b96
         },
         "matplotlib": {
             "hashes": [
