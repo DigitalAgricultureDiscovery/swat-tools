@@ -4,18 +4,14 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-awscli = "==1.11.75"
-"boto3" = "==1.4.4"
-botocore = "==1.5.38"
 celery = "==4.2.0"
 "django-bootstrap3" = "==8.2.2"
 gunicorn = "==19.8.1"
 matplotlib = "==2.2.3"
-numpy = "==1.11.3"
+numpy = "~=1.11"
 pandas = "==0.20.1"
 pyshp = "==1.2.12"
 redis = "==2.10.6"
-"s3transfer" = "==0.1.10"
 scipy = "==1.1.0"
 Django = "~=1.11"
 Fiona = "==1.7.6"
@@ -24,6 +20,8 @@ Unipath = "==1.1"
 XlsxWriter = "==0.9.6"
 jaydebeapi = "*"
 gdal = "==2.2.4"
+awscli = "~=1.16"
+boto3 = "~=1.9"
 
 [dev-packages]
 
