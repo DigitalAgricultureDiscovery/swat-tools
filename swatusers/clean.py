@@ -1,19 +1,19 @@
 import os
 import shutil
 from django.utils import timezone
-
+from swatapps.settings.production import DJANGO_DIR, UPLOAD_DIR
 from .models import UserTask
 
 
 def remove_expired_process_folders(proj_path, email_addr, task_id, logger):
     """
-    Removes expired user data (>48 hours) from depot location. Provided
+    Removes expired user data (>48 hours) from user data location. Provided
     path for directory to be removed, verifies location exists, and walks
     through the directory removing all files.
     
     Parameters
     ----------
-    proj_path (str): Path to project on depot.
+    proj_path (str): Path to project on server.
     email_addr (str): Email address of expired data's owner.
     task_id (str): Unique task id for task to be removed.
 
@@ -75,8 +75,8 @@ def clean_up_user_data(logger, expired_objs):
     logger.info("Checking for tasks over 48 hours old.")
 
     # Paths to temp and processed user data
-    tmp_path = "/tmp/"
-    proj_path = "/depot/saraswat/web/swatapps/"
+    tmp_path = UPLOAD_DIR
+    proj_path = DJANGO_DIR
 
     # If any expired records were found
     if expired_objs:
