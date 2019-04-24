@@ -5,8 +5,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, resolve_url
 from django.template.response import TemplateResponse
-from .forms import ContactUsForm, InternetSpeedForm, LoginForm, RegistrationForm
-from .models import UserTask, SwatUser
+from swatusers.forms import ContactUsForm, InternetSpeedForm, LoginForm, RegistrationForm
+from swatusers.models import UserTask, SwatUser
 from swatapps.settings.production import ADMINS, NORECAPTCHA_SITE_KEY, \
     NORECAPTCHA_SECRET_KEY
 

@@ -1,8 +1,8 @@
 import os
 import shutil
 from django.utils import timezone
-from swatapps.settings.production import DJANGO_DIR, UPLOAD_DIR
-from .models import UserTask
+from swatapps.settings.production import PROJECT_DIR, UPLOAD_DIR
+from swatusers.models import UserTask
 
 
 def remove_expired_process_folders(proj_path, email_addr, task_id, logger):
@@ -23,10 +23,7 @@ def remove_expired_process_folders(proj_path, email_addr, task_id, logger):
     """
 
     # Construct full path to expired task in user data dir
-    task_path = "{0}/{1}/{2}".format(
-        proj_path + "/user_data/",
-        email_addr,
-        task_id)
+    task_path = f"{proj_path}/user_data/{email_addr}/{task_id}"
 
     try:
         # Verify directory exists
@@ -76,7 +73,7 @@ def clean_up_user_data(logger, expired_objs):
 
     # Paths to temp and processed user data
     tmp_path = UPLOAD_DIR
-    proj_path = DJANGO_DIR
+    proj_path = PROJECT_DIR
 
     # If any expired records were found
     if expired_objs:
@@ -94,12 +91,12 @@ def clean_up_user_data(logger, expired_objs):
     try:
         logger.info("Cleaning up temp directory.")
         # Get user directories in tmp folder
-        root_user_directories = next(os.walk(tmp_path + 'user_data'))[1]
+        root_user_directories = next(os.walk(tmp_path))[1]
 
         # Loop through task folders in each user directory
         for user in root_user_directories:
             # Get task directories
-            user_tasks = next(os.walk(tmp_path + 'user_data/' + user))[1]
+            user_tasks = next(os.walk(tmp_path + user))[1]
             logger.info("{0} tasks found in temp directory.".format(
                 len(user_tasks)))
 
@@ -111,7 +108,7 @@ def clean_up_user_data(logger, expired_objs):
 
                 if not obj:
                     # Check if task is older than 12 hours
-                    task_path = "{0}user_data/{1}/{2}".format(tmp_path, user, task)
+                    task_path = f"{tmp_path}{user}/{task}"
                     last_modified = os.stat(task_path).st_mtime
                     task_last_modified_time = timezone.datetime.fromtimestamp(last_modified)
                     server_current_time = timezone.datetime.now()
@@ -120,7 +117,7 @@ def clean_up_user_data(logger, expired_objs):
                     # If the folder has not been modified in over 12 (60 * 12) hours
                     if divmod(time_diff.days * 86400 + time_diff.seconds, 60)[0] / (60*12) > 1:
                         logger.info("Removing {0}.".format(task))
-                        remove_unfinished_process_folders(tmp_path + 'user_data/' + user + '/' + task, logger)
+                        remove_unfinished_process_folders(task_path, logger)
     except:
         logger.warning("Unable to remove expired /tmp/user_data.")
         return
