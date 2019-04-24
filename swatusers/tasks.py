@@ -5,7 +5,7 @@ from celery.utils.log import get_task_logger
 from django.utils import timezone
 
 from .clean import clean_up_user_data
-from .models import UserTask
+from swatusers.models import UserTask
 
 logger = get_task_logger(__name__)
 
