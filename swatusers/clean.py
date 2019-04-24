@@ -2,7 +2,7 @@ import os
 import shutil
 from django.utils import timezone
 from swatapps.settings.production import DJANGO_DIR, UPLOAD_DIR
-from .models import UserTask
+from swatusers.models import UserTask
 
 
 def remove_expired_process_folders(proj_path, email_addr, task_id, logger):
