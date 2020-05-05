@@ -2,6 +2,8 @@ import os
 import shutil
 import unittest
 
+from django.core.files.uploadedfile import UploadedFile
+
 from common.SWATModelZip import NotAZipError
 from common.SWATModelZip import SWATModelZip
 
@@ -21,10 +23,11 @@ class TestSWATModelZip(unittest.TestCase):
         """
         Test that missing keys in the upload dictionary are detected.
         """
-        # Missing "cwd" key
+        # Missing "workspace" key
+        uploaded_file = UploadedFile
         upload = {
-            "filename": "test_file.zip",
-            "on_s3": {}
+            "local": {"file": UploadedFile(name="test_file.zip")},
+            "aws": {}
         }
 
         with self.assertRaises(KeyError):
@@ -34,11 +37,11 @@ class TestSWATModelZip(unittest.TestCase):
         """
         Test that the uploaded file exists.
         """
-        # "cwd" key points to file that does not exist
+        # "workspace" key points to file that does not exist
         upload = {
-            "cwd": "./wrong_directory",
-            "filename": "SWAT_Model.zip",
-            "on_s3": {}
+            "workspace": "./wrong_directory",
+            "local": {"file": UploadedFile(name="SWAT_Model.zip")},
+            "aws": {}
         }
 
         with self.assertRaises(FileNotFoundError):
@@ -49,9 +52,9 @@ class TestSWATModelZip(unittest.TestCase):
         Test that the uploaded file has the .zip extension.
         """
         upload = {
-            "cwd": "./tests/data",
-            "filename": "SWAT_Model.tar.gz",
-            "on_s3": {}
+            "workspace": "./tests/data",
+            "local": {"file": UploadedFile(name="SWAT_Model.tar.gz")},
+            "aws": {}
         }
 
         with self.assertRaises(NotAZipError):
