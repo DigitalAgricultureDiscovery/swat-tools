@@ -1,3 +1,4 @@
+import glob
 import os
 import shutil
 import subprocess
@@ -22,45 +23,84 @@ class SWATModelZip:
     def __init__(self, upload: dict) -> None:
         check_upload_keys(upload)
 
-        self.workspace = upload["workspace"]
+        workspace = upload["workspace"]
 
         if upload["local"]:
             self.filename = upload["local"]["file"].name
         else:
             self.filename = upload["aws"]["file"]["name"]
 
-        self.model_filepath = os.path.join(
+        self.model_directory = os.path.join(
             upload["workspace"],
             os.path.splitext(self.filename)[0])
 
         if not os.environ.get("TEST_FLAG"):
-            remove_existing_upload(self.workspace, self.filename)
+            remove_existing_upload(workspace, self.filename)
 
         if not os.environ.get("TEST_FLAG"):
             if upload.local:
-                write_file_to_disk(self.workspace, upload["local"]["file"])
+                write_file_to_disk(workspace, upload["local"]["file"])
             else:
-                download_file_to_server(self.workspace, upload["on_s3"]["url"])
+                download_file_to_server(workspace, upload["on_s3"]["url"])
 
-        check_if_file_exists(os.path.join(self.workspace, self.filename))
-        check_if_file_is_zip(os.path.join(self.workspace, self.filename))
+        check_if_file_exists(os.path.join(workspace, self.filename))
+        check_if_file_is_zip(os.path.join(workspace, self.filename))
 
-        unzip_file(self.workspace, self.filename)
+        unzip_file(workspace, self.filename)
 
-        self.valid_model = {
-            'raster': False,     # hrus1 raster grid
-            'shapefile': False,  # hru1 shapefile
-            'hrus': False        # hru files in TxtInOut
+        self.errors = {
+            "raster": False,     # hrus1 raster grid
+            "shapefile": False,  # hru1 shapefile
+            "hrus": False        # hru files in TxtInOut
         }
+
+        self.errors["raster"] = check_for_hrus1_raster(
+            self.model_directory)
+        self.errors["shapefile"] = check_for_hru1_shp(
+            self.model_directory)
+        self.errors["hrus"] = check_for_hrus(self.model_directory)
 
     def validate_model(self) -> dict:
-        return {
-            "status": 0,
-            "errors": []
-        }
+        """
+        Checks for any missing files that are required by SWAT tools.
+        Returns a status code and list of error messages for any 
+        missing files.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        results: dict
+            Status code and list of error messages (if any).
+        """
+        results = {"status": 0, "errors": []}
+
+        for key in self.errors.keys():
+            if self.errors[key] is False:
+                results["status"] = 1
+                results["errors"].append(
+                    get_error_message(self.model_directory, key))
+
+        return results
 
 
 def check_upload_keys(upload: dict) -> None:
+    """
+    Checks if upload contains the three required keys: 
+    workspace, local, and aws. Raises an error if one or 
+    more required keys are missing.
+
+    Parameters
+    ----------
+    upload: dict
+        Object containing info related to uploaded SWAT model zip.
+
+    Returns
+    -------
+    None
+    """
     required_keys_included = [key in upload.keys() for key in UPLOAD_KEYS]
     if not all(required_keys_included):
         missing_required_keys = ""
@@ -76,7 +116,7 @@ def check_upload_keys(upload: dict) -> None:
 
 
 def remove_existing_upload(workspace: str, filename: str) -> None:
-    """ 
+    """
     Checks if this file was previously uploaded and extracted. If so,
     the existing directory is removed.
 
@@ -101,7 +141,7 @@ def remove_existing_upload(workspace: str, filename: str) -> None:
 
 
 def download_file_to_server(workspace: str, url: str) -> None:
-    """ 
+    """
     Downloads uploaded zip file from a remote server.
 
     Parameters
@@ -189,6 +229,97 @@ def unzip_file(workspace: str, filename: str) -> None:
     None
     """
     filepath = os.path.join(workspace, filename)
-    directory = os.path.join(workspace, os.path.splitext(filename)[0])
+    subprocess.call(["unzip", "-qq", "-o", filepath, "-d", workspace])
 
-    subprocess.call(["unzip", "-qq", "-o", filepath, "-d", directory])
+    # Remove zip file after extraction finishes
+    os.remove(filepath)
+
+
+def check_for_hrus1_raster(model_directory: str) -> bool:
+    """
+    Checks for the hrus1 raster in the Grid directory.
+
+    Parameters
+    ----------
+    model_directory: str
+        Current working directory for the SWAT model.
+
+    Returns
+    -------
+    bool
+        True if hrus1 raster found, False otherwise.
+    """
+    return os.path.exists(os.path.join(
+        model_directory,
+        'Watershed',
+        'Grid',
+        'hrus1',
+        'w001001.adf'))
+
+
+def check_for_hru1_shp(model_directory: str) -> bool:
+    """
+    Checks for the hru1 shapefile in the Shapes directory.
+
+    Parameters
+    ----------
+    model_directory: str
+        Current working directory for the SWAT model.
+
+    Returns
+    -------
+    bool
+        True if hru1 shapefile found, False otherwise.
+    """
+    return os.path.exists(os.path.join(
+        model_directory,
+        'Watershed',
+        'Shapes',
+        'hru1.shp'
+    ))
+
+
+def check_for_hrus(model_directory: str) -> bool:
+    """
+    Checks for the .hru files in the TxtInOut directory. 
+
+    Parameters
+    ----------
+    model_directory: str
+        Current working directory for the SWAT model.
+
+    Returns
+    -------
+    bool
+        True if more than 1 .hru found, False otherwise.
+    """
+    return len(glob.glob(os.path.join(
+        model_directory,
+        'Scenarios',
+        'Default',
+        'TxtInOut',
+        '*.hru'
+    ))) > 0
+
+
+def get_error_message(model_directory: str, error: str) -> str:
+    """
+    Returns detailed error message for the provided error name.
+
+    Parameters
+    ----------
+    model_directory: str
+        Current working directory for the SWAT model.
+    error: str
+        Name of error.
+
+    Returns
+    -------
+    str
+        Error message.
+    """
+    return {
+        "raster": f"Could not find hrus1/w001001.adf in {model_directory}/Watershed/Grid/. See manual for further help.",
+        "shapefile": f"Could not find hru1.shp in {model_directory}/Watershed/Shapes/. See manual for further help.",
+        "hrus": f"Could not find hru files (.hru) in {model_directory}/Scenarios/Default/TxtInOut/. See manual for further help."
+    }.get(error, "")
