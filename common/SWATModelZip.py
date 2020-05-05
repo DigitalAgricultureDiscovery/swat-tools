@@ -1,15 +1,16 @@
 import os
 import shutil
 import subprocess
+from django.core.files.uploadedfile import UploadedFile
 
 """
 upload = {
-    "cwd": "/path/to/upload/input",
-    "filename": "name_of_swat_model_zip",
-    "on_s3": {"url": "http://"}
+    "workspace": "/path/to/upload/input",
+    "local": {file: file}
+    "aws": {"url": "http://"}
 }
 """
-UPLOAD_KEYS = ["cwd", "filename", "on_s3"]
+UPLOAD_KEYS = ["workspace", "local", "aws"]
 
 
 class NotAZipError(Exception):
@@ -19,26 +20,38 @@ class NotAZipError(Exception):
 class SWATModelZip:
 
     def __init__(self, upload: dict) -> None:
-
         check_upload_keys(upload)
 
-        self.model = f"{upload['cwd']}/{os.path.splitext(upload['filename'][0])}"
+        self.workspace = upload["workspace"]
+
+        if upload["local"]:
+            self.filename = upload["local"]["file"].name
+        else:
+            self.filename = upload["aws"]["file"]["name"]
+
+        self.model_filepath = os.path.join(
+            upload["workspace"],
+            os.path.splitext(self.filename)[0])
+
+        if not os.environ.get("TEST_FLAG"):
+            remove_existing_upload(self.workspace, self.filename)
+
+        if not os.environ.get("TEST_FLAG"):
+            if upload.local:
+                write_file_to_disk(self.workspace, upload["local"]["file"])
+            else:
+                download_file_to_server(self.workspace, upload["on_s3"]["url"])
+
+        check_if_file_exists(os.path.join(self.workspace, self.filename))
+        check_if_file_is_zip(os.path.join(self.workspace, self.filename))
+
+        unzip_file(self.workspace, self.filename)
+
         self.valid_model = {
             'raster': False,     # hrus1 raster grid
             'shapefile': False,  # hru1 shapefile
             'hrus': False        # hru files in TxtInOut
         }
-
-        if not os.environ.get("TEST_FLAG"):
-            remove_existing_upload(upload["cwd"], upload["filename"])
-
-        if upload["on_s3"]:
-            download_file_to_server(upload["cwd"], upload["on_s3"]["url"])
-
-        check_if_file_exists(f"{upload['cwd']}/{upload['filename']}")
-        check_if_file_is_zip(f"{upload['cwd']}/{upload['filename']}")
-
-        unzip_file(upload["cwd"], upload["filename"])
 
     def validate_model(self) -> dict:
         return {
@@ -62,14 +75,14 @@ def check_upload_keys(upload: dict) -> None:
             f'Parameter "upload" dictionary missing key(s): {missing_required_keys}.')
 
 
-def remove_existing_upload(cwd: str, filename: str) -> None:
+def remove_existing_upload(workspace: str, filename: str) -> None:
     """ 
     Checks if this file was previously uploaded and extracted. If so,
     the existing directory is removed.
 
     Parameters
     ----------
-    cwd: str
+    workspace: str
         Current working directory for task.
     filename: str
         Name of uploaded zip file.
@@ -78,22 +91,22 @@ def remove_existing_upload(cwd: str, filename: str) -> None:
     -------
     None
     """
-    filepath = f"{cwd}/{os.path.splitext(filename)[0]}"
+    filepath = os.path.join(workspace, os.path.splitext(filename)[0])
 
     if os.path.exists(filepath):
         shutil.rmtree(filepath)
 
-    if os.path.exists(f"{cwd}/{filename}"):
-        os.remove(f"{cwd}/{filename}")
+    if os.path.exists(os.path.join(workspace, filename)):
+        os.remove(os.path.join(workspace, filename))
 
 
-def download_file_to_server(cwd: str, url: str) -> None:
+def download_file_to_server(workspace: str, url: str) -> None:
     """ 
     Downloads uploaded zip file from a remote server.
 
     Parameters
     ----------
-    cwd: str
+    workspace: str
         Current working directory for task.
     url: str
         URL for the uploaded zip file.
@@ -102,7 +115,24 @@ def download_file_to_server(cwd: str, url: str) -> None:
     -------
     None
     """
-    subprocess.call(["curl", "-o", cwd, url])
+    subprocess.call(["curl", "-o", workspace, url])
+
+
+def write_file_to_disk(workspace: str, local_file: UploadedFile) -> None:
+    """
+    Write file uploaded to server to unique workspace.
+
+    Parameters
+    ----------
+    workspace: str
+        Unique workspace for current task.
+    local_file: UploadedFile
+        Uploaded file to local server.
+    """
+    filepath = os.path.join(workspace, local_file.name)
+    with open(filepath, "wb+") as destination:
+        for chunk in local_file.chunks():
+            destination.write(chunk)
 
 
 def check_if_file_exists(filepath: str) -> bool:
@@ -143,13 +173,13 @@ def check_if_file_is_zip(filepath: str) -> bool:
         raise NotAZipError("Uploaded file does not have the .zip extension")
 
 
-def unzip_file(cwd: str, filename: str) -> None:
+def unzip_file(workspace: str, filename: str) -> None:
     """
     Unzip uploaded zip file.
 
     Parameters
     ----------
-    cwd: str
+    workspace: str
         Current working directory for task.
     filename: str
         Name of uploaded zip file.
@@ -158,7 +188,7 @@ def unzip_file(cwd: str, filename: str) -> None:
     -------
     None
     """
-    filepath = f"{cwd}/{filename}"
-    directory = f"{cwd}/{filename[:-4]}"
+    filepath = os.path.join(workspace, filename)
+    directory = os.path.join(workspace, os.path.splitext(filename)[0])
 
     subprocess.call(["unzip", "-qq", "-o", filepath, "-d", directory])
