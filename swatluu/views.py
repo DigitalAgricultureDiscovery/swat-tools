@@ -5,6 +5,7 @@ from django.shortcuts import render, resolve_url
 from django.template.response import TemplateResponse
 from django.utils import timezone
 
+from common.SWATModelZip import SWATModelZip
 from s3upload.models import S3Upload
 from swatusers.models import UserTask
 from .tasks import process_task
@@ -37,7 +38,7 @@ def index(request):
                                 timezone.datetime.now().strftime(
                                     "%Y%m%dT%H%M%S")
         unique_path = settings.UPLOAD_DIR + request.user.email + \
-                      '/' + unique_directory_name
+            '/' + unique_directory_name
         request.session['unique_directory_name'] = unique_directory_name
         request.session['on_s3'] = {}
         request.session['directory'] = unique_path
@@ -85,6 +86,46 @@ def create_working_directory(request):
 
     # Set folder permissions
     fix_file_permissions(unique_path)
+
+
+@login_required
+def upload_swat_model_zip2(request):
+    # Clear any previous progress or error messages
+    request.session['progress_complete'] = []
+    request.session['progress_message'] = []
+    request.session['error'] = []
+
+    # If user is submitting a zipped SWAT Model
+    if request.method == 'POST':
+        upload = {
+            'workspace': request.session.get('directory'),
+            'local': request.FILES.get('swat_model_zip', None),
+            'aws': None
+        }
+
+        # Check if the uploaded zip is on the aws s3 server
+        task_id = request.session.get('unique_directory_name')
+        if task_id in request.session.get('on_s3').keys():
+            file_name, file_size = request.session.get('on_s3')[task_id]
+            upload['aws'] = S3Upload.objects.filter(
+                email=request.user.email,
+                file_name=file_name,
+                file_size=file_size
+            )
+
+        swat_model = SWATModelZip(upload)
+
+        # Update relevant session variables
+        request.session['swat_model_filename'] = swat_model.get_filename()
+        request.session['swat_model_filepath'] = swat_model.get_directory()
+
+        request.session['progress_message'].append(
+            'Swat Model zip folder uploaded.')
+        # Render the main page
+        return render(request, 'swatluu/index.html')
+    else:
+        # Nothing was posted, reload main page
+        return render(request, 'swatluu/index.html')
 
 
 @login_required
@@ -259,7 +300,7 @@ def upload_swat_model_zip(request):
             if swat_model_file_ext != ".zip":
                 logger.error("{0}: Uploaded swat model file does not "
                              "have .zip extension.".format(
-                    request.session.get("unique_directory_name")))
+                                 request.session.get("unique_directory_name")))
                 error_msg = "The file you are uploading does not have a " \
                             ".zip extension. Make sure the file you are " \
                             "uploading is a compressed zipfile. Please refer " \
@@ -472,7 +513,8 @@ def upload_landuse_zip(request):
                 ])
 
                 # Set permissions for unzipped data
-                fix_file_permissions(unique_path + '/input/' + landuse_filename)
+                fix_file_permissions(
+                    unique_path + '/input/' + landuse_filename)
 
                 # Remove landuse zip
                 os.remove(unique_path + '/input/' + filename)
@@ -506,7 +548,7 @@ def upload_landuse_zip(request):
             # Update relevant session variables
             request.session['landuse_filename'] = filename
             request.session['landuse_filepath'] = unique_path + '/input/' + \
-                                                  landuse_filename
+                landuse_filename
             request.session['progress_message'].append(
                 'Landuse zip folder uploaded.')
             return render(request, 'swatluu/index.html')
@@ -665,13 +707,15 @@ def validate_selected_landuse_layers(request):
 
                 # Get filenames and filepaths
                 try:
-                    landuse_layer_filename, landuse_layer_ext = os.path.splitext(landuse_layer.name)
+                    landuse_layer_filename, landuse_layer_ext = os.path.splitext(
+                        landuse_layer.name)
                     # Check for .xml extension
                     if landuse_layer_ext == ".xml":
-                        landuse_layer_filename = os.path.splitext(landuse_layer_filename)[0]
+                        landuse_layer_filename = os.path.splitext(
+                            landuse_layer_filename)[0]
                     landuse_layer_filepath = request.session.get(
                         'landuse_filepath') + '/' + landuse_layer_filename + \
-                                             '/w001001.adf'
+                        '/w001001.adf'
                 except:
                     error_msg = 'Unable to match selected layers with layers ' \
                                 'uploaded in the Landuse Folder input. Make ' \
@@ -882,7 +926,7 @@ def runit(request):
         'process_root_dir': request.session.get('directory'),
         'results_dir': request.session.get('directory') + '/output',
         'output_dir': settings.PROJECT_DIR + '/user_data/' + request.user.email + '/' +
-                      request.session['unique_directory_name'] + '/output',
+        request.session['unique_directory_name'] + '/output',
         'swat_dir': request.session.get('swat_model_filepath'),
         'hrus1_dir': request.session.get(
             'swat_model_filepath') + '/Watershed/Grid/hrus1',
@@ -902,7 +946,7 @@ def runit(request):
                                 data['task_id'])
 
         request.session['progress_message'].append(
-            'Job successfully added to queue. You will receive an email with ' + \
+            'Job successfully added to queue. You will receive an email with ' +
             'a link to your files once the processing has completed.')
 
     return render(request, 'swatluu/index.html')
@@ -932,11 +976,11 @@ def download_data(request):
         user_id = task_id.split('_')[1]
         if int(user_id) == int(request.user.id):
             if os.path.exists(
-                                                            settings.PROJECT_DIR + '/user_data/' + request.user.email + '/' + task_id + '/output'):
+                    settings.PROJECT_DIR + '/user_data/' + request.user.email + '/' + task_id + '/output'):
                 file = io.BytesIO()
 
                 dir_to_zip = settings.PROJECT_DIR + '/user_data/' + request.user.email + \
-                             '/' + task_id + '/output'
+                    '/' + task_id + '/output'
 
                 dir_to_zip_len = len(dir_to_zip.rstrip(os.sep)) + 1
 
