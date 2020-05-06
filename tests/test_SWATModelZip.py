@@ -10,23 +10,30 @@ from common.SWATModelZip import SWATModelZip
 
 class TestSWATModelZip(unittest.TestCase):
     def setUp(self):
-        self.workspace = "./tests/data/tmp"
+        self.tmp_dir = "./tests/data/tmp"
+        self.workspace = os.path.join(
+            os.getcwd(), "tests", "data", "tmp", "email", "taskid")
         self.swat_model_zip = "./tests/data/SWAT_Model.zip"
         self.swat_model_missing_reqs_zip = "./tests/data/SWAT_Model_Missing_Reqs.zip"
+        self.swat_model_wrong_ext = "./tests/data/SWAT_Model.tar.gz"
 
         if os.path.exists(self.workspace):
             shutil.rmtree(self.workspace)
 
-        os.makedirs(self.workspace)
-        shutil.copy(self.swat_model_zip, self.workspace)
-        shutil.copy(self.swat_model_missing_reqs_zip, self.workspace)
+        os.makedirs(os.path.join(self.workspace, "input"))
+        shutil.copy(self.swat_model_zip,
+                    os.path.join(self.workspace, "input"))
+        shutil.copy(self.swat_model_missing_reqs_zip,
+                    os.path.join(self.workspace, "input"))
+        shutil.copy(self.swat_model_wrong_ext,
+                    os.path.join(self.workspace, "input"))
 
     def tearDown(self):
         """
         Remove SWAT Model directory if the zip was extracted.
         """
-        if os.path.exists(self.workspace):
-            shutil.rmtree(self.workspace)
+        if os.path.exists(self.tmp_dir):
+            shutil.rmtree(self.tmp_dir)
 
     def test_missing_keys(self):
         """
@@ -34,7 +41,7 @@ class TestSWATModelZip(unittest.TestCase):
         """
         # Missing "workspace" key
         upload = {
-            "local": {"file": UploadedFile(name="test_file.zip")},
+            "local": UploadedFile(name="test_file.zip"),
             "aws": {}
         }
 
@@ -48,7 +55,7 @@ class TestSWATModelZip(unittest.TestCase):
         # "workspace" key points to file that does not exist
         upload = {
             "workspace": "./wrong_directory",
-            "local": {"file": UploadedFile(name="SWAT_Model.zip")},
+            "local": UploadedFile(name="SWAT_Model.zip"),
             "aws": {}
         }
 
@@ -60,8 +67,8 @@ class TestSWATModelZip(unittest.TestCase):
         Test that the uploaded file has the .zip extension.
         """
         upload = {
-            "workspace": "./tests/data",
-            "local": {"file": UploadedFile(name="SWAT_Model.tar.gz")},
+            "workspace": self.workspace,
+            "local": UploadedFile(name="SWAT_Model.tar.gz"),
             "aws": {}
         }
 
@@ -71,7 +78,7 @@ class TestSWATModelZip(unittest.TestCase):
     def test_validate_model_returns_status_code_0_when_no_errors_detected(self):
         upload = {
             "workspace": self.workspace,
-            "local": {"file": UploadedFile(name="SWAT_Model.zip")},
+            "local": UploadedFile(name="SWAT_Model.zip"),
             "aws": {}
         }
 
@@ -83,7 +90,7 @@ class TestSWATModelZip(unittest.TestCase):
     def test_validate_model_returns_status_code_1_when_errors_detected(self):
         upload = {
             "workspace": self.workspace,
-            "local": {"file": UploadedFile(name="SWAT_Model_Missing_Reqs.zip")},
+            "local": UploadedFile(name="SWAT_Model_Missing_Reqs.zip"),
             "aws": {}
         }
 

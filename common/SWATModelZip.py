@@ -2,7 +2,10 @@ import glob
 import os
 import shutil
 import subprocess
+
 from django.core.files.uploadedfile import UploadedFile
+
+from .utils import create_working_directory, fix_file_permissions
 
 """
 upload = {
@@ -23,30 +26,38 @@ class SWATModelZip:
     def __init__(self, upload: dict) -> None:
         check_upload_keys(upload)
 
+        # Root workspace for input and output files
         workspace = upload["workspace"]
+        # Sub workspace for input files
+        workspace_input = os.path.join(workspace, "input")
 
         if upload["local"]:
-            self.filename = upload["local"]["file"].name
+            self.filename = upload["local"].name
         else:
             self.filename = upload["aws"]["file"]["name"]
 
-        self.model_directory = os.path.join(
-            upload["workspace"],
+        self.swat_model_directory = os.path.join(
+            workspace_input,
             os.path.splitext(self.filename)[0])
 
-        if not os.environ.get("TEST_FLAG"):
-            remove_existing_upload(workspace, self.filename)
+        create_working_directory(upload["workspace"])
 
         if not os.environ.get("TEST_FLAG"):
-            if upload.local:
-                write_file_to_disk(workspace, upload["local"]["file"])
+            remove_existing_upload(workspace_input, self.filename)
+
+        if not os.environ.get("TEST_FLAG"):
+            if upload["local"]:
+                write_file_to_disk(workspace_input, upload["local"])
             else:
-                download_file_to_server(workspace, upload["on_s3"]["url"])
+                download_file_to_server(
+                    workspace_input, upload["on_s3"]["url"])
 
-        check_if_file_exists(os.path.join(workspace, self.filename))
-        check_if_file_is_zip(os.path.join(workspace, self.filename))
+        check_if_file_exists(os.path.join(workspace_input, self.filename))
+        check_if_file_is_zip(os.path.join(workspace_input, self.filename))
 
-        unzip_file(workspace, self.filename)
+        unzip_file(workspace_input, self.filename)
+
+        fix_file_permissions(self.swat_model_directory)
 
         self.errors = {
             "raster": False,     # hrus1 raster grid
@@ -55,10 +66,16 @@ class SWATModelZip:
         }
 
         self.errors["raster"] = check_for_hrus1_raster(
-            self.model_directory)
+            self.swat_model_directory)
         self.errors["shapefile"] = check_for_hru1_shp(
-            self.model_directory)
-        self.errors["hrus"] = check_for_hrus(self.model_directory)
+            self.swat_model_directory)
+        self.errors["hrus"] = check_for_hrus(self.swat_model_directory)
+
+    def get_filename(self) -> str:
+        return self.filename
+
+    def get_directory(self) -> str:
+        return self.swat_model_directory
 
     def validate_model(self) -> dict:
         """
@@ -81,7 +98,7 @@ class SWATModelZip:
             if self.errors[key] is False:
                 results["status"] = 1
                 results["errors"].append(
-                    get_error_message(self.model_directory, key))
+                    get_error_message(self.swat_model_directory, key))
 
         return results
 
@@ -233,6 +250,10 @@ def unzip_file(workspace: str, filename: str) -> None:
 
     # Remove zip file after extraction finishes
     os.remove(filepath)
+
+
+def check_for_correct_folder_structure(model_directory: str) -> bool:
+    pass
 
 
 def check_for_hrus1_raster(model_directory: str) -> bool:
