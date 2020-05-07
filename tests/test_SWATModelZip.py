@@ -16,6 +16,8 @@ class TestSWATModelZip(unittest.TestCase):
         self.swat_model_zip = "./tests/data/SWAT_Model.zip"
         self.swat_model_missing_reqs_zip = "./tests/data/SWAT_Model_Missing_Reqs.zip"
         self.swat_model_wrong_ext = "./tests/data/SWAT_Model.tar.gz"
+        self.swat_model_missing_root = "./tests/data/SWAT_Model_No_Root_Folder.zip"
+        self.swat_model_missing_swat_folders = "./tests/data/SWAT_Model_Missing_SWAT_Folders.zip"
 
         if os.path.exists(self.workspace):
             shutil.rmtree(self.workspace)
@@ -26,6 +28,10 @@ class TestSWATModelZip(unittest.TestCase):
         shutil.copy(self.swat_model_missing_reqs_zip,
                     os.path.join(self.workspace, "input"))
         shutil.copy(self.swat_model_wrong_ext,
+                    os.path.join(self.workspace, "input"))
+        shutil.copy(self.swat_model_missing_root,
+                    os.path.join(self.workspace, "input"))
+        shutil.copy(self.swat_model_missing_swat_folders,
                     os.path.join(self.workspace, "input"))
 
     def tearDown(self):
@@ -54,8 +60,8 @@ class TestSWATModelZip(unittest.TestCase):
         """
         # "workspace" key points to file that does not exist
         upload = {
-            "workspace": "./wrong_directory",
-            "local": UploadedFile(name="SWAT_Model.zip"),
+            "workspace": os.path.join(self.workspace),
+            "local": UploadedFile(name="SWAT_Model_Does_Not_Exist.zip"),
             "aws": {}
         }
 
@@ -98,4 +104,19 @@ class TestSWATModelZip(unittest.TestCase):
         validation_results = model.validate_model()
 
         self.assertEqual(validation_results["status"], 1)
-        self.assertEqual(len(validation_results["errors"]), 3)
+        self.assertFalse(model.errors["raster"])
+        self.assertFalse(model.errors["shapefile"])
+        self.assertFalse(model.errors["hrus"])
+
+    def test_handles_missing_root_folder(self):
+        upload = {
+            "workspace": self.workspace,
+            "local": UploadedFile(name="SWAT_Model_No_Root_Folder.zip"),
+            "aws": {}
+        }
+
+        model = SWATModelZip(upload)
+        validation_results = model.validate_model()
+
+        self.assertEqual(validation_results["status"], 0)
+        self.assertTrue(os.path.exists(model.swat_model_directory))

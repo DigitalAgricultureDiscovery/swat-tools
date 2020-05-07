@@ -24,6 +24,14 @@ class NotAZipError(Exception):
 class SWATModelZip:
 
     def __init__(self, upload: dict) -> None:
+        self.errors = {
+            "folders": False,    # model directory containing "Scenarios" and "Watershed"
+            "raster": False,     # hrus1 raster grid
+            "shapefile": False,  # hru1 shapefile
+            "hrus": False        # hru files in TxtInOut
+        }
+        self.swat_model_directory = ""
+
         check_upload_keys(upload)
 
         # Root workspace for input and output files
@@ -35,10 +43,6 @@ class SWATModelZip:
             self.filename = upload["local"].name
         else:
             self.filename = upload["aws"]["file"]["name"]
-
-        self.swat_model_directory = os.path.join(
-            workspace_input,
-            os.path.splitext(self.filename)[0])
 
         create_working_directory(upload["workspace"])
 
@@ -57,13 +61,17 @@ class SWATModelZip:
 
         unzip_file(workspace_input, self.filename)
 
-        fix_file_permissions(self.swat_model_directory)
+        root_folder_name = find_root_folder(workspace_input)
+        if not root_folder_name:
+            self.errors["folders"] = get_error_message("folders")
+            return
+        else:
+            self.errors["folders"] = True
 
-        self.errors = {
-            "raster": False,     # hrus1 raster grid
-            "shapefile": False,  # hru1 shapefile
-            "hrus": False        # hru files in TxtInOut
-        }
+        self.swat_model_directory = os.path.join(
+            workspace_input, root_folder_name)
+
+        fix_file_permissions(self.swat_model_directory)
 
         self.errors["raster"] = check_for_hrus1_raster(
             self.swat_model_directory)
@@ -98,7 +106,7 @@ class SWATModelZip:
             if self.errors[key] is False:
                 results["status"] = 1
                 results["errors"].append(
-                    get_error_message(self.swat_model_directory, key))
+                    get_error_message(key, self.swat_model_directory))
 
         return results
 
@@ -252,8 +260,35 @@ def unzip_file(workspace: str, filename: str) -> None:
     os.remove(filepath)
 
 
-def check_for_correct_folder_structure(model_directory: str) -> bool:
-    pass
+def find_root_folder(workspace) -> str:
+    """
+    Find folder containing SWAT Model sub-directories "Watershed"
+    and "Scenarios".
+
+    Parameters
+    ----------
+    workspace: str
+        Current working directory for task.
+
+    Returns
+    -------
+    root_folder: str
+        Name of folder containing SWAT Model sub-directories.
+    """
+    root_folder = ""
+
+    workspace_directories = next(os.walk(workspace))[1]
+
+    if "Watershed" in workspace_directories and "Scenarios" in workspace_directories:
+        root_folder = workspace
+    else:
+        for directory in next(os.walk(workspace))[1]:
+            sub_directories = next(
+                os.walk(os.path.join(workspace, directory)))[1]
+            if "Watershed" in sub_directories and "Scenarios" in sub_directories:
+                root_folder = directory
+
+    return root_folder
 
 
 def check_for_hrus1_raster(model_directory: str) -> bool:
@@ -323,7 +358,7 @@ def check_for_hrus(model_directory: str) -> bool:
     ))) > 0
 
 
-def get_error_message(model_directory: str, error: str) -> str:
+def get_error_message(error: str, model_directory: str = None) -> str:
     """
     Returns detailed error message for the provided error name.
 
@@ -340,6 +375,7 @@ def get_error_message(model_directory: str, error: str) -> str:
         Error message.
     """
     return {
+        "folders": f"Could not find \"Scenarios\" and \"Watershed\" directories. See manual for further help.",
         "raster": f"Could not find hrus1/w001001.adf in {model_directory}/Watershed/Grid/. See manual for further help.",
         "shapefile": f"Could not find hru1.shp in {model_directory}/Watershed/Shapes/. See manual for further help.",
         "hrus": f"Could not find hru files (.hru) in {model_directory}/Scenarios/Default/TxtInOut/. See manual for further help."
