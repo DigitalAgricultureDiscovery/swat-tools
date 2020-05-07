@@ -79,8 +79,6 @@ urlpatterns = [
     url(r'^swatluu$', swatluu_views.index, name='swatluu'),
     url(r'^swatluu/upload_swat_model_zip$', swatluu_views.upload_swat_model_zip,
         name='swatluu/upload_swat_model_zip'),
-    url(r'^swatluu/upload_swat_model_zip2$', swatluu_views.upload_swat_model_zip2,
-        name='swatluu/upload_swat_model_zip2'),
     url(r'^swatluu/upload_landuse_zip$', swatluu_views.upload_landuse_zip,
         name='swatluu/upload_landuse_zip'),
     url(r'^swatluu/select_number_of_landuse_layers$', swatluu_views.select_number_of_landuse_layers,

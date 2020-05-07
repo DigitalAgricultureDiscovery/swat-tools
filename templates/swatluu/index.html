@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load bootstrap3 %}
+{% load class_tag %}
 
 {% block meta_description %}
     <meta name="description" content="SWAT LUU is a geospatial tool that ingests multiple land use/land cover geospatial datasets and other associated information interactively and prepares the input files necessary for activating the land use update (LUU) module in SWAT." />
@@ -175,7 +176,7 @@
     <div class="row" style="padding-top: 15px;">
         <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
             <div class="inner-block" style="max-width: 650px; min-width: 610px; width: 45%;">
-                <form id="form1" role="form" method="post" action="{% url 'swatluu/upload_swat_model_zip2' %}" enctype="multipart/form-data" style="text-align: left">
+                <form id="form1" role="form" method="post" action="{% url 'swatluu/upload_swat_model_zip' %}" enctype="multipart/form-data" style="text-align: left">
                     {% csrf_token %}
                     <label><b>SWAT Model Input:</b> &nbsp;</label>
                     {% buttons %}
@@ -191,12 +192,12 @@
                         </div>
                     {% endbuttons %}
                     <div class="progress progress-striped active">
-                      <div class="bar"></div>
+                        <div class="bar"></div>
                     </div>
                     <div class="upload overwrite">
-                      <label><strong>Overwrite existing file?</strong>&nbsp</label>
-                      <label class="radio-inline"><input type="radio" name="upload-overwrite" checked="checked" value="no">No</label>
-                      <label class="radio-inline"><input type="radio" name="upload-overwrite" value="yes">Yes</label>
+                        <label><strong>Overwrite existing file?</strong>&nbsp</label>
+                        <label class="radio-inline"><input type="radio" name="upload-overwrite" checked="checked" value="no">No</label>
+                        <label class="radio-inline"><input type="radio" name="upload-overwrite" value="yes">Yes</label>
                     </div>
                     <div id="loading" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
@@ -204,9 +205,17 @@
                     <div id="uploadAlert" class="alert alert-success" role="alert"></div>
                     <div id="help1div" class="alert alert-info" role="alert"></div>
                     {% if request.session.error_swat_model %}
-                      <div class="alert alert-danger" role="alert">
-                        <strong style="color:#F92E31;">{{ request.session.error_swat_model }}</strong><br/>
-                      </div>
+                        <div class="alert alert-danger" role="alert">
+                            {% if request.session.error_swat_model|get_class == "list" %}
+                                <ul>
+                                    {% for error_msg in request.session.error_swat_model %}
+                                        <li>{{ error_msg }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <strong style="color:#F92E31;">{{ request.session.error_swat_model }}</strong><br/>
+                            {% endif %}
+                        </div>
                     {% endif %}
                 </form>
             </div>
@@ -384,7 +393,17 @@
                         <b id="message_process" style="color: #33CC33;">{{message }}</b><br/>
                     {% endfor %}
                     {% if request.session.error %}
-                        <b style ="color:#F92E31;">{{ request.session.error}}</b><br/>
+                        {% if request.session.error|get_class == "list" %}
+                            <ul>
+                                {% for error in request.session.error %}
+                                    <li>
+                                        <strong style="color: #F92E31;">{{ error }}</strong>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <b style ="color:#F92E31;">{{ request.session.error}}</b><br/>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>

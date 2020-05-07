@@ -61,15 +61,14 @@ class SWATModelZip:
 
         unzip_file(workspace_input, self.filename)
 
-        root_folder_name = find_root_folder(workspace_input)
-        if not root_folder_name:
-            self.errors["folders"] = get_error_message("folders")
+        self.root_folder_name = find_root_folder(workspace_input)
+        if not self.root_folder_name:
             return
         else:
             self.errors["folders"] = True
 
         self.swat_model_directory = os.path.join(
-            workspace_input, root_folder_name)
+            workspace_input, self.root_folder_name)
 
         fix_file_permissions(self.swat_model_directory)
 
@@ -106,7 +105,7 @@ class SWATModelZip:
             if self.errors[key] is False:
                 results["status"] = 1
                 results["errors"].append(
-                    get_error_message(key, self.swat_model_directory))
+                    get_error_message(key, self.root_folder_name))
 
         return results
 
@@ -375,7 +374,7 @@ def get_error_message(error: str, model_directory: str = None) -> str:
         Error message.
     """
     return {
-        "folders": f"Could not find \"Scenarios\" and \"Watershed\" directories. See manual for further help.",
+        "folders": f"Could not find \"Scenarios\" and \"Watershed\" directories in zip file. See manual for further help.",
         "raster": f"Could not find hrus1/w001001.adf in {model_directory}/Watershed/Grid/. See manual for further help.",
         "shapefile": f"Could not find hru1.shp in {model_directory}/Watershed/Shapes/. See manual for further help.",
         "hrus": f"Could not find hru files (.hru) in {model_directory}/Scenarios/Default/TxtInOut/. See manual for further help."
