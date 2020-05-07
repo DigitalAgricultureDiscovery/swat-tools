@@ -82,6 +82,9 @@ class TestSWATModelZip(unittest.TestCase):
             SWATModelZip(upload)
 
     def test_validate_model_returns_status_code_0_when_no_errors_detected(self):
+        """
+        Test validate_model returns a 0 status code when no errors are detected.
+        """
         upload = {
             "workspace": self.workspace,
             "local": UploadedFile(name="SWAT_Model.zip"),
@@ -94,6 +97,9 @@ class TestSWATModelZip(unittest.TestCase):
         self.assertEqual(validation_results["status"], 0)
 
     def test_validate_model_returns_status_code_1_when_errors_detected(self):
+        """
+        Test validate_model returns a 1 status code when errors are found.
+        """
         upload = {
             "workspace": self.workspace,
             "local": UploadedFile(name="SWAT_Model_Missing_Reqs.zip"),
@@ -109,6 +115,10 @@ class TestSWATModelZip(unittest.TestCase):
         self.assertFalse(model.errors["hrus"])
 
     def test_handles_missing_root_folder(self):
+        """
+        Test that a missing root folder does not cause an error 
+        as long as the Watershed and Scenarios folders are found.
+        """
         upload = {
             "workspace": self.workspace,
             "local": UploadedFile(name="SWAT_Model_No_Root_Folder.zip"),
@@ -120,3 +130,20 @@ class TestSWATModelZip(unittest.TestCase):
 
         self.assertEqual(validation_results["status"], 0)
         self.assertTrue(os.path.exists(model.swat_model_directory))
+
+    def test_validate_model_returns_folders_error_when_required_swat_folders_missing(self):
+        """
+        Test that the "folders" error is returned by validate_model when the 
+        "Watershed" and/or "Scenarios" folders are missing.
+        """
+        upload = {
+            "workspace": self.workspace,
+            "local": UploadedFile(name="SWAT_Model_Missing_SWAT_Folders.zip"),
+            "aws": {}
+        }
+
+        model = SWATModelZip(upload)
+        validation_results = model.validate_model()
+
+        self.assertEqual(validation_results["status"], 1)
+        self.assertFalse(model.errors["folders"])

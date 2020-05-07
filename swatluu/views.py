@@ -89,7 +89,8 @@ def create_working_directory(request):
 
 
 @login_required
-def upload_swat_model_zip2(request):
+def upload_swat_model_zip(request):
+    """ This view uploads the SWAT model zip in to the input directory. """
     # Clear any previous progress or error messages
     request.session['progress_complete'] = []
     request.session['progress_message'] = []
@@ -113,7 +114,23 @@ def upload_swat_model_zip2(request):
                 file_size=file_size
             )
 
-        swat_model = SWATModelZip(upload)
+        try:
+            swat_model = SWATModelZip(upload)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'An unexpected error has occurred, ' \
+                        'please try again. If the issue persists ' \
+                        'please use the Contact Us form to request ' \
+                        'further assistance from the site admins.'
+            request.session['error'] = error_msg
+            request.session['error_swat_model'] = error_msg
+            return render(request, 'swatluu/index.html')
+
+        validation_results = swat_model.validate_model()
+        if validation_results["status"] == 1:
+            request.session['error'] = validation_results['errors']
+            request.session['error_swat_model'] = validation_results['errors']
+            return render(request, 'swatluu/index.html')
 
         # Update relevant session variables
         request.session['swat_model_filename'] = swat_model.get_filename()
@@ -123,299 +140,6 @@ def upload_swat_model_zip2(request):
             'Swat Model zip folder uploaded.')
         # Render the main page
         return render(request, 'swatluu/index.html')
-    else:
-        # Nothing was posted, reload main page
-        return render(request, 'swatluu/index.html')
-
-
-@login_required
-def upload_swat_model_zip(request):
-    """ This view uploads the SWAT model zip in to the input directory. """
-    # Clear any previous progress or error messages
-    request.session['progress_complete'] = []
-    request.session['progress_message'] = []
-    request.session['error'] = []
-
-    # If user is submitting a zipped SWAT Model
-    if request.method == 'POST':
-        file_exists = False
-        file_on_s3 = False
-        if 'swat_model_zip' in request.FILES:
-            file_exists = True
-        else:
-            task_id = request.session.get('unique_directory_name')
-
-            if task_id in request.session.get('on_s3').keys():
-                file_name, file_size = request.session.get('on_s3')[task_id]
-
-                file_obj = S3Upload.objects.filter(
-                    email=request.user.email,
-                    file_name=file_name,
-                    file_size=file_size
-                )
-
-                if file_obj:
-                    file_exists = True
-                    file_on_s3 = True
-
-        if file_exists:
-            if not file_on_s3:
-                # Get the uploaded file and store the name of the zip
-                try:
-                    file = request.FILES['swat_model_zip']
-                    filename = file.name
-                    swat_model_file = os.path.splitext(filename)
-                    swat_model_filename = swat_model_file[0]
-                    swat_model_file_ext = swat_model_file[1]
-                except:
-                    logger.error(
-                        "{0}: Unable upload SWAT model zipfile.".format(
-                            request.session.get('unique_directory_name')))
-                    error_msg = 'Unable to receive the uploaded file, ' \
-                                'please try again. If the issue persists ' \
-                                'please use the Contact Us form to request ' \
-                                'further assistance from the site admins.'
-                    request.session['error'] = error_msg
-                    request.session['error_swat_model'] = error_msg
-                    return render(request, 'swatluu/index.html')
-
-                try:
-                    # Create base working directory now that
-                    # user has uploaded a file
-                    create_working_directory(request)
-                    unique_path = request.session.get('directory')
-                except:
-                    logger.error(
-                        "{0}: Unable to create working directory.".format(
-                            request.session.get('unique_directory_name')))
-                    error_msg = 'Unable to set up user workspace, please ' \
-                                'try again. If the issue persists please use ' \
-                                'the Contact Us form to request further ' \
-                                'assistance from the site admins.'
-                    request.session['error'] = error_msg
-                    request.session['error_swat_model'] = error_msg
-                    return render(request, 'swatluu/index.html')
-
-                try:
-                    # If the SWAT Model directory already exists,
-                    # remove it to make way for new upload
-                    model_path = "{0}/input/{1}".format(
-                        unique_path,
-                        swat_model_filename
-                    )
-                    if os.path.exists(model_path):
-                        shutil.rmtree(model_path)
-                except:
-                    logger.error(
-                        "{0}: Unable to remove previously uploaded files.".format(
-                            request.session.get('unique_directory_name')))
-                    error_msg = 'Unable to remove previously uploaded file, ' \
-                                'please use the Reset button to reset the ' \
-                                'tool. If the issue persists please use the ' \
-                                'Contact Us form to request further ' \
-                                'assistance from the site admins.'
-                    request.session['error'] = error_msg
-                    request.session['error_swat_model'] = error_msg
-                    return render(request, 'swatluu/index.html')
-
-                try:
-                    # Read uploaded file into tmp directory
-                    file_path = "{0}/input/{1}".format(unique_path, filename)
-                    with open(file_path, 'wb+') as destination:
-                        for chunk in file.chunks():
-                            destination.write(chunk)
-                except:
-                    logger.error(
-                        "{0}: Unable to write uploaded data to disk.".format(
-                            request.session.get('unique_directory_name')))
-                    error_msg = 'Unable to receive the uploaded file, please ' \
-                                'try again. If the issue persists please use ' \
-                                'the Contact Us form to request further ' \
-                                'assistance from the site admins.'
-                    request.session['error'] = error_msg
-                    request.session['error_swat_model'] = error_msg
-                    return render(request, 'swatluu/index.html')
-            else:
-                try:
-                    # Create base working directory now that
-                    # user has uploaded a file
-                    create_working_directory(request)
-                    unique_path = request.session.get('directory')
-                except:
-                    logger.error(
-                        "{0}: Unable to create working directory.".format(
-                            request.session.get('unique_directory_name')))
-                    error_msg = 'Unable to set up user workspace, please ' \
-                                'try again. If the issue persists please use ' \
-                                'the Contact Us form to request further ' \
-                                'assistance from the site admins.'
-                    request.session['error'] = error_msg
-                    request.session['error_swat_model'] = error_msg
-                    return render(request, 'swatluu/index.html')
-
-                try:
-                    # If the SWAT Model directory already exists,
-                    # remove it to make way for new upload
-                    input_dir = unique_path + '/input/' + file_obj[0].file_name
-                    if os.path.exists(input_dir):
-                        shutil.rmtree(input_dir)
-
-                    # Get filename and ext
-                    filename = file_obj[0].file_name
-                    swat_model_file = os.path.splitext(file_obj[0].file_name)
-                    swat_model_filename = swat_model_file[0]
-                    swat_model_file_ext = swat_model_file[1]
-                except:
-                    logger.error(
-                        "{0}: Unable to obtain SWAT model information.".format(
-                            request.session.get('unique_directory_name')))
-                    error_msg = 'Unable to remove previously uploaded file, ' \
-                                'please use the Reset button to reset the ' \
-                                'tool. If the issue persists please use the ' \
-                                'Contact Us form to request further ' \
-                                'assistance from the site admins.'
-                    request.session['error'] = error_msg
-                    request.session['error_swat_model'] = error_msg
-                    return render(request, 'swatluu/index.html')
-
-                try:
-                    subprocess.call([
-                        "curl",
-                        "-o",
-                        input_dir,
-                        file_obj[0].s3_url])
-                except:
-                    logger.error(
-                        "{0}: Unable to retrieve SWAT model from S3.".format(
-                            request.session.get('unique_directory_name')))
-                    error_msg = "Unable to retrieve file from storage. " \
-                                "Please try re-uploading. If this issue " \
-                                "persists please use the Contact Us form to " \
-                                "request further assistance from the site " \
-                                "admins."
-                    request.session['error'] = error_msg
-                    request.session['error_swat_model'] = error_msg
-
-            # Make sure the file has the .zip extension
-            if swat_model_file_ext != ".zip":
-                logger.error("{0}: Uploaded swat model file does not "
-                             "have .zip extension.".format(
-                                 request.session.get("unique_directory_name")))
-                error_msg = "The file you are uploading does not have a " \
-                            ".zip extension. Make sure the file you are " \
-                            "uploading is a compressed zipfile. Please refer " \
-                            "to the user manual if you need help creating a " \
-                            "zipfile."
-                request.session['error'] = error_msg
-                request.session['error_swat_model'] = error_msg
-                return render(request, "swatluu/index.html")
-            try:
-                # Unzip uploaded file in tmp directory
-                subprocess.call([
-                    "unzip",
-                    "-qq", "-o",
-                    unique_path + "/input/" + swat_model_filename,
-                    "-d",
-                    unique_path + "/input/"
-                ])
-
-                # Set permissions for unzipped data
-                model_path = "{0}/input/{1}".format(
-                    unique_path,
-                    swat_model_filename
-                )
-                fix_file_permissions(model_path)
-
-                # Remove uploaded zip file
-                os.remove(model_path + swat_model_file_ext)
-            except:
-                logger.error("{0}: Unable to unzip uploaded SWAT model.".format(
-                    request.session.get('unique_directory_name')))
-                error_msg = 'Unable to unzip the uploaded file, please ' \
-                            'try again. If the issue persists please use ' \
-                            'the Contact Us form to request further ' \
-                            'assistance from the site admins.'
-                request.session['error'] = error_msg
-                request.session['error_swat_model'] = error_msg
-                return render(request, 'swatluu/index.html')
-
-            # Check if decompression completed or failed (no folder if failed)
-            if not os.path.exists(model_path):
-                logger.error("{0}: Could not extract SWAT model zip folder.".format(
-                    request.session.get('unique_directory_name')))
-                error_msg = 'Could not extract the folder "{0}". Please ' \
-                            'check if the file is compressed in zip format ' \
-                            'and has the same name as compressed folder. If ' \
-                            'the issue persists please use the Contact Us ' \
-                            'form to request further assistance from the ' \
-                            'site admins.'.format(swat_model_filename)
-                request.session['error'] = error_msg
-                request.session['error_swat_model'] = error_msg
-                return render(request, 'swatluu/index.html')
-
-            # Check if the required files/folders exist
-            loc = unique_path + '/input/' + swat_model_filename + \
-                '/Watershed/Grid/hrus1/w001001.adf'
-            shapeloc = unique_path + '/input/' + swat_model_filename + \
-                '/Watershed/Shapes/hru1.shp'
-            scenarioloc = unique_path + '/input/' + swat_model_filename + \
-                '/Scenarios/Default/TxtInOut/*.hru'
-
-            # Check if hru files were found
-            if not (glob.glob(scenarioloc)):
-                logger.error("{0}: Unable to find TxtInOut directory.".format(
-                    request.session.get('unique_directory_name')))
-                error_msg = 'Could not find the folder or hru files in "{0}" ' \
-                            '/Scenarios/Default/TxtInOut/*.hru. Please check ' \
-                            'for files in folder and re-upload the zip file. ' \
-                            'If the issue persists please use the Contact Us ' \
-                            'form to request further assistance from the ' \
-                            'site admins.'.format(swat_model_filename)
-                request.session['error'] = error_msg
-                request.session['error_swat_model'] = error_msg
-                return render(request, 'swatluu/index.html')
-
-            # Check if watershed folder was found
-            if not os.path.exists(shapeloc):
-                logger.error("{0}: Unable to find hru1.shp.".format(
-                    request.session.get('unique_directory_name')))
-                error_msg = 'Could not find the folder "{0}" ' \
-                            '/Watershed/Shapes/hru1.shp. Please check for ' \
-                            'files in folder and re-upload the zip file. If ' \
-                            'the issue persists please use the Contact Us ' \
-                            'form to request further assistance from the ' \
-                            'site admins.'.format(swat_model_filename)
-                request.session['error'] = error_msg
-                request.session['error_swat_model'] = error_msg
-                return render(request, 'swatluu/index.html')
-
-            # If there were no issues finding the required SWAT Model paths
-            if os.path.exists(loc):
-                # Update relevant session variables
-                request.session['swat_model_filename'] = filename
-                request.session['swat_model_filepath'] = model_path
-                request.session['progress_message'].append(
-                    'Swat Model zip folder uploaded.')
-                # Render the main page
-                return render(request, 'swatluu/index.html')
-            else:
-                logger.error("{0}: Unable find hrus1/w001001.adf.".format(
-                    request.session.get('unique_directory_name')))
-                # Couldn't find a required SWAT Model folder, return error msg
-                error_msg = 'Could not find the folder "{0}" ' \
-                            '/Watershed/Grid/hrus1/w001001.adf. Please check ' \
-                            'for files in folder and re-upload ' \
-                            'the zip file.'.format(swat_model_filename)
-                request.session['error'] = error_msg
-                request.session['error_swat_model'] = error_msg
-                return render(request, 'swatluu/index.html')
-        else:
-            # Couldn't find a required SWAT Model folder, return error msg
-            error_msg = 'Please select your zipped SWAT Model before ' \
-                        'clicking the Upload button.'
-            request.session['error'] = error_msg
-            request.session['error_swat_model'] = error_msg
-            return render(request, 'swatluu/index.html')
     else:
         # Nothing was posted, reload main page
         return render(request, 'swatluu/index.html')
