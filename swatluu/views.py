@@ -6,6 +6,7 @@ from django.template.response import TemplateResponse
 from django.utils import timezone
 
 from common.SWATModelZip import SWATModelZip
+from common.utils import fix_file_permissions
 from s3upload.models import S3Upload
 from swatusers.models import UserTask
 from .tasks import process_task
@@ -32,7 +33,14 @@ def index(request):
         return HttpResponseRedirect(resolve_url('login'))
     else:
         # Clear progress message
+        request.session['progress_complete'] = []
         request.session['progress_message'] = []
+        request.session['error'] = []
+        request.session['error_swat_model'] = []
+        request.session['error_landuse'] = []
+        request.session['error_landuse_layers'] = []
+        request.session['error_lookup'] = []
+
         # Set user's unique directory that will hold their uploaded files
         unique_directory_name = 'uid_' + str(request.user.id) + '_swatluu_' + \
                                 timezone.datetime.now().strftime(
@@ -45,47 +53,6 @@ def index(request):
 
         # Render main SWAT LUU view
         return render(request, 'swatluu/index.html')
-
-
-def fix_file_permissions(path):
-    """ Starts at a base directory and moves through all of its
-        files changing the directory permissions to 775 and file
-        permissions to 664. """
-
-    # Change directory and file permissions for "path"
-    # to 775 and 664 respectively
-    if os.path.isfile(path):
-        os.chmod(path, 0o664)
-    else:
-        os.chmod(path, 0o775)
-        for root, directory, file in os.walk(path):
-            for d in directory:
-                os.chmod(os.path.join(root, d), 0o775)
-            for f in file:
-                os.chmod(os.path.join(root, f), 0o664)
-
-
-def create_working_directory(request):
-    """ Creates the directory structure that all inputs/outputs will be
-        placed for this current process. """
-    # Create main directory for user data (e.g. ../user_data/user_email)
-    if not os.path.exists(settings.UPLOAD_DIR):
-        os.makedirs(settings.UPLOAD_DIR)
-        os.chmod(settings.UPLOAD_DIR, 0o775)
-
-    if not os.path.exists(settings.UPLOAD_DIR + request.user.email):
-        os.makedirs(settings.UPLOAD_DIR + request.user.email)
-        os.chmod(settings.UPLOAD_DIR + request.user.email, 0o775)
-
-    # Set up the working directory for this specific process
-    unique_path = request.session.get("directory")
-    if not os.path.exists(unique_path):
-        os.makedirs(unique_path)
-    if not os.path.exists(unique_path + '/input'):
-        os.makedirs(unique_path + '/input')
-
-    # Set folder permissions
-    fix_file_permissions(unique_path)
 
 
 @login_required
