@@ -23,7 +23,7 @@ class NotAZipError(Exception):
 
 class SWATModelZip:
 
-    def __init__(self, upload: dict) -> None:
+    def __init__(self, upload: dict, tool: str = None) -> None:
         self.errors = {
             "folders": False,    # model directory containing "Scenarios" and "Watershed"
             "raster": False,     # hrus1 raster grid
@@ -31,6 +31,9 @@ class SWATModelZip:
             "hrus": False        # hru files in TxtInOut
         }
         self.swat_model_directory = ""
+
+        if tool == "field":
+            self.errors["swatmdb"] = False
 
         check_upload_keys(upload)
 
@@ -77,6 +80,12 @@ class SWATModelZip:
         self.errors["shapefile"] = check_for_hru1_shp(
             self.swat_model_directory)
         self.errors["hrus"] = check_for_hrus(self.swat_model_directory)
+        
+        # Run check only for Field SWAT
+        if tool == "field":
+            self.errors["swatmdb"] = check_for_swatoutput_mdb(
+                self.swat_model_directory
+            )
 
     def get_filename(self) -> str:
         return self.filename
@@ -233,7 +242,7 @@ def check_if_file_is_zip(filepath: str) -> bool:
     bool
         True if the file has a zip extension, false if it does not.
     """
-    if not os.path.splitext(filepath)[1] == '.zip':
+    if not os.path.splitext(filepath)[1] == ".zip":
         raise NotAZipError("Uploaded file does not have the .zip extension")
 
 
@@ -306,10 +315,10 @@ def check_for_hrus1_raster(model_directory: str) -> bool:
     """
     return os.path.exists(os.path.join(
         model_directory,
-        'Watershed',
-        'Grid',
-        'hrus1',
-        'w001001.adf'))
+        "Watershed",
+        "Grid",
+        "hrus1",
+        "w001001.adf"))
 
 
 def check_for_hru1_shp(model_directory: str) -> bool:
@@ -328,9 +337,9 @@ def check_for_hru1_shp(model_directory: str) -> bool:
     """
     return os.path.exists(os.path.join(
         model_directory,
-        'Watershed',
-        'Shapes',
-        'hru1.shp'
+        "Watershed",
+        "Shapes",
+        "hru1.shp"
     ))
 
 
@@ -350,11 +359,34 @@ def check_for_hrus(model_directory: str) -> bool:
     """
     return len(glob.glob(os.path.join(
         model_directory,
-        'Scenarios',
-        'Default',
-        'TxtInOut',
-        '*.hru'
+        "Scenarios",
+        "Default",
+        "TxtInOut",
+        "*.hru"
     ))) > 0
+
+
+def check_for_swatoutput_mdb(model_directory: str) -> bool:
+    """
+    Checks for the SWATOutput.mdb database in the TablesOut directory. 
+
+    Parameters
+    ----------
+    model_directory: str
+        Current working directory for the SWAT model.
+
+    Returns
+    -------
+    bool
+        True if SWATOutput.mdb found, False otherwise.
+    """
+    return os.path.exists(os.path.join(
+        model_directory,
+        "Scenarios",
+        "Default",
+        "TablesOut",
+        "SWATOutput.mdb"
+    ))
 
 
 def get_error_message(error: str, model_directory: str = None) -> str:
@@ -377,5 +409,6 @@ def get_error_message(error: str, model_directory: str = None) -> str:
         "folders": f"Could not find \"Scenarios\" and \"Watershed\" directories in zip file. See manual for further help.",
         "raster": f"Could not find hrus1/w001001.adf in {model_directory}/Watershed/Grid/. See manual for further help.",
         "shapefile": f"Could not find hru1.shp in {model_directory}/Watershed/Shapes/. See manual for further help.",
-        "hrus": f"Could not find hru files (.hru) in {model_directory}/Scenarios/Default/TxtInOut/. See manual for further help."
+        "hrus": f"Could not find hru files (.hru) in {model_directory}/Scenarios/Default/TxtInOut/. See manual for further help.",
+        "swatmdb": f"Could not find SWATOutput.mdb in {model_directory}/Scenarios/Default/TablesOut/. See manual for further help."
     }.get(error, "")
