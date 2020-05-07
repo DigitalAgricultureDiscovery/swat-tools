@@ -23,6 +23,8 @@ boto3 = "==1.11.6"
 gdal = "==2.4.0"
 
 [dev-packages]
+pylint = "*"
+autopep8 = "*"
 
 [requires]
 python_version = "3.6"
