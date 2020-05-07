@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'luuchecker',
     'uncertainty',
     'fieldswat',
-    's3upload'
+    's3upload',
+    'templates'
 ]
 
 MIDDLEWARE = [
@@ -65,7 +66,7 @@ ROOT_URLCONF = 'swatapps.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates').replace('\\', '/'),
+        'DIRS': [os.path.join(PROJECT_DIR, 'templates').replace('\\', '/'),
                  os.path.join(PROJECT_DIR, 's3direct/templates').replace('\\', '/')],
         'APP_DIRS': True,
         'OPTIONS': {

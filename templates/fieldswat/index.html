@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load bootstrap3 %}
+{% load class_tag %}
 
 {% block meta_description %}
     <meta name="description" content="Field SWAT is designed to map SWAT simulations from a HRU layer to a user-defined field boundaries layer. The tool ingests spatial and nonspatial SWAT ouputs and helps in visualizing them at the field scale using four different aggregation methods." />
@@ -178,10 +179,18 @@
                     <div id="loading" style="display: none; text-align: center">
                         <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
                     </div>
-                    {% if request.session.error_swatmodel %}
-                      <div class="alert alert-danger" role="alert">
-                        <b style ="color:#F92E31;">{{ request.session.error_swatmodel }}</b><br/>
-                      </div>
+                    {% if request.session.error_swat_model %}
+                        <div class="alert alert-danger" role="alert">
+                            {% if request.session.error_swat_model|get_class == "list" %}
+                                <ul>
+                                    {% for error_msg in request.session.error_swat_model %}
+                                        <li>{{ error_msg }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <strong style="color:#F92E31;">{{ request.session.error_swat_model }}</strong><br/>
+                            {% endif %}
+                        </div>
                     {% endif %}
                 </form>
             </div>
@@ -350,7 +359,17 @@
                         <b id="message_process" style="color: #33CC33;">{{message }}</b><br/>
                     {% endfor %}
                     {% if request.session.error %}
-                        <b style ="color:#F92E31;">{{ request.session.error}}</b><br/>
+                        {% if request.session.error|get_class == "list" %}
+                            <ul>
+                                {% for error in request.session.error %}
+                                    <li>
+                                        <strong style="color: #F92E31;">{{ error }}</strong>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <b style ="color:#F92E31;">{{ request.session.error}}</b><br/>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>

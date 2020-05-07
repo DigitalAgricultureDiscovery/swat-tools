@@ -2,6 +2,8 @@
 
 {% load bootstrap3 %}
 
+{% load class_tag %}
+
 {% block meta_description %}
     <meta name="description" content="Small LULC errors can have a substantial effect on watershed model output. LUU Uncertainty enables the user to integrate LULC realizations in the SWAT model and evaluate the sensitivity of SWAT output to LULC errors." />
 {% endblock %}
@@ -244,9 +246,17 @@
                     <div id="uploadAlert" class="alert alert-success" role="alert"></div>
                     <div id="help1div" class="alert alert-info" role="alert"></div>
                     {% if request.session.error_swat_model %}
-                      <div class="alert alert-danger" role="alert">
-                        <strong style="color:#F92E31;">{{ request.session.error_swat_model }}</strong><br/>
-                      </div>
+                        <div class="alert alert-danger" role="alert">
+                            {% if request.session.error_swat_model|get_class == "list" %}
+                                <ul>
+                                    {% for error_msg in request.session.error_swat_model %}
+                                        <li>{{ error_msg }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <strong style="color:#F92E31;">{{ request.session.error_swat_model }}</strong><br/>
+                            {% endif %}
+                        </div>
                     {% endif %}
                 </form>
             </div>
@@ -460,7 +470,17 @@
                         <b id="message_process" style="color: #33CC33;">{{message }}</b><br/>
                     {% endfor %}
                     {% if request.session.error %}
-                        <b style ="color:#F92E31;">{{ request.session.error}}</b><br/>
+                        {% if request.session.error|get_class == "list" %}
+                            <ul>
+                                {% for error in request.session.error %}
+                                    <li>
+                                        <strong style="color: #F92E31;">{{ error }}</strong>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <b style ="color:#F92E31;">{{ request.session.error}}</b><br/>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
