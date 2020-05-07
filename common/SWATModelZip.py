@@ -7,13 +7,6 @@ from django.core.files.uploadedfile import UploadedFile
 
 from .utils import create_working_directory, fix_file_permissions
 
-"""
-upload = {
-    "workspace": "/path/to/upload/input",
-    "local": {file: file}
-    "aws": {"url": "http://"}
-}
-"""
 UPLOAD_KEYS = ["workspace", "local", "aws"]
 
 
@@ -45,7 +38,7 @@ class SWATModelZip:
         if upload["local"]:
             self.filename = upload["local"].name
         else:
-            self.filename = upload["aws"]["file"]["name"]
+            self.filename = upload["aws"][0].file_name
 
         create_working_directory(upload["workspace"])
 
@@ -57,7 +50,7 @@ class SWATModelZip:
                 write_file_to_disk(workspace_input, upload["local"])
             else:
                 download_file_to_server(
-                    workspace_input, upload["on_s3"]["url"])
+                    os.path.join(workspace_input, self.filename), upload["aws"][0].s3_url)
 
         check_if_file_exists(os.path.join(workspace_input, self.filename))
         check_if_file_is_zip(os.path.join(workspace_input, self.filename))
