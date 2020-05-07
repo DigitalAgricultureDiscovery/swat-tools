@@ -18,6 +18,7 @@ class TestSWATModelZip(unittest.TestCase):
         self.swat_model_wrong_ext = "./tests/data/SWAT_Model.tar.gz"
         self.swat_model_missing_root = "./tests/data/SWAT_Model_No_Root_Folder.zip"
         self.swat_model_missing_swat_folders = "./tests/data/SWAT_Model_Missing_SWAT_Folders.zip"
+        self.swat_model_missing_swatoutput_database = "./tests/data/SWAT_Model_Missing_SWATOutput_database.zip"
 
         if os.path.exists(self.workspace):
             shutil.rmtree(self.workspace)
@@ -32,6 +33,8 @@ class TestSWATModelZip(unittest.TestCase):
         shutil.copy(self.swat_model_missing_root,
                     os.path.join(self.workspace, "input"))
         shutil.copy(self.swat_model_missing_swat_folders,
+                    os.path.join(self.workspace, "input"))
+        shutil.copy(self.swat_model_missing_swatoutput_database,
                     os.path.join(self.workspace, "input"))
 
     def tearDown(self):
@@ -147,3 +150,20 @@ class TestSWATModelZip(unittest.TestCase):
 
         self.assertEqual(validation_results["status"], 1)
         self.assertFalse(model.errors["folders"])
+
+    def test_validate_model_detects_missing_swatoutput_database(self):
+        """
+        Test that validate model checks for SWATOutput.mdb and toggles
+        the appropriate error flag if it is not found.
+        """
+        upload = {
+            "workspace": self.workspace,
+            "local": UploadedFile(name="SWAT_Model_Missing_SWATOutput_database.zip"),
+            "aws": {}
+        }
+
+        model = SWATModelZip(upload, "field")
+        validation_results = model.validate_model()
+
+        self.assertEqual(validation_results["status"], 1)
+        self.assertFalse(model.errors["swatmdb"])
