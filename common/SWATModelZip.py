@@ -4,6 +4,7 @@ import shutil
 import subprocess
 
 from django.core.files.uploadedfile import UploadedFile
+import shapefile
 
 from .utils import create_working_directory, fix_file_permissions
 
@@ -21,7 +22,8 @@ class SWATModelZip:
             "folders": False,    # model directory containing "Scenarios" and "Watershed"
             "raster": False,     # hrus1 raster grid
             "shapefile": False,  # hru1 shapefile
-            "hrus": False        # hru files in TxtInOut
+            "hrus": False,       # hru files in TxtInOut
+            "hru_id": False,     # HRU_ID field present in hru1 shapefile
         }
         self.swat_model_directory = ""
 
@@ -73,7 +75,13 @@ class SWATModelZip:
         self.errors["shapefile"] = check_for_hru1_shp(
             self.swat_model_directory)
         self.errors["hrus"] = check_for_hrus(self.swat_model_directory)
-        
+
+        if self.errors["shapefile"]:
+            self.errors["hru_id"] = check_for_hru_id_field(
+                self.swat_model_directory)
+        else:
+            self.errors["hru_id"] = True
+
         # Run check only for Field SWAT
         if tool == "field":
             self.errors["swatmdb"] = check_for_swatoutput_mdb(
@@ -380,6 +388,30 @@ def check_for_swatoutput_mdb(model_directory: str) -> bool:
         "TablesOut",
         "SWATOutput.mdb"
     ))
+
+
+def check_for_hru_id_field(model_directory: str) -> bool:
+    """
+    Checks for the HRU_ID field in hru1 shapefile.
+
+    Parameters
+    ----------
+    model_directory: str
+        Current working directory for the SWAT model.
+
+    Returns
+    -------
+    bool
+        True if HRU_ID field found, False otherwise.
+    """
+    hru1_shp = os.path.join(model_directory, "Watershed", "Shapes", "hru1.shp")
+    sf = shapefile.Reader(hru1_shp)
+
+    for field in sf.fields:
+        if field[0].lower() == "hru_id":
+            return True
+
+    return False
 
 
 def get_error_message(error: str, model_directory: str = None) -> str:

@@ -19,6 +19,7 @@ class TestSWATModelZip(unittest.TestCase):
         self.swat_model_missing_root = "./tests/data/SWAT_Model_No_Root_Folder.zip"
         self.swat_model_missing_swat_folders = "./tests/data/SWAT_Model_Missing_SWAT_Folders.zip"
         self.swat_model_missing_swatoutput_database = "./tests/data/SWAT_Model_Missing_SWATOutput_database.zip"
+        self.swat_model_missing_hru_id_field = "./tests/data/SWAT_Model_Missing_HRU_ID_Field.zip"
 
         if os.path.exists(self.workspace):
             shutil.rmtree(self.workspace)
@@ -35,6 +36,8 @@ class TestSWATModelZip(unittest.TestCase):
         shutil.copy(self.swat_model_missing_swat_folders,
                     os.path.join(self.workspace, "input"))
         shutil.copy(self.swat_model_missing_swatoutput_database,
+                    os.path.join(self.workspace, "input"))
+        shutil.copy(self.swat_model_missing_hru_id_field,
                     os.path.join(self.workspace, "input"))
 
     def tearDown(self):
@@ -167,3 +170,20 @@ class TestSWATModelZip(unittest.TestCase):
 
         self.assertEqual(validation_results["status"], 1)
         self.assertFalse(model.errors["swatmdb"])
+
+    def test_missing_hru_id_field_detected(self):
+        """
+        Test that the appropriate error is thrown when the 
+        hru1 shapefile is missing a field named "HRU_ID".
+        """
+        upload = {
+            "workspace": self.workspace,
+            "local": UploadedFile(name="SWAT_Model_Missing_HRU_ID_Field.zip"),
+            "aws": {}
+        }
+
+        model = SWATModelZip(upload)
+        validation_results = model.validate_model()
+
+        self.assertEqual(validation_results["status"], 1)
+        self.assertFalse(model.errors["hru_id"])
