@@ -1,14 +1,15 @@
-from django.core.mail import send_mail
-from django.utils import timezone
-from swatusers.models import UserTask
-
 import csv
 import numpy as np
 import os
 import shutil
 
+from django.core.mail import send_mail
+from django.utils import timezone
+
+from common.utils import find_objectid_and_hru_id_indexes
 from swatluu import geotools
 from swatluu import swattools
+from swatusers.models import UserTask
 
 
 class UncertaintyProcess(object):
@@ -210,7 +211,8 @@ class UncertaintyProcess(object):
             self.logger.error('Unable to open the lup.dat file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
-        self.logger.info('Extracting information about landuse layers\' dates.')
+        self.logger.info(
+            'Extracting information about landuse layers\' dates.')
         # loop through landuse layers and pull out date information provided by user
         landuse_layers_data = []
         for layer_index in range(0, len(self.landuse_layer_name)):
@@ -312,7 +314,7 @@ class UncertaintyProcess(object):
         self.logger.info('Reading hrus1.tif into numpy array.')
         try:
             hrus, hru_info = geotools.read_raster(
-                self.results_dir + '/Raster/hrus1/hrus1.tif')
+                os.path.join(self.results_dir, 'Raster', 'hrus1', 'hrus1.tif'))
         except Exception:
             self.logger.error('Unable to read hrus1.tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -320,15 +322,22 @@ class UncertaintyProcess(object):
         self.logger.info('Reading hru1.shp into numpy array.')
         try:
             merged_hru = geotools.read_shapefile(
-                self.swat_dir + '/Watershed/Shapes/hru1.shp')
-            merged_hru = np.array(merged_hru, dtype=int)
+                os.path.join(self.swat_dir, 'Watershed', 'Shapes', 'hru1.shp'))
+            merged_hru = np.array(merged_hru)
             # sort HRU_ID column (second column) into ascending order
             # and keep respective positions of other columns
             # for example:
             # dominant_hrus = [50, 30, 25, 70, 10]
             # new_hrus = [3, 2, 5, 1, 4]
             # old_hrus = [70, 30, 50, 10, 25]
-            sorted_hru = merged_hru[merged_hru[:, 1].argsort()]
+            hru1_field_positions = find_objectid_and_hru_id_indexes(
+                os.path.join(self.swat_dir, 'Watershed', 'Shapes', 'hru1.shp'))
+
+            if not hru1_field_positions:
+                Exception('Unable to find OBJECTID and HRU_ID in hru1.shp.')
+
+            sorted_hru = merged_hru[merged_hru[:,
+                                               hru1_field_positions['hru_id']].argsort()]
         except Exception:
             self.logger.error('Unable to open shapefile hrus1.shp')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -337,12 +346,12 @@ class UncertaintyProcess(object):
             'Sorting and merging the non-dominant and dominant hrus.')
         # retrieve dominant hru values - these are the hrus that remained
         # after the threshold was applied (OBJECTID in hru1.shp)
-        dominant_hrus = sorted_hru[:, 0]
+        dominant_hrus = sorted_hru[:, hru1_field_positions['objectid']]
 
         # retrieve new hru values - each dominant hru is assigned a
         # new hru value starting at 1 (HRU_ID in hru1.shp);
         # for example, dominant hru 5838 (OBJECTID) may become hru 10 (HRU_ID)
-        new_hrus = sorted_hru[:, 1]
+        new_hrus = sorted_hru[:, hru1_field_positions['hru_id']]
 
         # merge non-dominant hrus into nearby dominant hrus
         hrus = swattools.merge(hrus, dominant_hrus, hru_info[1])
@@ -530,7 +539,7 @@ class UncertaintyProcess(object):
         for code_index in range(0, len(self.lookup_info) - 1):
             landuse_codes[np.nonzero(np.array(landuse_abbrevs_from_hru_files) ==
                                      self.lookup_info[code_index + 1][1])] = \
-            self.lookup_info[code_index + 1][0]
+                self.lookup_info[code_index + 1][0]
 
         # get each hru's soil code
         unique_soil_codes = list(set(soil_codes_from_hru_files))
@@ -638,8 +647,8 @@ class UncertaintyProcess(object):
 
                         # fetch fractional areas for HRUs in sub with the current lulc
                         matching_hrus_fractional_areas = \
-                        hru_subbasin_fractional_areas[
-                            hrus_in_sub_with_lulc[:, 1]]
+                            hru_subbasin_fractional_areas[
+                                hrus_in_sub_with_lulc[:, 1]]
 
                         # calculate cumulative fractional area
                         matching_hrus_cumulative_fractional_area = sum(
@@ -647,15 +656,16 @@ class UncertaintyProcess(object):
 
                         # calculate portion of cumulative area subject to error
                         error_area = (error_range[
-                                          j] / 100.0) * matching_hrus_cumulative_fractional_area
+                            j] / 100.0) * matching_hrus_cumulative_fractional_area
 
                         # calculate each HRUs area percentage
-                        matching_hrus_percentage_area = matching_hrus_fractional_areas / matching_hrus_cumulative_fractional_area
+                        matching_hrus_percentage_area = matching_hrus_fractional_areas / \
+                            matching_hrus_cumulative_fractional_area
 
                         # increase/decrease the area of affected HRUs based on error range
                         new_fractional_hru_areas[hrus_in_sub_with_lulc[:,
-                                                 1]] = matching_hrus_fractional_areas + (
-                        error_area * matching_hrus_percentage_area)
+                                                                       1]] = matching_hrus_fractional_areas + (
+                            error_area * matching_hrus_percentage_area)
 
                         # identify the unaffected HRUs (i.e. those in subbasin
                         # k that do not have lulc i)
@@ -665,8 +675,8 @@ class UncertaintyProcess(object):
 
                         # fetch fractional areas for HRUs in sub with the current lulc
                         matching_hrus_without_lulc_fractional_areas = \
-                        hru_subbasin_fractional_areas[
-                            hrus_in_sub_without_lulc[:, 1]]
+                            hru_subbasin_fractional_areas[
+                                hrus_in_sub_without_lulc[:, 1]]
 
                         # find how much area needs to be adjusted
                         fractional_area_diff = sum(
@@ -680,8 +690,8 @@ class UncertaintyProcess(object):
 
                         # now adjust the non-affected HRUs based on error range
                         new_fractional_hru_areas[hrus_in_sub_without_lulc[:,
-                                                 1]] = matching_hrus_without_lulc_fractional_areas + (
-                        fractional_area_diff * matching_hrus_without_lulc_percentage_area)
+                                                                          1]] = matching_hrus_without_lulc_fractional_areas + (
+                            fractional_area_diff * matching_hrus_without_lulc_percentage_area)
 
                     # once realization is processed, write to a suitable output file
                     hru_fa_file = open(self.results_dir + '/Output/file' + str(
@@ -709,7 +719,8 @@ class UncertaintyProcess(object):
         """
         Copies output from process over to web directory for user's consumption.
         """
-        self.logger.info('Copying output directory to user directory on depot.')
+        self.logger.info(
+            'Copying output directory to user directory on depot.')
 
         # If output directory already exists in web directory, remove it
         if os.path.exists(self.output_dir):
@@ -792,7 +803,8 @@ class UncertaintyProcess(object):
         self.logger.info(
             'Sending user email informing them an error has occurred.')
         subject = self.tool_name + ' error'
-        message = 'An error has occurred within ' + self.tool_name + ' while processing your data. '
+        message = 'An error has occurred within ' + \
+            self.tool_name + ' while processing your data. '
         message += 'Please verify your inputs are not missing any required files. '
         message += 'If the problem persists, please sign in to SWAT Tools and use '
         message += 'the Contact Us form to request assistance from the SWAT Tools '
