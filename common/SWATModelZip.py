@@ -24,6 +24,7 @@ class SWATModelZip:
             "shapefile": False,  # hru1 shapefile
             "hrus": False,       # hru files in TxtInOut
             "hru_id": False,     # HRU_ID field present in hru1 shapefile
+            "objectid": False,   # OBJECTID field present in hru1 shapefile
         }
         self.swat_model_directory = ""
 
@@ -79,8 +80,11 @@ class SWATModelZip:
         if self.errors["shapefile"]:
             self.errors["hru_id"] = check_for_hru_id_field(
                 self.swat_model_directory)
+            self.errors["objectid"] = check_for_objectid_field(
+                self.swat_model_directory)
         else:
             self.errors["hru_id"] = True
+            self.errors["objectid"] = True
 
         # Run check only for Field SWAT
         if tool == "field":
@@ -414,6 +418,30 @@ def check_for_hru_id_field(model_directory: str) -> bool:
     return False
 
 
+def check_for_objectid_field(model_directory: str) -> bool:
+    """
+    Checks for the OBJECTID field in hru1 shapefile.
+
+    Parameters
+    ----------
+    model_directory: str
+        Current working directory for the SWAT model.
+
+    Returns
+    -------
+    bool
+        True if OBJECTID field found, False otherwise.
+    """
+    hru1_shp = os.path.join(model_directory, "Watershed", "Shapes", "hru1.shp")
+    sf = shapefile.Reader(hru1_shp)
+
+    for field in sf.fields:
+        if field[0].lower() == "objectid":
+            return True
+
+    return False
+
+
 def get_error_message(error: str, model_directory: str = None) -> str:
     """
     Returns detailed error message for the provided error name.
@@ -436,5 +464,6 @@ def get_error_message(error: str, model_directory: str = None) -> str:
         "shapefile": f"Could not find hru1.shp in {model_directory}/Watershed/Shapes/. See manual for further help.",
         "hrus": f"Could not find hru files (.hru) in {model_directory}/Scenarios/Default/TxtInOut/. See manual for further help.",
         "swatmdb": f"Could not find SWATOutput.mdb in {model_directory}/Scenarios/Default/TablesOut/. See manual for further help.",
-        "hru_id": f"Could not find field named HRU_ID in {model_directory}/Watershed/Shapes/hru1.shp."
+        "hru_id": f"Could not find field named HRU_ID in {model_directory}/Watershed/Shapes/hru1.shp.",
+        "objectid": f"Could not find field named OBJECTID in {model_directory}/Watershed/Shapes/hru1.shp."
     }.get(error, "")
