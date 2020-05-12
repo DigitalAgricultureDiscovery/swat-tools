@@ -99,10 +99,10 @@ def upload_swat_model_zip(request):
             request.session['error'] = validation_results['errors']
             request.session['error_swat_model'] = validation_results['errors']
             return render(request, 'fieldswat/index.html')
-
         try:
             # fetch data from SWATOutput.mdb
-            swatoutput_mdb_data = get_unique_years_from_mdb(swat_model.get_directory())
+            swatoutput_mdb_data = get_unique_years_from_mdb(
+                swat_model.get_directory())
 
             request.session['swatoutput_years'] = swatoutput_mdb_data['years']
             request.session['swatoutput_runoff'] = swatoutput_mdb_data['runoff']
@@ -289,7 +289,8 @@ def upload_fields_shapefile_zip(request):
                 # Get the uploaded file and store the name of the zip
                 file = request.FILES['fields_shapefile_zip']
                 filename = file.name
-                fields_shapefile_foldername, fields_shapefile_ext = os.path.splitext(filename)
+                fields_shapefile_foldername, fields_shapefile_ext = os.path.splitext(
+                    filename)
             except:
                 logger.error("{0}: Unable to receive the uploaded shapefile.".format(
                     request.session.get('unique_directory_name')))
@@ -307,7 +308,8 @@ def upload_fields_shapefile_zip(request):
             try:
                 # If an input directory already exists, remove it
                 if os.path.exists(unique_path + '/input/' + fields_shapefile_foldername):
-                    shutil.rmtree(unique_path + '/input/' + fields_shapefile_foldername)
+                    shutil.rmtree(unique_path + '/input/' +
+                                  fields_shapefile_foldername)
             except:
                 logger.error("{0}: Unable to remove previously uploaded shapefile.".format(
                     request.session.get('unique_directory_name')))
@@ -364,7 +366,8 @@ def upload_fields_shapefile_zip(request):
                 ])
 
                 # Set permissions for unzipped data
-                fix_file_permissions(unique_path + '/input/' + fields_shapefile_foldername)
+                fix_file_permissions(
+                    unique_path + '/input/' + fields_shapefile_foldername)
 
                 # Remove landuse zip
                 os.remove(unique_path + '/input/' + filename)
@@ -389,7 +392,8 @@ def upload_fields_shapefile_zip(request):
                 return render(request, 'fieldswat/index.html')
 
             # directory path for the unzipped shapefile folder
-            fields_shapefile_filepath = unique_path + '/input/' + fields_shapefile_foldername
+            fields_shapefile_filepath = unique_path + \
+                '/input/' + fields_shapefile_foldername
 
             # loop through folder and grab any file ending with the .shp
             shapefiles = []
@@ -417,7 +421,8 @@ def upload_fields_shapefile_zip(request):
             # Update relevant session variables
             request.session['fieldswat_fields_shapefile_filename'] = fields_shapefile_filename
             request.session['fieldswat_fields_shapefile_filepath'] = fields_shapefile_filepath
-            request.session['progress_message'].append('Fields shapefile uploaded.')
+            request.session['progress_message'].append(
+                'Fields shapefile uploaded.')
 
             # Render the main page
             return render(request, 'fieldswat/index.html')
@@ -529,10 +534,11 @@ def request_process(request):
         process_task.delay(data)
 
         # add task id to database
-        add_task_id_to_database(data['user_id'], data['user_email'], data['task_id'])
+        add_task_id_to_database(
+            data['user_id'], data['user_email'], data['task_id'])
 
         request.session['progress_message'].append(
-            'Job successfully added to queue. You will receive an email with ' + \
+            'Job successfully added to queue. You will receive an email with ' +
             'a link to your files once the processing has completed.')
 
     return render(request, 'fieldswat/index.html')
@@ -593,7 +599,7 @@ def download_data(request):
                 file = io.BytesIO()
 
                 dir_to_zip = settings.PROJECT_DIR + '/user_data/' + request.user.email + \
-                             '/' + task_id + '/output'
+                    '/' + task_id + '/output'
 
                 dir_to_zip_len = len(dir_to_zip.rstrip(os.sep)) + 1
 
@@ -606,8 +612,10 @@ def download_data(request):
                             zf.write(path, entry)
                 zf.close()
 
-                response = HttpResponse(file.getvalue(), content_type="application/zip")
-                response['Content-Disposition'] = 'attachment; filename=' + task_id + '.zip'
+                response = HttpResponse(
+                    file.getvalue(), content_type="application/zip")
+                response['Content-Disposition'] = 'attachment; filename=' + \
+                    task_id + '.zip'
             else:
                 context = {'title': ('File does not exist error')}
                 return TemplateResponse(
