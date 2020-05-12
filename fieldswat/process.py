@@ -1,18 +1,20 @@
+import glob
+import os
+import shutil
+
 from django.core.mail import send_mail
 from django.utils import timezone
-from swatusers.models import UserTask
 from matplotlib.path import Path
-from swatluu import geotools
-from swatluu import swattools
 from osgeo import gdal, ogr
 from scipy import stats
-
-import glob
 import numpy as np
-import os
 import shapefile
-import shutil
 import xlsxwriter
+
+from common.utils import find_objectid_and_hru_id_indexes
+from swatluu import geotools
+from swatluu import swattools
+from swatusers.models import UserTask
 
 
 class FieldSWATProcess(object):
@@ -220,7 +222,7 @@ class FieldSWATProcess(object):
         # copy hru1 shapefile to Output
         hru1_shapefile = []
         for hru1_shapefile_part in glob.glob(
-                        self.fieldswat_swat_model_dir + '/Watershed/Shapes/hru1*'):
+                self.fieldswat_swat_model_dir + '/Watershed/Shapes/hru1*'):
             shutil.copy(hru1_shapefile_part,
                         results_dir + '/Output/HRU_Response' +
                         os.path.splitext(hru1_shapefile_part)[1])
@@ -253,20 +255,27 @@ class FieldSWATProcess(object):
         self.logger.info('Reading hrus1.tif into numpy array.')
 
         hrus, hrus_info = geotools.read_raster(
-            self.results_dir + '/Raster/hrus1/hrus1.tif')
+            os.path.join(self.results_dir, 'Raster', 'hrus1', 'hrus1.tif'))
 
         self.logger.info('Reading hru1.shp into numpy array.')
 
         merged_hru = geotools.read_shapefile(
-            self.fieldswat_swat_model_dir + '/Watershed/Shapes/hru1.shp')
-        merged_hru = np.array(merged_hru, dtype=int)
+            os.path.join(self.fieldswat_swat_model_dir, 'Watershed', 'Shapes', 'hru1.shp'))
+        merged_hru = np.array(merged_hru)
         # sort HRU_ID column (second column) into ascending order
         # and keep respective positions of other columns
         # for example:
         # dominant_hrus = [50, 30, 25, 70, 10]
         # new_hrus = [3, 2, 5, 1, 4]
         # old_hrus = [70, 30, 50, 10, 25]
-        sorted_hru = merged_hru[merged_hru[:, 1].argsort()]
+        hru1_field_positions = find_objectid_and_hru_id_indexes(
+            os.path.join(self.fieldswat_swat_model_dir, 'Watershed', 'Shapes', 'hru1.shp'))
+
+        if not hru1_field_positions:
+            Exception('Unable to find OBJECTID and HRU_ID in hru1.shp.')
+
+        sorted_hru = merged_hru[merged_hru[:,
+                                           hru1_field_positions['hru_id']].argsort()]
 
         self.logger.info(
             'Sorting and merging the non-dominant and dominant hrus.')
@@ -296,7 +305,7 @@ class FieldSWATProcess(object):
 
         # copy the fields shapefile to output directory
         for shapefile_part in glob.glob(
-                        self.fieldswat_fields_shapefile_filename[:-4] + '*'):
+                self.fieldswat_fields_shapefile_filename[:-4] + '*'):
             shutil.copyfile(shapefile_part,
                             self.results_dir + '/Shape/' + os.path.basename(
                                 shapefile_part))
@@ -349,19 +358,21 @@ class FieldSWATProcess(object):
 
         self.logger.info('Building grid_x.')
         # build x grid
-        grid_x = np.zeros((hrus1_info['rows'], hrus1_info['cols']), dtype=float)
+        grid_x = np.zeros(
+            (hrus1_info['rows'], hrus1_info['cols']), dtype=float)
         grid_x[0:hrus1_info['rows'], 0] = x_origin + (delta_x / 2)
         for i in range(1, hrus1_info['cols']):
             grid_x[0:hrus1_info['rows'], i] = grid_x[0:hrus1_info['rows'],
-                                              i - 1] + delta_x
+                                                     i - 1] + delta_x
 
         self.logger.info('Building grid_y.')
         # build y grid
-        grid_y = np.zeros((hrus1_info['rows'], hrus1_info['cols']), dtype=float)
+        grid_y = np.zeros(
+            (hrus1_info['rows'], hrus1_info['cols']), dtype=float)
         grid_y[0, 0:hrus1_info['cols']] = y_origin - (delta_y / 2)
         for i in range(1, hrus1_info['rows']):
             grid_y[i, 0:hrus1_info['cols']] = grid_y[i - 1,
-                                              :hrus1_info['cols']] - delta_y
+                                                     :hrus1_info['cols']] - delta_y
 
         self.logger.info('Reshaping grid_x and grid_y.')
         # reshape the coordinates grid_x and grid_y to temporary column matrix
@@ -533,7 +544,6 @@ class FieldSWATProcess(object):
                 if np.isnan(field_output[i]):
                     field_output[i] = 0
 
-
         return field_shapefile, field_output, data_for_year
 
     def create_new_field_shapefile(self, field_shapefile, output_data):
@@ -610,7 +620,8 @@ class FieldSWATProcess(object):
         """
         Copies output from process over to web directory for user's consumption.
         """
-        self.logger.info('Copying output directory to user directory on depot.')
+        self.logger.info(
+            'Copying output directory to user directory on depot.')
 
         # If output directory already exists in web directory, remove it
         if os.path.exists(self.output_dir):
@@ -681,7 +692,8 @@ class FieldSWATProcess(object):
         self.logger.info(
             'Sending user email informing them an error has occurred.')
         subject = self.tool_name + ' error'
-        message = 'An error has occurred within ' + self.tool_name + ' while processing your data. '
+        message = 'An error has occurred within ' + \
+            self.tool_name + ' while processing your data. '
         message += 'Please verify your inputs are not missing any required files. '
         message += 'If the problem persists, please sign in to SWAT Tools and use '
         message += 'the Contact Us form to request assistance from the SWAT Tools '
