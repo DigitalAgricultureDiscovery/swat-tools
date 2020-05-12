@@ -342,10 +342,11 @@ class SWATLUUProcess(object):
             # new_hrus = [3, 2, 5, 1, 4]
             # old_hrus = [70, 30, 50, 10, 25]
             hru1_field_positions = find_objectid_and_hru_id_indexes(
-                os.path.join(self.swat_dir, 'Watershed', 'Shapes', 'hru1.shp')
-            )
+                os.path.join(self.swat_dir, 'Watershed', 'Shapes', 'hru1.shp'))
+
             if not hru1_field_positions:
                 Exception('Unable to find OBJECTID and HRU_ID in hru1.shp.')
+
             sorted_hru = merged_hru[merged_hru[:,
                                                hru1_field_positions['hru_id']].argsort()]
         except Exception:
