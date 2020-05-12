@@ -435,5 +435,6 @@ def get_error_message(error: str, model_directory: str = None) -> str:
         "raster": f"Could not find hrus1/w001001.adf in {model_directory}/Watershed/Grid/. See manual for further help.",
         "shapefile": f"Could not find hru1.shp in {model_directory}/Watershed/Shapes/. See manual for further help.",
         "hrus": f"Could not find hru files (.hru) in {model_directory}/Scenarios/Default/TxtInOut/. See manual for further help.",
-        "swatmdb": f"Could not find SWATOutput.mdb in {model_directory}/Scenarios/Default/TablesOut/. See manual for further help."
+        "swatmdb": f"Could not find SWATOutput.mdb in {model_directory}/Scenarios/Default/TablesOut/. See manual for further help.",
+        "hru_id": f"Could not find field named HRU_ID in {model_directory}/Watershed/Shapes/hru1.shp."
     }.get(error, "")
