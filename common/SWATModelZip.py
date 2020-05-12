@@ -4,7 +4,7 @@ import shutil
 import subprocess
 
 from django.core.files.uploadedfile import UploadedFile
-import shapefile
+import fiona
 
 from .utils import create_working_directory, fix_file_permissions
 
@@ -409,10 +409,11 @@ def check_for_hru_id_field(model_directory: str) -> bool:
         True if HRU_ID field found, False otherwise.
     """
     hru1_shp = os.path.join(model_directory, "Watershed", "Shapes", "hru1.shp")
-    sf = shapefile.Reader(hru1_shp)
+    sf = fiona.open(hru1_shp, "r")
+    fields = list(sf[1]["properties"])
 
-    for field in sf.fields:
-        if field[0].lower() == "hru_id":
+    for field in fields:
+        if field.lower() == "hru_id":
             return True
 
     return False
@@ -433,10 +434,11 @@ def check_for_objectid_field(model_directory: str) -> bool:
         True if OBJECTID field found, False otherwise.
     """
     hru1_shp = os.path.join(model_directory, "Watershed", "Shapes", "hru1.shp")
-    sf = shapefile.Reader(hru1_shp)
+    sf = fiona.open(hru1_shp, "r")
+    fields = list(sf[1]["properties"])
 
-    for field in sf.fields:
-        if field[0].lower() == "objectid":
+    for field in fields:
+        if field.lower() == "objectid":
             return True
 
     return False

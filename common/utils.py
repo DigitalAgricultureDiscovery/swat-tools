@@ -1,9 +1,10 @@
 import os
 
 from django.conf import settings
+import fiona
 
 
-def create_working_directory(workspace):
+def create_working_directory(workspace: str) -> None:
     """ Creates the directory structure that all inputs/outputs will be
         placed for this current process. """
     if os.environ.get("TEST_FLAG"):
@@ -34,7 +35,7 @@ def create_working_directory(workspace):
     fix_file_permissions(workspace)
 
 
-def fix_file_permissions(path):
+def fix_file_permissions(path: str) -> None:
     """ Starts at a base directory and moves through all of its
         files changing the directory permissions to 775 and file
         permissions to 664. """
@@ -50,3 +51,32 @@ def fix_file_permissions(path):
                 os.chmod(os.path.join(root, d), 0o775)
             for f in file:
                 os.chmod(os.path.join(root, f), 0o664)
+
+
+def find_objectid_and_hru_id_indexes(shp_path: str) -> dict:
+    """
+    Checks a shapefile for OBJECTID and HRU_ID fields 
+    and returns index position of both fields if found.
+
+    Parameters
+    ----------
+    shp_path: str
+        Path to shapefile.
+
+    Returns
+    -------
+    dict
+        Dictionary containing index position for OBJECTID and HRU_ID.
+    """
+    sf = fiona.open(shp_path, "r")
+    fields = list(sf[1]["properties"])
+
+    fields_lower = [field.lower() for field in fields]
+
+    if "objectid" in fields_lower and "hru_id" in fields_lower:
+        return {
+            "objectid": fields_lower.index("objectid"),
+            "hru_id": fields_lower.index("hru_id")
+        }
+    else:
+        return None

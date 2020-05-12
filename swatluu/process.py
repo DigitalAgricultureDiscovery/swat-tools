@@ -1,8 +1,3 @@
-from django.conf import settings
-from django.core.mail import send_mail
-from django.utils import timezone
-from swatusers.models import UserTask
-
 import csv
 import math
 import numpy as np
@@ -10,9 +5,14 @@ import os
 import shutil
 import sys
 
+from django.conf import settings
+from django.core.mail import send_mail
+from django.utils import timezone
+
+from common.utils import find_objectid_and_hru_id_indexes
 from swatluu import geotools
 from swatluu import swattools
-
+from swatusers.models import UserTask
 
 sys.path.insert(0, os.path.join(settings.PROJECT_DIR, "swatluu"))
 
@@ -222,7 +222,8 @@ class SWATLUUProcess(object):
             self.logger.error('Unable to open the lup.dat file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
-        self.logger.info('Extracting information about landuse layers\' dates.')
+        self.logger.info(
+            'Extracting information about landuse layers\' dates.')
         # loop through landuse layers and pull out date information provided by user
         landuse_layers_data = []
         for layer_index in range(0, len(self.landuse_layers_names)):
@@ -332,15 +333,21 @@ class SWATLUUProcess(object):
         self.logger.info('Reading hru1.shp into numpy array.')
         try:
             merged_hru = geotools.read_shapefile(
-                self.swat_dir + '/Watershed/Shapes/hru1.shp')
-            merged_hru = np.array(merged_hru, dtype=int)
+                os.path.join(self.swat_dir, 'Watershed', 'Shapes', 'hru1.shp'))
+            merged_hru = np.array(merged_hru)
             # sort HRU_ID column (second column) into ascending order
             # and keep respective positions of other columns
             # for example:
             # dominant_hrus = [50, 30, 25, 70, 10]
             # new_hrus = [3, 2, 5, 1, 4]
             # old_hrus = [70, 30, 50, 10, 25]
-            sorted_hru = merged_hru[merged_hru[:, 1].argsort()]
+            hru1_field_positions = find_objectid_and_hru_id_indexes(
+                os.path.join(self.swat_dir, 'Watershed', 'Shapes', 'hru1.shp')
+            )
+            if not hru1_field_positions:
+                Exception('Unable to find OBJECTID and HRU_ID in hru1.shp.')
+            sorted_hru = merged_hru[merged_hru[:,
+                                               hru1_field_positions['hru_id']].argsort()]
         except Exception:
             self.logger.error('Unable to open shapefile hrus1.shp.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -351,12 +358,12 @@ class SWATLUUProcess(object):
         try:
             # retrieve dominant hru values - these are the hrus that remained
             # after the threshold was applied (OBJECTID in hru1.shp)
-            dominant_hrus = sorted_hru[:, 0]
+            dominant_hrus = sorted_hru[:, hru1_field_positions['objectid']]
 
             # retrieve new hru values - each dominant hru is assigned a
             # new hru value starting at 1 (HRU_ID in hru1.shp);
             # for example, dominant hru 5838 (OBJECTID) may become hru 10 (HRU_ID)
-            new_hrus = sorted_hru[:, 1]
+            new_hrus = sorted_hru[:, hru1_field_positions['hru_id']]
 
             # merge non-dominant hrus into nearby dominant hrus
             hrus = swattools.merge(hrus, dominant_hrus, hru_info[1])
@@ -540,7 +547,8 @@ class SWATLUUProcess(object):
                     hru_ids_from_hru_files)) + ') found in *.hru files does not match number of dominant HRUs (' + str(
                 len(self.dominant_hrus)) + ').')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
-            raise Exception('Number of HRU ids does not match number of dominant HRUS.')
+            raise Exception(
+                'Number of HRU ids does not match number of dominant HRUS.')
 
         self.logger.info(
             'Collecting subbasin ids, landuse codes, soil codes, slope ranges, and subbasin ids.')
@@ -549,7 +557,7 @@ class SWATLUUProcess(object):
         for code_index in range(0, len(self.lookup_info) - 1):
             landuse_codes[np.nonzero(np.array(landuse_abbrevs_from_hru_files) ==
                                      self.lookup_info[code_index + 1][1])] = \
-            self.lookup_info[code_index + 1][0]
+                self.lookup_info[code_index + 1][0]
 
         # get each hru's soil code
         unique_soil_codes = list(set(soil_codes_from_hru_files))
@@ -686,32 +694,32 @@ class SWATLUUProcess(object):
                                 self.hru_files_data[:, 3] == landuse_code)]
 
                         potential_receiver_hrus_two = \
-                        potential_receiver_hrus_one[np.where(
-                            potential_receiver_hrus_one[:, 4] == donor_hru_info[
-                                2])]
+                            potential_receiver_hrus_one[np.where(
+                                potential_receiver_hrus_one[:, 4] == donor_hru_info[
+                                    2])]
 
                         potential_receiver_hrus_one = \
-                        potential_receiver_hrus_two[np.where(
-                            potential_receiver_hrus_two[:, 2] == donor_hru_info[
-                                0])]
+                            potential_receiver_hrus_two[np.where(
+                                potential_receiver_hrus_two[:, 2] == donor_hru_info[
+                                    0])]
 
                         if len(potential_receiver_hrus_one) != 0:
                             receiver_hru = math.ceil(np.random.rand() * (
-                            len(potential_receiver_hrus_one)))
+                                len(potential_receiver_hrus_one)))
                             new_hru_areas[
                                 potential_receiver_hrus_one[receiver_hru - 1][
                                     1]] = new_hru_areas[
-                                              potential_receiver_hrus_one[
-                                                  receiver_hru - 1][1]] + (
-                                          landuse_code_count * (
-                                          pixel_size ** 2 * 10 ** -6))
+                                potential_receiver_hrus_one[
+                                    receiver_hru - 1][1]] + (
+                                landuse_code_count * (
+                                    pixel_size ** 2 * 10 ** -6))
 
                             if new_hru_areas[hru[1]] > (landuse_code_count * (
                                     pixel_size ** 2 * 10 ** -6)):
                                 new_hru_areas[hru[1]] = new_hru_areas[
-                                                            hru[1]] - (
-                                                        landuse_code_count * (
-                                                        pixel_size ** 2 * 10 ** -6))
+                                    hru[1]] - (
+                                    landuse_code_count * (
+                                        pixel_size ** 2 * 10 ** -6))
                             else:
                                 new_hru_areas[hru[1]] = 0
                         else:
@@ -731,7 +739,7 @@ class SWATLUUProcess(object):
                 hru_subbasins_matching_subbasin_id = np.nonzero(
                     hru_subbasins == subbasin_id)
                 fractional_hru_areas[hru_subbasins_matching_subbasin_id] = \
-                hru_areas[hru_subbasins_matching_subbasin_id] / sum(
+                    hru_areas[hru_subbasins_matching_subbasin_id] / sum(
                     hru_areas[hru_subbasins_matching_subbasin_id])
 
             self.logger.info('Writing new fractional areas to file.\n')
@@ -754,7 +762,8 @@ class SWATLUUProcess(object):
         """
         Copies output from process over to web directory for user's consumption.
         """
-        self.logger.info('Copying output directory to user directory on depot.')
+        self.logger.info(
+            'Copying output directory to user directory on depot.')
 
         # If output directory already exists in web directory, remove it
         if os.path.exists(self.output_dir):
@@ -825,7 +834,8 @@ class SWATLUUProcess(object):
         self.logger.info(
             'Sending user email informing them an error has occurred.')
         subject = self.tool_name + ' error'
-        message = 'An error has occurred within ' + self.tool_name + ' while processing your data. '
+        message = 'An error has occurred within ' + \
+            self.tool_name + ' while processing your data. '
         message += 'Please verify your inputs are not missing any required files. '
         message += 'If the problem persists, please sign in to SWAT Tools and use '
         message += 'the Contact Us form to request assistance from the SWAT Tools '
@@ -862,7 +872,7 @@ class SWATLUUProcess(object):
         """
         self.logger.info('Calculating the date three days from now.')
         return (
-        timezone.datetime.now() + timezone.timedelta(hours=48)).strftime(
+            timezone.datetime.now() + timezone.timedelta(hours=48)).strftime(
             "%m-%d-%Y %H:%M:%S %Z")
 
     def update_task_status_in_database(self):
