@@ -25,6 +25,7 @@ class SWATModelZip:
             "hrus": False,       # hru files in TxtInOut
             "hru_id": False,     # HRU_ID field present in hru1 shapefile
             "objectid": False,   # OBJECTID field present in hru1 shapefile
+            "matching_hrus": False
         }
         self.swat_model_directory = ""
 
@@ -82,9 +83,12 @@ class SWATModelZip:
                 self.swat_model_directory)
             self.errors["objectid"] = check_for_objectid_field(
                 self.swat_model_directory)
+            self.errors["matching_hrus"] = check_for_matching_number_of_hrus_in_hru1_and_txtinout(
+                self.swat_model_directory)
         else:
             self.errors["hru_id"] = True
             self.errors["objectid"] = True
+            self.errors["matching_hrus"] = True
 
         # Run check only for Field SWAT
         if tool == "field":
@@ -416,6 +420,8 @@ def check_for_hru_id_field(model_directory: str) -> bool:
         if field.lower() == "hru_id":
             return True
 
+    sf.close()
+
     return False
 
 
@@ -441,7 +447,48 @@ def check_for_objectid_field(model_directory: str) -> bool:
         if field.lower() == "objectid":
             return True
 
+    sf.close()
+
     return False
+
+
+def check_for_matching_number_of_hrus_in_hru1_and_txtinout(model_directory: str) -> bool:
+    """
+    Checks if the number of unique hrus in the hru1 shapefile matches
+    the number of .hru files in the TxtInOut directory. Any .hru files 
+    that do not have an integer as a filename are excluded from the count
+    (e.g. output.hru, outputb.hru, etc.).
+
+    Parameters
+    ----------
+    model_directory: str
+        Current working directory for the SWAT model.
+
+    Returns
+    -------
+    bool
+        True if number of hrus in hru1 and number of .hru files match, False otherwise.
+    """
+    hru1_shp = os.path.join(model_directory, "Watershed", "Shapes", "hru1.shp")
+    hru_dir = os.path.join(model_directory, "Scenarios", "Default", "TxtInOut")
+
+    hru_files = glob.glob(os.path.join(hru_dir, "*.hru"))
+
+    # Only count hru files that have integers as filenames
+    number_of_hru_files = 0
+    for hru in hru_files:
+        try:
+            int(os.path.splitext(os.path.basename(hru))[0])
+            number_of_hru_files += 1
+        except ValueError:
+            pass
+
+    sf = fiona.open(hru1_shp, "r")
+    number_of_hrus_in_hru1 = len(sf)
+
+    sf.close()
+
+    return number_of_hru_files == number_of_hrus_in_hru1
 
 
 def get_error_message(error: str, model_directory: str = None) -> str:
@@ -467,5 +514,6 @@ def get_error_message(error: str, model_directory: str = None) -> str:
         "hrus": f"Could not find hru files (.hru) in {model_directory}/Scenarios/Default/TxtInOut/. See manual for further help.",
         "swatmdb": f"Could not find SWATOutput.mdb in {model_directory}/Scenarios/Default/TablesOut/. See manual for further help.",
         "hru_id": f"Could not find field named HRU_ID in {model_directory}/Watershed/Shapes/hru1.shp.",
-        "objectid": f"Could not find field named OBJECTID in {model_directory}/Watershed/Shapes/hru1.shp."
+        "objectid": f"Could not find field named OBJECTID in {model_directory}/Watershed/Shapes/hru1.shp.",
+        "matching_hrus": f"Number of hrus in {model_directory}/Watershed/Shapes/hru1.shp do not match the number of .hru files in {model_directory}/Scenarios/Default/TxtInOut."
     }.get(error, "")
