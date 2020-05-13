@@ -21,6 +21,7 @@ class TestSWATModelZip(unittest.TestCase):
         self.swat_model_missing_swatoutput_database = "./tests/data/SWAT_Model_Missing_SWATOutput_database.zip"
         self.swat_model_missing_hru_id_field = "./tests/data/SWAT_Model_Missing_HRU_ID_Field.zip"
         self.swat_model_missing_objectid_field = "./tests/data/SWAT_Model_Missing_OBJECTID_Field.zip"
+        self.swat_model_mismatching_hrus = "./tests/data/SWAT_Model_Mismatching_HRUs.zip"
 
         if os.path.exists(self.workspace):
             shutil.rmtree(self.workspace)
@@ -41,6 +42,8 @@ class TestSWATModelZip(unittest.TestCase):
         shutil.copy(self.swat_model_missing_hru_id_field,
                     os.path.join(self.workspace, "input"))
         shutil.copy(self.swat_model_missing_objectid_field,
+                    os.path.join(self.workspace, "input"))
+        shutil.copy(self.swat_model_mismatching_hrus,
                     os.path.join(self.workspace, "input"))
 
     def tearDown(self):
@@ -125,7 +128,7 @@ class TestSWATModelZip(unittest.TestCase):
 
     def test_handles_missing_root_folder(self):
         """
-        Test that a missing root folder does not cause an error 
+        Test that a missing root folder does not cause an error
         as long as the Watershed and Scenarios folders are found.
         """
         upload = {
@@ -142,7 +145,7 @@ class TestSWATModelZip(unittest.TestCase):
 
     def test_validate_model_returns_folders_error_when_required_swat_folders_missing(self):
         """
-        Test that the "folders" error is returned by validate_model when the 
+        Test that the "folders" error is returned by validate_model when the
         "Watershed" and/or "Scenarios" folders are missing.
         """
         upload = {
@@ -176,7 +179,7 @@ class TestSWATModelZip(unittest.TestCase):
 
     def test_missing_hru_id_field_detected(self):
         """
-        Test that the appropriate error is thrown when the 
+        Test that the appropriate error is thrown when the
         hru1 shapefile is missing a field named "HRU_ID".
         """
         upload = {
@@ -207,3 +210,40 @@ class TestSWATModelZip(unittest.TestCase):
 
         self.assertEqual(validation_results["status"], 1)
         self.assertFalse(model.errors["objectid"])
+
+    def test_that_number_of_hrus_in_hru1_match_hru_files(self):
+        """
+        Test that the number of unique hrus in the hru1 shapefile
+        match the number of .hru files in the TxtInOut directory.
+        """
+        upload = {
+            "workspace": self.workspace,
+            "local": UploadedFile(name="SWAT_Model.zip"),
+            "aws": {}
+        }
+
+        model = SWATModelZip(upload)
+        validation_results = model.validate_model()
+
+        self.assertEqual(validation_results["status"], 0)
+        self.assertEqual(len(validation_results["errors"]), 0)
+        self.assertTrue(model.errors["matching_hrus"])
+
+    def test_validate_model_detects_mismatching_number_of_hrus_in_hru1_and_txtinout(self):
+        """
+        Test that the correct errors is thrown when the number of hrus in
+        hru1 shapefile and the number .hru files in the TxtInOut directory
+        do not match.
+        """
+        upload = {
+            "workspace": self.workspace,
+            "local": UploadedFile(name="SWAT_Model_Mismatching_HRUs.zip"),
+            "aws": {}
+        }
+
+        model = SWATModelZip(upload)
+        validation_results = model.validate_model()
+
+        self.assertEqual(validation_results["status"], 1)
+        self.assertEqual(len(validation_results["errors"]), 1)
+        self.assertFalse(model.errors["matching_hrus"])
