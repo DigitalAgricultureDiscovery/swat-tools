@@ -467,7 +467,7 @@ def check_for_matching_number_of_hrus_in_hru1_and_txtinout(model_directory: str)
     Returns
     -------
     bool
-        True if number of hrus in hru1 and number of .hru files match, False otherwise.
+        True if number of hrus in hru1 are less than or equal to number of .hru files, False otherwise.
     """
     hru1_shp = os.path.join(model_directory, "Watershed", "Shapes", "hru1.shp")
     hru_dir = os.path.join(model_directory, "Scenarios", "Default", "TxtInOut")
@@ -488,7 +488,7 @@ def check_for_matching_number_of_hrus_in_hru1_and_txtinout(model_directory: str)
 
     sf.close()
 
-    return number_of_hru_files == number_of_hrus_in_hru1
+    return number_of_hru_files >= number_of_hrus_in_hru1
 
 
 def get_error_message(error: str, model_directory: str = None) -> str:
