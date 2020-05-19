@@ -261,7 +261,7 @@ class FieldSWATProcess(object):
 
         merged_hru = geotools.read_shapefile(
             os.path.join(self.fieldswat_swat_model_dir, 'Watershed', 'Shapes', 'hru1.shp'))
-        merged_hru = np.array(merged_hru)
+        merged_hru = np.array(merged_hru, dtype=int)
         # sort HRU_ID column (second column) into ascending order
         # and keep respective positions of other columns
         # for example:

@@ -142,7 +142,7 @@ class LUUCheckerProcess(object):
         try:
             # read base landuse raster (.tif) into numpy array
             base_raster_array = geotools.read_raster(
-                self.temp_output_directory + '/' + \
+                self.temp_output_directory + '/' +
                 self.base_landuse_raster_filename + '.tif')[0]
 
             # construct shapefile layer information
@@ -184,12 +184,12 @@ class LUUCheckerProcess(object):
                                          output_tif_filepath)
         except Exception:
             self.logger.error(
-                'Error converting shapefile to raster. Please make ' + \
+                'Error converting shapefile to raster. Please make ' +
                 'sure you uploaded file.shp.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception(
-                'Error converting shapefile to raster. Please make ' + \
+                'Error converting shapefile to raster. Please make ' +
                 'sure you uploaded file.shp.')
 
         self.logger.info('Converting subbasin geotiff into numpy array.')
@@ -197,8 +197,8 @@ class LUUCheckerProcess(object):
         try:
             # read rasterized shapefile into numpy array
             rasterized_shapefile = \
-            geotools.read_raster(self.temp_output_directory + '/subbasin.tif')[
-                0]
+                geotools.read_raster(self.temp_output_directory + '/subbasin.tif')[
+                    0]
         except Exception:
             self.logger.error(
                 'Unable to read the rasterized subbasin geotiff.')
@@ -248,7 +248,7 @@ class LUUCheckerProcess(object):
                         landuse_layer) + '.tif')
                 # read new landuse raster (.tif) into numpy array
                 new_landuse_raster = geotools.read_raster(
-                    self.temp_output_directory + '/' + \
+                    self.temp_output_directory + '/' +
                     os.path.basename(landuse_layer) + '.tif')[0]
                 self.logger.info('Begin looping through subbasins.')
                 # create feature layers based off the FID field & then use as mask
@@ -443,10 +443,11 @@ class LUUCheckerProcess(object):
             for j in range(0, len(new_lulc_codes)):
 
                 newLULC_idx = injection_history[subid][
-                              previous_new_lulc_ending_index:number_of_new_lulc_cells + previous_new_lulc_ending_index]
-                previous_new_lulc_ending_index = previous_new_lulc_ending_index + number_of_new_lulc_cells
+                    previous_new_lulc_ending_index:number_of_new_lulc_cells + previous_new_lulc_ending_index]
+                previous_new_lulc_ending_index = previous_new_lulc_ending_index + \
+                    number_of_new_lulc_cells
                 base_raster_array[row[newLULC_idx], col[newLULC_idx]] = \
-                new_lulc_codes[j]
+                    new_lulc_codes[j]
                 # Remove index from injection history to prevent its re-use
                 for injection_index in range(0, len(newLULC_idx)):
                     injection_history[subid].pop(injection_index)
@@ -476,7 +477,8 @@ class LUUCheckerProcess(object):
         """
         Copies output from process over to web directory for user's consumption.
         """
-        self.logger.info('Copying output directory to user directory on depot.')
+        self.logger.info(
+            'Copying output directory to user directory on depot.')
 
         # If output directory already exists in web directory, remove it
         if os.path.exists(self.output_dir):
@@ -546,7 +548,8 @@ class LUUCheckerProcess(object):
         self.logger.info(
             'Sending user email informing them an error has occurred.')
         subject = self.tool_name + ' error'
-        message = 'An error has occurred within ' + self.tool_name + ' while processing your data. '
+        message = 'An error has occurred within ' + \
+            self.tool_name + ' while processing your data. '
         message += 'Please verify your inputs are not missing any required files. '
         message += 'If the problem persists, please sign in to SWAT Tools and use '
         message += 'the Contact Us form to request assistance from the SWAT Tools '
