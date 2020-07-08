@@ -488,7 +488,7 @@ def check_for_matching_number_of_hrus_in_hru1_and_txtinout(model_directory: str)
 
     sf.close()
 
-    return number_of_hru_files >= number_of_hrus_in_hru1
+    return number_of_hru_files == number_of_hrus_in_hru1
 
 
 def get_error_message(error: str, model_directory: str = None) -> str:
