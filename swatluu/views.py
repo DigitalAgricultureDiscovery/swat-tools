@@ -450,6 +450,7 @@ def validate_selected_landuse_layers(request):
                 }
 
             if validated['status'] == 'error':
+                request.session['error_validate_landuse'] = validated['msg']
                 request.session['error'] = validated['msg']
                 return render(request, 'swatluu/index.html')
 
@@ -460,6 +461,7 @@ def validate_selected_landuse_layers(request):
         else:
             error_msg = 'Please select landuse layers before continuing.'
             request.session['error'] = error_msg
+            request.session['error_validate_landuse'] = validated['msg']
             return render(request, 'swatluu/index.html')
     else:
         return render(request, 'swatluu/index.html')
