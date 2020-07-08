@@ -344,7 +344,18 @@
                     {% buttons %}
                         <div align="left">
                             <input style="display: inline; padding-bottom: 5px" id="Lookup" type="file" name="lookup_file">
-                            <button id="upload5" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading2').show();" {% if not request.session.uncertainty_landuse_layer_filename %}disabled{% endif %}>Upload</button>
+                            <button 
+                                id="upload5" 
+                                type="submit" 
+                                class="btn btn-primary" 
+                                value="Upload" 
+                                onclick="$('#loading2').show();" 
+                                {% if not request.session.uncertainty_landuse_layer_filename or request.session.error_landuse_layers %}
+                                    disabled
+                                {% endif %}
+                            >
+                                Upload
+                            </button>
                             <button id="Help5" type="button">?</button>
                             {% if request.session.uncertainty_lookup_file_data %}
                                 <span class="icon" style="color: #33CC33; margin-left: 15px">
