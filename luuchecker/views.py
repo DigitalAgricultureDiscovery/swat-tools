@@ -228,14 +228,14 @@ def upload_subbasin_shapefile_zip(request):
                 request.session["error_subbasin"] = error_msg
                 return HttpResponseRedirect(resolve_url('luuchecker'))
 
-            subbasin_shapefile_filepath = unique_path + '/input/' + subbasin_shapefile_filename + '/subs1.shp'
+            subbasin_shapefile_filepath = f'{unique_path}/input/{subbasin_shapefile_filename}/{subbasin_shapefile_filename}.shp'
 
             if not os.path.exists(subbasin_shapefile_filepath):
                 logger.error(
                     "{0}: Unable upload subbasin shapefile.".format(
                         request.session.get('unique_directory_name')))
                 error_msg = 'Could not find the folder ' + \
-                            subbasin_shapefile_filename + '/subs1.shp. ' \
+                            subbasin_shapefile_filename + '/' + subbasin_shapefile_filename + '.shp. ' \
                             'Please check for files in folder and re-upload ' \
                             'the zip file. If the issue persists please use ' \
                             'the Contact Us form to request further ' \
