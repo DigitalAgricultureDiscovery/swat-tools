@@ -151,7 +151,7 @@ class LUUCheckerProcess(object):
             layer_info = {
                 "attribute_name": "Subbasin",
                 "extent": [cols, rows],
-                "layername": "subs1",
+                "layername": subbasin_shapefile_filename,
             }
         except Exception:
             self.logger.error('Unable to read the base landuse raster.')
