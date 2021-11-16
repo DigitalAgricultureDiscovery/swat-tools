@@ -437,10 +437,20 @@ def upload_base_landuse_raster_file(request):
                 request.session['error_base_landuse'] = error_msg
                 return render(request, 'luuchecker/index.html')
 
-            filename = base_landuse_raster.name
-            base_landuse_raster_filename = os.path.splitext(filename)[0]
-            base_landuse_raster_location = request.session.get(
-                'luuc_landuse_dir') + '/' + base_landuse_raster_filename + '/w001001.adf'
+            try:
+                base_landuse_raster_filename, base_landuse_layer_ext = os.path.splitext(base_landuse_raster.name)
+                # Check for .xml extension
+                if base_landuse_layer_ext == ".xml":
+                    base_landuse_raster_filename = os.path.splitext(base_landuse_raster_filename)[0]
+
+                base_landuse_raster_location = request.session.get(
+                    'luuc_landuse_dir') + '/' + base_landuse_raster_filename + '/w001001.adf'
+            except:
+                error_msg = 'Unable to match selected layer with layers ' \
+                            'uploaded in the zipped landuse folder. Make ' \
+                            'sure you are selecting the .aux files.'
+                request.session['error'] = error_msg
+                request.session['error_base_landuse'] = error_msg
 
             request.session['progress_message'] = []
             request.session['error'] = []
