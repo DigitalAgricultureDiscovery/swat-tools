@@ -350,7 +350,7 @@ class SWATLUUProcess(object):
             sorted_hru = merged_hru[merged_hru[:,
                                                hru1_field_positions['hru_id']].argsort()]
         except Exception:
-            self.logger.error('Unable to open shapefile hrus1.shp.')
+            self.logger.error('Unable to open shapefile hru1.shp.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
         self.logger.info(
