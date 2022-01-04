@@ -83,7 +83,8 @@ class SWATLUUProcess(object):
         try:
             self.setup_logger()
             self.logger.info('Processing started.')
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Unable to initialize logger.')
@@ -91,7 +92,8 @@ class SWATLUUProcess(object):
         try:
             # create output directory structure
             self.create_output_dir()
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to create output directory.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -100,7 +102,8 @@ class SWATLUUProcess(object):
         # create lup.dat file and populate with landuse layers' date information
         try:
             self.create_lupdat_file()
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to create lup.dat file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -109,7 +112,8 @@ class SWATLUUProcess(object):
         # extract lookup information from uploaded lookup file
         try:
             self.extract_lookup_info()
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'Unable to extract lookup information from uploaded lookup file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -122,7 +126,8 @@ class SWATLUUProcess(object):
             geotools.convert_adf_to_tif(
                 self.results_dir + '/Raster/hrus1',
                 self.results_dir + '/Raster/hrus1/hrus1.tif')
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to convert raster from .adf to .tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -131,7 +136,8 @@ class SWATLUUProcess(object):
         # merge non-dominant hrus into nearby dominant hrus
         try:
             self.merge_thresholds()
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'Unable to merge non-dominant HRUs into nearby dominant hrus.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -142,7 +148,8 @@ class SWATLUUProcess(object):
         # create fractional area for each dominant hru
         try:
             self.create_fractional_values()
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to create fractional values.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -151,7 +158,8 @@ class SWATLUUProcess(object):
         # extract hru information from TxtInOut folder
         try:
             self.extract_hru_files_data()
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to extract HRU files data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -160,7 +168,8 @@ class SWATLUUProcess(object):
         # calculate new fractional areas using the uploaded landuse layers
         try:
             self.calculate_new_fractional_areas()
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to calculate new fractional areas.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -218,7 +227,8 @@ class SWATLUUProcess(object):
         self.logger.info('Creating lup.dat file.')
         try:
             lup_file = open(self.results_dir + '/lup.dat', 'a')
-        except IOError:
+        except IOError as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to open the lup.dat file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
@@ -238,7 +248,8 @@ class SWATLUUProcess(object):
             converted_layer_path = self.results_dir + '/Raster/' + layer_name + '.tif'
             try:
                 geotools.convert_adf_to_tif(layer_path, converted_layer_path)
-            except Exception:
+            except Exception as e:
+            self.logger.error(str(e))
                 self.logger.error(
                     'Unable to convert raster from .adf to .tif.')
                 UserTask.objects.filter(task_id=self.task_id).update(
@@ -282,7 +293,8 @@ class SWATLUUProcess(object):
         try:
             lookup_file = csv.reader(open(self.lookup_filepath, 'r'),
                                      delimiter=',')
-        except:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to open the lookup file.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
@@ -326,7 +338,8 @@ class SWATLUUProcess(object):
         try:
             hrus, hru_info = geotools.read_raster(
                 self.results_dir + '/Raster/hrus1/hrus1.tif')
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to read hrus1.tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
@@ -349,7 +362,8 @@ class SWATLUUProcess(object):
 
             sorted_hru = merged_hru[merged_hru[:,
                                                hru1_field_positions['hru_id']].argsort()]
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to open shapefile hru1.shp.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
@@ -368,7 +382,8 @@ class SWATLUUProcess(object):
 
             # merge non-dominant hrus into nearby dominant hrus
             hrus = swattools.merge(hrus, dominant_hrus, hru_info[1])
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'Unable to sort and merge the non-dominant and dominant hrus.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -379,7 +394,8 @@ class SWATLUUProcess(object):
                 hrus,
                 self.results_dir + '/Raster/hrus1/w001001.adf',
                 self.results_dir + '/Raster/final_HRU.tif')
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.info('Failed to create final_HRU.tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
@@ -536,7 +552,8 @@ class SWATLUUProcess(object):
             landuse_abbrevs_from_hru_files = hru_files_read[2]
             soil_codes_from_hru_files = hru_files_read[3]
             slope_ranges_from_hru_files = hru_files_read[4]
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to read the hru files in TxtInOut.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
 
@@ -653,7 +670,8 @@ class SWATLUUProcess(object):
                     self.results_dir + '/Raster/' + landuse_layer[3] + '.tif')
                 # get the nodata value
                 landuse_layer_nodata = layer_info[1]
-            except Exception:
+            except Exception as e:
+                self.logger.error(str(e))
                 self.logger.error('Unable to read landuse layer.')
                 UserTask.objects.filter(task_id=self.task_id).update(
                     task_status=2)
@@ -778,8 +796,9 @@ class SWATLUUProcess(object):
         self.logger.info('Removing input files from tmp.')
         try:
             shutil.rmtree(self.process_root_dir)
-        except PermissionError:
-            logger.warning("Unable to remove the input data from /tmp.")
+        except PermissionError as e:
+            self.logger.warning(str(e))
+            self.logger.warning("Unable to remove the input data from /tmp.")
 
     def email_user_link_to_results(self):
         """
@@ -813,7 +832,8 @@ class SWATLUUProcess(object):
                 [self.user_email],
                 fail_silently=False,
                 html_message=message)
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'Error sending the user the email to their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -850,7 +870,8 @@ class SWATLUUProcess(object):
                 [self.user_email],
                 fail_silently=False,
                 html_message=message)
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'Error sending the user the email informing ' +
                 'them of an error occurrence while processing their data.')

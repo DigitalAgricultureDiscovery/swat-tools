@@ -85,7 +85,7 @@ def upload_swat_model_zip(request):
         try:
             swat_model = SWATModelZip(upload)
         except Exception as e:
-            logger.error(e)
+            logger.error(str(e))
             error_msg = 'An unexpected error has occurred, ' \
                         'please try again. If the issue persists ' \
                         'please use the Contact Us form to request ' \
@@ -132,7 +132,8 @@ def upload_landuse_zip(request):
                 file = request.FILES['landuse_zip']
                 filename = file.name
                 landuse_filename, landuse_ext = os.path.splitext(filename)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable upload landuse zipfile.".format(
                         request.session.get('unique_directory_name')))
@@ -151,7 +152,8 @@ def upload_landuse_zip(request):
                 # If an input directory already exists, remove it
                 if os.path.exists(unique_path + '/input/' + landuse_filename):
                     shutil.rmtree(unique_path + '/input/' + landuse_filename)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable to remove existing landuse directory.".format(
                         request.session.get('unique_directory_name')))
@@ -176,7 +178,8 @@ def upload_landuse_zip(request):
                           'wb+') as destination:
                     for chunk in file.chunks():
                         destination.write(chunk)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable to write landuse zipfile to disk.".format(
                         request.session.get('unique_directory_name')))
@@ -219,7 +222,8 @@ def upload_landuse_zip(request):
 
                 # Remove landuse zip
                 os.remove(unique_path + '/input/' + filename)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable extract landuse zipfile.".format(
                         request.session.get('unique_directory_name')))
@@ -288,7 +292,8 @@ def upload_landuse_layer(request):
             request.session['uncertainty_year'].append(day[2])
             request.session['uncertainty_month'].append(day[0])
             request.session['uncertainty_day'].append(day[1])
-        except:
+        except Exception as e:
+            logger.error(str(e))
             error_msg = 'Please make sure you are selecting a date ' \
                         'for each landuse layer.'
             request.session['error'] = error_msg
@@ -401,7 +406,8 @@ def upload_lookup_file(request):
                     os.makedirs(unique_path, 0o775)
                 if not os.path.exists(unique_path + '/input'):
                     os.makedirs(unique_path + '/input', 0o775)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 error_msg = 'Unable to remove previously uploaded file, ' \
                             'please use the Reset button to reset the ' \
                             'tool. If the issue persists please use the ' \
@@ -417,7 +423,8 @@ def upload_lookup_file(request):
                           'wb+') as destination:
                     for chunk in lookup_file.chunks():
                         destination.write(chunk)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 error_msg = 'Unable to receive the uploaded file, please ' \
                             'try again. If the issue persists please use ' \
                             'the Contact Us form to request further ' \
@@ -441,7 +448,8 @@ def upload_lookup_file(request):
                 reader = csv.reader(
                     open(unique_path + '/input/' + lookup_filename, 'r'),
                     delimiter=',')
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 error_msg = 'Error reading the uploaded lookup file, {0}. ' \
                             'Please check that the file is not empty and is ' \
                             'in the csv format.'.format(lookup_filename)
@@ -461,7 +469,8 @@ def upload_lookup_file(request):
                         request.session['error_lookup'] = error_msg
                         return render(request, 'uncertainty/index.html')
                     lookup_info.append(row)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 error_msg = 'Error reading the uploaded lookup file, {0}. ' \
                             'Please check that the file is not empty and is ' \
                             'in the csv format. Remove any empty lines from ' \
@@ -475,7 +484,8 @@ def upload_lookup_file(request):
                 for i in range(len(lookup_info)):
                     lookup_info[i][0] = lookup_info[i][0].strip()
                     lookup_info[i][1] = lookup_info[i][1].strip()
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 error_msg = 'Error occurred while trying to find the lookup ' \
                             'codes and class names in the uploaded file. ' \
                             'Please make sure the lookup file is in the csv ' \

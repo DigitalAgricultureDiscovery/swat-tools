@@ -129,7 +129,8 @@ def upload_landuse_zip(request):
                 file = request.FILES['landuse_zip']
                 filename = file.name
                 landuse_filename, landuse_ext = os.path.splitext(filename)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable upload landuse zipfile.".format(
                         request.session.get('unique_directory_name')))
@@ -148,7 +149,8 @@ def upload_landuse_zip(request):
                 # If an input directory already exists, remove it
                 if os.path.exists(unique_path + '/input/' + landuse_filename):
                     shutil.rmtree(unique_path + '/input/' + landuse_filename)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable to remove existing landuse directory.".format(
                         request.session.get('unique_directory_name')))
@@ -167,7 +169,8 @@ def upload_landuse_zip(request):
                           'wb+') as destination:
                     for chunk in file.chunks():
                         destination.write(chunk)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable to write landuse zipfile to disk.".format(
                         request.session.get('unique_directory_name')))
@@ -209,7 +212,8 @@ def upload_landuse_zip(request):
 
                 # Remove landuse zip
                 os.remove(unique_path + '/input/' + filename)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable extract landuse zipfile.".format(
                         request.session.get('unique_directory_name')))
@@ -269,7 +273,8 @@ def select_number_of_landuse_layers(request):
         try:
             # Get the posted landuse layer count value
             landuse_layer_count = request.POST.get('landuse_layer_count')
-        except:
+        except Exception as e:
+            logger.error(str(e))
             error_msg = 'Error with submitted value, please try again. If ' \
                         'the issue persists please use the Contact Us form ' \
                         'to request further assistance from the site admins.'
@@ -280,7 +285,8 @@ def select_number_of_landuse_layers(request):
         try:
             # Try converting the count to an integer
             landuse_layer_count = int(landuse_layer_count)
-        except ValueError:
+        except ValueError as e:
+            logger.error(str(e))
             # If it fails, display error
             error_msg = 'Please enter an integer.'
             request.session['error'] = error_msg
@@ -328,7 +334,8 @@ def validate_selected_landuse_layers(request):
             # Get the dates if available and recall the landuse layer count
             dates = request.POST.getlist('dates')
             landuse_layer_count = request.session.get('landuse_layer_count')
-        except:
+        except Exception as e:
+            logger.error(str(e))
             error_msg = 'Unable to receive the dates, please try again. If ' \
                         'the issue persists please use the Contact Us form ' \
                         'to request further assistance from the site admins.'
@@ -364,7 +371,8 @@ def validate_selected_landuse_layers(request):
                     request.session['years'].append(day[2])
                     request.session['months'].append(day[0])
                     request.session['day'].append(day[1])
-        except IndexError:
+        except IndexError as e:
+            logger.error(str(e))
             error_msg = 'Please make sure the date you are entering is in ' \
                         'the required format: MM/DD/YYYY. Click the calendar ' \
                         'icon and select your date from the popup calendar ' \
@@ -407,7 +415,8 @@ def validate_selected_landuse_layers(request):
                     landuse_layer_filepath = request.session.get(
                         'landuse_filepath') + '/' + landuse_layer_filename + \
                         '/w001001.adf'
-                except:
+                except Exception as e:
+                    logger.error(str(e))
                     error_msg = 'Unable to match selected layers with layers ' \
                                 'uploaded in the Landuse Folder input. Make ' \
                                 'sure you are selecting the .aux files.'
@@ -440,7 +449,8 @@ def validate_selected_landuse_layers(request):
                         'swat_model_filepath') + '/Watershed/Grid/hrus1',
                     request.session.get('landuse_filepath'),
                     request.session.get('landuse_layers_names'))
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 validated = {
                     'status': 'error',
                     'msg': 'Unable to validate landuse layers. Refer to '
@@ -490,7 +500,8 @@ def upload_lookup_file(request):
                 # and if so remove it
                 if os.path.exists(unique_path + '/input/' + lookup_filename):
                     os.remove(unique_path + '/input/' + lookup_filename)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 error_msg = 'Unable to remove previously uploaded file, ' \
                             'please use the Reset button to reset the tool. ' \
                             'If the issue persists please use the Contact Us ' \
@@ -506,7 +517,8 @@ def upload_lookup_file(request):
                           'wb+') as destination:
                     for chunk in lookup_file.chunks():
                         destination.write(chunk)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 error_msg = 'Unable to receive the uploaded file, please ' \
                             'try again. If the issue persists please use the ' \
                             'Contact Us form to request further assistance ' \
@@ -530,7 +542,8 @@ def upload_lookup_file(request):
                 reader = csv.reader(
                     open(unique_path + '/input/' + lookup_filename, 'r'),
                     delimiter=',')
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 error_msg = 'Error reading the uploaded lookup file, "{0}". ' \
                             'Please check that the file is not empty and is ' \
                             'in the csv format.'.format(lookup_filename)
@@ -550,7 +563,8 @@ def upload_lookup_file(request):
                         request.session['error_lookup'] = error_msg
                         return render(request, 'swatluu/index.html')
                     lookup_info.append(row)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 error_msg = 'Error reading the uploaded lookup file, "{0}". ' \
                             'Please check that the file is not empty and is ' \
                             'in the csv format. Remove any empty lines from ' \
@@ -566,7 +580,8 @@ def upload_lookup_file(request):
                     if i > 0:
                         int(lookup_info[i][0].strip())
                     lookup_info[i][1] = lookup_info[i][1].strip()
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 error_msg = 'Error occurred while trying to find the lookup ' \
                             'codes and class names in the uploaded file. ' \
                             'Please make sure the lookup file is in the csv ' \

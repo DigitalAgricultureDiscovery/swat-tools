@@ -119,7 +119,7 @@ class LUUCheckerProcess(object):
             # create output directory structure
             self.create_output_dir()
         except Exception as e:
-            print(e)
+            self.logger.error(str(e))
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Unable to initialize logger.')
@@ -131,7 +131,8 @@ class LUUCheckerProcess(object):
             geotools.convert_adf_to_tif(
                 self.base_landuse_raster_filepath,
                 output_filepath)
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to convert raster from .adf to .tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -153,7 +154,8 @@ class LUUCheckerProcess(object):
                 "extent": [cols, rows],
                 "layername": self.subbasin_shapefile_filename,
             }
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to read the base landuse raster.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -166,7 +168,8 @@ class LUUCheckerProcess(object):
             # get number of subbasins in shapefile
             total_subbasin_count = len(
                 geotools.read_shapefile(self.subbasin_shapefile_filepath))
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to read the subbasin shapefile.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -182,7 +185,8 @@ class LUUCheckerProcess(object):
             geotools.rasterize_shapefile(layer_info,
                                          self.subbasin_shapefile_filepath,
                                          output_tif_filepath)
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'Error converting shapefile to raster. Please make ' +
                 'sure you uploaded file.shp.')
@@ -199,7 +203,8 @@ class LUUCheckerProcess(object):
             rasterized_shapefile = \
                 geotools.read_raster(self.temp_output_directory + '/subbasin.tif')[
                     0]
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'Unable to read the rasterized subbasin geotiff.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -215,7 +220,8 @@ class LUUCheckerProcess(object):
             # create emerging_lulcs text file to store new landuse information
             emerging_lulc_report = open(
                 self.output_directory + '/Emerging_LULC_Report.txt', 'w')
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'Unable to create emerging_lulcs text file to store new landuse information.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -282,7 +288,8 @@ class LUUCheckerProcess(object):
                         injection_history)
 
                 self.logger.info('End looping through subbasins.')
-        except:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'An error occurred while creating the emerging lulc report.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -298,7 +305,8 @@ class LUUCheckerProcess(object):
                 base_raster_array,
                 self.base_landuse_raster_adf_filepath,
                 self.temp_output_directory + '/base_new1.tif')
-        except:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'An error occurred while creating the composite raster.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -468,7 +476,8 @@ class LUUCheckerProcess(object):
                  '-of', 'GTiff',
                  self.temp_output_directory + '/base_new1.tif',
                  self.output_directory + '/base_new.tif'], env=env)
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'Error converting new base raster to geotiff.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -492,8 +501,9 @@ class LUUCheckerProcess(object):
         self.logger.info('Removing input files from tmp.')
         try:
             shutil.rmtree(self.process_root_dir)
-        except PermissionError:
-            logger.warning("Unable to remove the input data from /tmp.")
+        except PermissionError as e:
+            self.logger.warning(str(e))
+            self.logger.warning("Unable to remove the input data from /tmp.")
 
     def email_user_link_to_results(self):
         """
@@ -527,7 +537,8 @@ class LUUCheckerProcess(object):
                 [self.user_email],
                 fail_silently=False,
                 html_message=message)
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to convert raster from .adf to .tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -563,7 +574,8 @@ class LUUCheckerProcess(object):
                 [self.user_email],
                 fail_silently=False,
                 html_message=message)
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'Error sending the user the email informing ' +
                 'them of an error occurrence while processing their data.')

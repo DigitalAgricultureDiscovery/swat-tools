@@ -79,7 +79,8 @@ class FieldSWATProcess(object):
             # start the logging
             self.setup_logger()
             self.logger.info('Processing started.')
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
             raise Exception('Unable to initialize logger.')
@@ -87,7 +88,8 @@ class FieldSWATProcess(object):
         try:
             # create output directory structure
             self.create_output_dir()
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Create output directory structures.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -98,7 +100,8 @@ class FieldSWATProcess(object):
             geotools.convert_adf_to_tif(
                 self.results_dir + '/Raster/hrus1',
                 self.results_dir + '/Raster/hrus1/hrus1.tif')
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error('Unable to convert raster from .adf to .tif.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
             self.email_error_alert_to_user()
@@ -107,7 +110,8 @@ class FieldSWATProcess(object):
         # copy hru1 and fields shapefiles to output directory
         try:
             self.copy_shapefile_to_output_directory()
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'An error occurred while copying hru1 and fields shapefiles to output directory.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -118,7 +122,8 @@ class FieldSWATProcess(object):
         # merge hru thresholds
         try:
             self.merge_thresholds()
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'An error occurred while merging hru thresholds.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -128,7 +133,8 @@ class FieldSWATProcess(object):
         try:
             # get hrus1 cols, rows, and resolution
             hrus1_info = self.get_tif_info()
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'An error occurred while fetching the hrus1 raster details.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -139,7 +145,8 @@ class FieldSWATProcess(object):
         try:
             grid_x_reshape, grid_y_reshape = self.set_gridx_and_gridy_matrices(
                 hrus1_info)
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'An error occurred while setting the gridx and gridy matrices.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -150,7 +157,8 @@ class FieldSWATProcess(object):
         try:
             clu = self.create_hru_field_workbook(
                 grid_x_reshape, grid_y_reshape, hrus1_info['nodata'])
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'An error occurred while creating the hru field workbook.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -161,7 +169,8 @@ class FieldSWATProcess(object):
         try:
             field_shapefile, output_data, hru_output_data = self.update_field_info(
                 hrus1_info['nodata'], clu)
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'An error occurred while updating field info.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -170,7 +179,8 @@ class FieldSWATProcess(object):
 
         try:
             self.create_new_field_shapefile(field_shapefile, output_data)
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'An error occurred while creating the new shapefile.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -182,7 +192,8 @@ class FieldSWATProcess(object):
 
         try:
             self.update_hru_shapefile(hru_shapefile, hru_output_data)
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'An error occurred while updating the hru shapefile.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)
@@ -635,8 +646,9 @@ class FieldSWATProcess(object):
         self.logger.info('Removing input files from tmp.')
         try:
             shutil.rmtree(self.process_root_dir)
-        except PermissionError:
-            logger.warning("Unable to remove the input data from /tmp.")
+        except PermissionError as e:
+            self.logger.warning(str(e))
+            self.logger.warning("Unable to remove the input data from /tmp.")
 
     def email_user_link_to_results(self):
         """
@@ -670,7 +682,8 @@ class FieldSWATProcess(object):
                 [self.user_email],
                 fail_silently=False,
                 html_message=message)
-        except Exception:
+        except Exception as e:
+            self.logger.error(str(e))
             self.logger.error(
                 'Error sending the user the email to their data.')
             UserTask.objects.filter(task_id=self.task_id).update(task_status=2)

@@ -85,7 +85,7 @@ def upload_swat_model_zip(request):
         try:
             swat_model = SWATModelZip(upload)
         except Exception as e:
-            logger.error(e)
+            logger.error(str(e))
             error_msg = 'An unexpected error has occurred, ' \
                         'please try again. If the issue persists ' \
                         'please use the Contact Us form to request ' \
@@ -111,7 +111,8 @@ def upload_swat_model_zip(request):
             # get unique_years
             unique_years = list(set(swatoutput_mdb_data['years']))
             unique_years.sort()
-        except:
+        except Exception as e:
+            logger.error(str(e))
             logger.error("{0}: Missing .hru file or unique year in database.".format(
                 request.session.get('unique_directory_name')))
             error_msg = 'You are either missing a .hru file or unique ' \
@@ -259,7 +260,8 @@ def select_year(request):
         # Get the year
         try:
             fieldswat_selected_year = int(request.POST.get('fieldswat_year'))
-        except:
+        except Exception as e:
+            logger.error(str(e))
             request.session['error'] = 'Please select one of the year radio buttons.'
             return render(request, 'fieldswat/index.html')
 
@@ -291,7 +293,8 @@ def upload_fields_shapefile_zip(request):
                 filename = file.name
                 fields_shapefile_foldername, fields_shapefile_ext = os.path.splitext(
                     filename)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error("{0}: Unable to receive the uploaded shapefile.".format(
                     request.session.get('unique_directory_name')))
                 error_msg = 'Unable to receive the uploaded file, please ' \
@@ -310,7 +313,8 @@ def upload_fields_shapefile_zip(request):
                 if os.path.exists(unique_path + '/input/' + fields_shapefile_foldername):
                     shutil.rmtree(unique_path + '/input/' +
                                   fields_shapefile_foldername)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error("{0}: Unable to remove previously uploaded shapefile.".format(
                     request.session.get('unique_directory_name')))
                 error_msg = 'Unable to remove previously uploaded file, ' \
@@ -327,7 +331,8 @@ def upload_fields_shapefile_zip(request):
                 with open(unique_path + '/input/' + filename, 'wb+') as destination:
                     for chunk in file.chunks():
                         destination.write(chunk)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error("{0}: Unable to write uploaded shapefile to disk.".format(
                     request.session.get('unique_directory_name')))
                 error_msg = 'Unable to receive the uploaded file, please try ' \
@@ -371,7 +376,8 @@ def upload_fields_shapefile_zip(request):
 
                 # Remove landuse zip
                 os.remove(unique_path + '/input/' + filename)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error("{0}: Unable to extract zipped shapefile.".format(
                     request.session.get('unique_directory_name')))
                 error_msg = 'Could not unzip the folder. Please contact ' \
@@ -460,7 +466,8 @@ def confirm_output_and_agg(request):
             # retrieve posted values
             output_type = request.POST.get('fieldswat_output')
             aggregation_method = request.POST.get('fieldswat_agg')
-        except:
+        except Exception as e:
+            logger.error(str(e))
             error_msg = 'Unable to find selected output and aggregation ' \
                         'methods. Please make sure you have selected an ' \
                         'option for both of these methods and then try again.'

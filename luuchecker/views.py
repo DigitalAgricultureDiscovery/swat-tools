@@ -102,7 +102,8 @@ def upload_subbasin_shapefile_zip(request):
                 subbasin_shapefile_file = os.path.splitext(filename)
                 subbasin_shapefile_filename = subbasin_shapefile_file[0]
                 subbasin_shapefile_file_ext = subbasin_shapefile_file[1]
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable to receive uploaded shapefile.".format(
                         request.session.get('unique_directory_name')))
@@ -133,7 +134,8 @@ def upload_subbasin_shapefile_zip(request):
                 # Set up the working directory
                 create_working_directory(request)
                 unique_path = request.session.get("directory")
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable to create working directory.".format(
                         request.session.get('unique_directory_name')))
@@ -151,7 +153,8 @@ def upload_subbasin_shapefile_zip(request):
                 shp_path = unique_path + '/input/' + subbasin_shapefile_filename
                 if os.path.exists(shp_path):
                     shutil.rmtree(shp_path)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable to remove previously uploaded file.".format(
                         request.session.get('unique_directory_name')))
@@ -170,7 +173,8 @@ def upload_subbasin_shapefile_zip(request):
                           'wb+') as destination:
                     for chunk in file.chunks():
                         destination.write(chunk)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable to write uploaded shapefile to disk.".format(
                         request.session.get('unique_directory_name')))
@@ -201,7 +205,8 @@ def upload_subbasin_shapefile_zip(request):
 
                 # Remove uploaded zip file
                 os.remove(filepath + subbasin_shapefile_file_ext)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable to unzip uploaded shapefile.".format(
                         request.session.get('unique_directory_name')))
@@ -284,7 +289,8 @@ def upload_landuse_folder_zip(request):
                 file = request.FILES['landuse_folder_zip']
                 filename = file.name
                 landuse_filename, landuse_ext = os.path.splitext(filename)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable receive uploaded landuse zipfile.".format(
                         request.session.get('unique_directory_name')))
@@ -303,7 +309,8 @@ def upload_landuse_folder_zip(request):
                 # If an input directory already exists, remove it
                 if os.path.exists(unique_path + '/input/' + landuse_filename):
                     shutil.rmtree(unique_path + '/input/' + landuse_filename)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable to remove previously uploaded landuse zipfile.".format(
                         request.session.get('unique_directory_name')))
@@ -322,7 +329,8 @@ def upload_landuse_folder_zip(request):
                           'wb+') as destination:
                     for chunk in file.chunks():
                         destination.write(chunk)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 logger.error(
                     "{0}: Unable to write landuse zipfile to disk.".format(
                         request.session.get('unique_directory_name')))
@@ -367,7 +375,8 @@ def upload_landuse_folder_zip(request):
 
                 # Remove landuse zip
                 os.remove(unique_path + '/input/' + filename)
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 # Create error message if unzip failed
                 logger.error(
                     "{0}: Unable to unzip the landuse zipfile.".format(
@@ -445,7 +454,8 @@ def upload_base_landuse_raster_file(request):
 
                 base_landuse_raster_location = request.session.get(
                     'luuc_landuse_dir') + '/' + base_landuse_raster_filename + '/w001001.adf'
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 error_msg = 'Unable to match selected layer with layers ' \
                             'uploaded in the zipped landuse folder. Make ' \
                             'sure you are selecting the .aux files.'
@@ -506,7 +516,8 @@ def select_number_of_landuse_layers(request):
         try:
             # Try converting the count to an integer
             landuse_layer_count = int(landuse_layer_count)
-        except ValueError:
+        except ValueError as e:
+            logger.error(str(e))
             # If it fails, display error
             error_msg = 'Please enter a number.'
             request.session['error'] = error_msg
@@ -644,7 +655,8 @@ def select_percentage(request):
         logger.info('Receiving landuse percentage')
         try:
             landuse_percent = request.POST.get('luuc_landuse_percentage')
-        except:
+        except Exception as e:
+            logger.error(str(e))
             error_msg = 'Unable to retrieve submitted percentage value, ' \
                         'please try again. If the issue persists please ' \
                         'use the Contact Us form to request further ' \
@@ -758,8 +770,7 @@ def download_data(request):
     if task_id != '':
         user_id = task_id.split('_')[1]
         if int(user_id) == int(request.user.id):
-            if os.path.exists(
-                                                            settings.PROJECT_DIR + '/user_data/' + request.user.email + '/' + task_id + '/Output'):
+            if os.path.exists(settings.PROJECT_DIR + '/user_data/' + request.user.email + '/' + task_id + '/Output'):
                 file = io.BytesIO()
 
                 dir_to_zip = settings.PROJECT_DIR + '/user_data/' + request.user.email + \
