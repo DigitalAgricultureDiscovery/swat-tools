@@ -249,7 +249,7 @@ class SWATLUUProcess(object):
             try:
                 geotools.convert_adf_to_tif(layer_path, converted_layer_path)
             except Exception as e:
-            self.logger.error(str(e))
+                self.logger.error(str(e))
                 self.logger.error(
                     'Unable to convert raster from .adf to .tif.')
                 UserTask.objects.filter(task_id=self.task_id).update(
