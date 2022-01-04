@@ -1,7 +1,9 @@
+import os
+import glob
+
 from osgeo import gdal
 from scipy import ndimage
 from numpy.core.fromnumeric import nonzero
-import glob
 
 
 def merge(hrus, dominant_hrus, nodata_value):
@@ -153,6 +155,23 @@ def read_hru_files(txt_in_out_dir):
     return hru_files_attribute_values
 
 
+def statistics_grid_file_is_missing(grid_folder):
+    """
+    Checks if the statistics file 'sta.adf' is in the raster grid folder.
+
+    Parameters
+    ----------
+    grid_folder: string
+        path to grid folder
+
+    Returns
+    -------
+    boolean: True if 'sta.adf' does not exists, False if it does.
+    """
+    return 'sta.adf' not in os.listdir(grid_folder)
+
+
+
 def validate_raster_properties(hrus1_path, lu_path, lu_layers):
     """
     Checks whether the hrus1 raster and landuse rasters have the
@@ -174,7 +193,18 @@ def validate_raster_properties(hrus1_path, lu_path, lu_layers):
     validated: dictionary
         status key either 'pass', 'warn', 'error'
     """
+    # validation flag
+    validated = {
+        'status': 'pass',
+        'msg': 'Passed all tests.'
+    }
+
     # open hrus1 raster with gdal
+    if statistics_grid_file_is_missing(hrus1_path):
+        validated['status'] = 'error'
+        validated['msg'] = f'hrus1 grid directory ({hrus1_path}) missing the statistics file - sta.adf. Please include this file in the directory and try again.'
+        return validated
+
     hrus1 = gdal.Open(hrus1_path)
 
     # get hrus1 geoproperties
@@ -186,14 +216,13 @@ def validate_raster_properties(hrus1_path, lu_path, lu_layers):
     # get hrus1 (rows,cols) extent
     hrus1_extent = hrus1.RasterYSize, hrus1.RasterXSize
 
-    # validation flag
-    validated = {
-        'status': 'pass',
-        'msg': 'Passed all tests.'
-    }
-
     # repeat above steps for each landuse layer
     for layer_name in lu_layers:
+        if statistics_grid_file_is_missing(lu_path + '/' + layer_name):
+            validated['status'] = 'error'
+            validated['msg'] = f'{layer_name} grid directory ({lu_path}/{layer_name}) missing the statistics file - sta.adf. Please include this file in the directory and try again.'
+            return validated
+
         lu = gdal.Open(lu_path + '/' + layer_name)
         lu_pres = lu.GetGeoTransform()[1]
         lu_extent = lu.RasterYSize, lu.RasterXSize
