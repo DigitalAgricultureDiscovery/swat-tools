@@ -220,7 +220,7 @@ def validate_raster_properties(hrus1_path, lu_path, lu_layers):
     for layer_name in lu_layers:
         if statistics_grid_file_is_missing(lu_path + '/' + layer_name):
             validated['status'] = 'error'
-            validated['msg'] = f'{layer_name} grid directory ({lu_path}/{layer_name}) missing the statistics file - sta.adf. Please include this file in the directory and try again.'
+            validated['msg'] = f'{layer_name} grid directory ({os.path.basename(lu_path)}/{layer_name}) missing the statistics file - sta.adf. Please include this file in the directory and try again.'
             return validated
 
         lu = gdal.Open(lu_path + '/' + layer_name)
