@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% block meta_description %}
+    <meta name="description" content="Unable to access page." />
+{% endblock %}
+
+{% block title %}Permission denied - {% endblock %}
+
+{% load static %}
+
+{% block content %}
+  <div style="margin-bottom: 200px;">
+    <h2>Permission denied.</h2>
+    <p>
+      You do not have access to this page. If you believe this is a mistake,
+      please contact us through the
+      <a href="{% url 'contact_us' %}">Contact Us</a> form or email
+      <a href="mailto:saraswat@purdue.com">Dharmendra Saraswat</a>.
+      Assistance will be provided as quickly as possible.</p>
+  </div>
+{% endblock %}

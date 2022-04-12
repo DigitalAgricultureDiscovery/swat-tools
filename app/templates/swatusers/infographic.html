@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load bootstrap3 %}
+{% load static %} 
+
+{% block meta_description %}
+<meta
+  name="description"
+  content="Display infographic report produced by Google Data Studios."
+/>
+{% endblock %} {% block title %}Infographic - {% endblock %} {% block content %}
+<div class="row">
+  <div class="col-md-12">
+    <!-- Embed Google Data Studio report in an iframe -->
+    <iframe
+      width="600"
+      height="1134"
+      src="https://datastudio.google.com/embed/reporting/0B5y9kKJR9qGrcEl6WG1zZ0xVU3c/page/1M"
+      frameborder="0"
+      style="border: 0"
+      allowfullscreen
+    ></iframe>
+  </div>
+</div>
+{% endblock %}

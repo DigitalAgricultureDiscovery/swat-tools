@@ -1,0 +1,10 @@
+IUNUM, URBNAME, URBFLNM
+1, URHD, Residential-High Density
+2, URMD, Residential-Medium Density
+3, URML, Residential-Med/Low Density
+4, URLD, Residential-Low Density
+5, UCOM, Commercial
+6, UIDU, Industrial
+7, UTRN, Transportation
+8, UINS, Institutional
+9, URBN, Residential

@@ -1,0 +1,9 @@
+Watershed atmospheric deposition file      .atm file 2022/4/11 0:00:00 ArcSWAT 2009.93.7
+
+
+
+
+     0.000 | RAMMO_SUB : Atmospheric deposition of ammonium (mg/l)
+     0.000 | RCN_SUB : Atmospheric deposition of nitrate (mg/l)
+     0.000 | DRYDEP_NH4 : Atmospheric dry deposition of ammonium (kg/ha/yr)
+     0.000 | DRYDEP_NO3 : Atmospheric dry deposition of nitrates (kg/ha/yr)

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+        <meta name="keywords" content="SWAT, SWAT Tools, Purdue University, SWAT LUU, LUU Checker, LUU Uncertainty, Field SWAT, Saraswat, agriculture, swat modeling, gis, geospatial" />
+        {% block meta_description %}<meta name="description" content="A collection of four tools designed for processing and analyzing SWAT model data. LUU Checker, SWAT LUU, LUU Uncertainty, and Field SWAT are the four tools. Each one focuses on a different aspect of your SWAT model data such as comparing multiple land use datasets, generating a land use update (LUU) module, integrating land use realizations, and mapping SWAT simulations at a field scale." />{% endblock %}
+        <meta name="author" content="Dharmendra Saraswat, Purdue University"/>
+
+        <title>{% block title %}{% endblock %}SWAT Tools</title>
+
+        {% load static %}
+        <script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+        <script async defer src="{% static 'js/jquery-ui-1.12.0.min.js' %}"></script>
+        <link rel="stylesheet" href="{% static 'css/jquery-ui-1.12.0.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/fa/css/font-awesome.min.css' %}">
+
+        {# Load the tag library #}
+        {% load bootstrap3 %}
+
+        {# Load CSS and JavaScript #}
+        {% bootstrap_css %}
+        {% bootstrap_javascript %}
+
+        {# Alertifyjs #}
+        <script src="{% static 'js/alertify.min.js' %}"></script>
+        <link href="{% static 'css/alertify.min.css' %}" rel="stylesheet" type="text/css" />
+
+        {# Display django.contrib.messages as Bootstrap alerts #}
+        {% bootstrap_messages %}
+        <link href="{% static "css/purdue.min.css"%}" rel="stylesheet" type="text/css" />
+        <link href="{% static "css/main.css"%}" rel="stylesheet" type="text/css" />
+        <link rel="shortcut icon" href="{% static "Images/favicon.ico" %}" />
+
+        {# Google Analytics #}
+        <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-78284792-1', 'auto');
+          ga('send', 'pageview');
+        </script>
+
+        {% block javascript %}{% endblock %}
+    </head>
+
+    <body>
+        <div class="navbar navbar-inverse goldbar" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button class="navbar-toggle left" data-target=".gold" data-toggle="collapse" type="button">
+                        <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> Quick Links
+                    </button>
+                    <button class="navbar-toggle search right" data-target="#search" data-toggle="collapse" style="float:right;" type="button">
+                        <i class="fa fa-search fa-lg"></i>
+                    </button>
+                </div>
+                <div class="collapse navbar-collapse right search" id="search">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                <i class="fa fa-search fa-lg"></i>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <form role="search">
+                                        <div class="form-group">
+                                            <div id="cse-search-form">Loading</div>
+                                            <script src="https://www.google.com/jsapi" type="text/javascript"></script>
+                                            <script type="text/javascript">// <![CDATA[
+                                                google.load('search', '1', {language: 'en', style: google.loader.themes.MINIMALIST});
+                                                google.setOnLoadCallback(function() {
+                                                    var customSearchOptions = {};
+                                                    var orderByOptions = {};
+                                                    orderByOptions['keys'] = [{label: 'Relevance', key: ''} , {label: 'Date', key: 'date'}];
+                                                    customSearchOptions['enableOrderBy'] = true;
+                                                    customSearchOptions['orderByOptions'] = orderByOptions;
+                                                    var customSearchControl =   new google.search.CustomSearchControl('017690826183710227054:mjxnqnpskjk', customSearchOptions);
+                                                    customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+                                                    var options = new google.search.DrawOptions();
+                                                    options.enableSearchboxOnly('//www.purdue.edu/purdue/search.html', 'q');
+                                                    customSearchControl.draw('cse-search-form', options);
+                                                }, true);
+                                                // ]]>
+                                            </script>
+                                        </div>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="collapse navbar-collapse gold">
+                    <ul class="nav navbar-nav information">
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Find Info For <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <p class="hide">Find Info For</p>
+                                <li><a href="//purdue.edu/purdue/academics/index.html">Academics</a></li>
+                                <li><a href="//purdue.edu/purdue/admissions/index.html">Admissions</a></li>
+                                <li><a href="//purdue.edu/purdue/current_students/index.html">Current Students</a></li>
+                                <li><a href="//purdue.edu/purdue/athletics/index.html">Athletics</a></li>
+                                <li><a href="//purdue.edu/purdue/about/index.html">About</a></li>
+                                <li><a href="//purdue.edu/purdue/careers/index.html">Careers</a></li>
+                                <li><a href="//purdue.edu/purdue/prospective_students/index.html">Prospective Students</a></li>
+                                <li><a href="//purdue.edu/purdue/research/index.html">Research and Partnerships</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <ul class="nav navbar-nav right quicklinks">
+                        <p class="hide">Quick Links</p>
+                        <li><a href="http://www.admissions.purdue.edu/apply/apply.php">Apply</a></li>
+                        <li><a href="http://www.purdue.edu/newsroom/index.html">News</a></li>
+                        <li><a href="http://www.purdue.edu/president/index.html">President</a></li>
+                        <li><a href="http://www.purdueofficialstore.com/index.html">Shop</a></li>
+                        <li><a href="http://www.purdue.edu/visit/index.html">Visit</a></li>
+                        <li><a href="https://securelb.imodules.com/s/1461/research/hybrid/index.aspx?sid=1461&amp;gid=1010&amp;pgid=1754&amp;cid=4045&amp;appealcode=13475">Give</a></li>
+                        <li><a href="http://www.purdue.edu/emergency/index.html">Emergency</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="top">
+            <div class="container">
+                <div class="row">
+                    <div id="purdue_logo_col" class="logo col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                        <a id="purdue_logo_link" href="http://www.purdue.edu">
+                            <img id="purdue_logo" alt="Purdue University" src="https://www.purdue.edu/purdue/images/logo.png"/>
+                        </a>
+                    </div>
+
+                    <div id="tool_title_col" class="department col-lg-10 col-md-10 col-sm-10 col-xs-12">
+                        <a id="tool_title_link" class="tool-title" href="{% url 'index' %}">SWAT Tools</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        {% include "nav_menu.html" %}
+
+        <div class="container-fluid">
+            <div class="topspace"></div>
+            {% block content %}
+            {% endblock content %}
+        </div>
+
+        {% if user.is_authenticated %}
+          <script>
+            // Acquires csrf token from csrf cookie
+            function getCookie(name) {
+              var cookieValue = null;
+              if (document.cookie && document.cookie !== "") {
+                var cookies = document.cookie.split(";");
+                for (var i = 0; i < cookies.length; i++) {
+                  var cookie = $.trim(cookies[i]);
+                  // Does this cookie string begin with the name we want?
+                  if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                  }
+                }
+              }
+              return cookieValue;
+            }
+
+            // Tells dAJAX request headers to include csrf token
+            function csrfSafeMethod(method) {
+              // these HTTP methods do not require CSRF protection
+              return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+            }
+            $.ajaxSetup({
+              beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                  xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                }
+              }
+            });
+
+            function alertSessionExpire() {
+                // error notification
+                // Shorthand for:
+                // alertify.notify( message, 'error', [wait, callback]);
+                alertify.set('notifier', 'delay', 0);
+                alertify.error('Session expired!');
+            }
+
+            function warnSessionExpire() {
+                // warning notification
+                // Shorthand for:
+                // alertify.notify( message, 'warning', [wait, callback]);
+                alertify.set('notifier', 'delay', 0);
+                alertify.warning('Session will expire in one minute. Please refresh the page to remain active.');
+            }
+
+            setTimeout(warnSessionExpire, ({{ request.session.get_expiry_age }} * 1000) - 60000);
+            setTimeout(alertSessionExpire, {{ request.session.get_expiry_age }} * 1000);
+          </script>
+        {% endif %}
+
+        <footer>
+            <div id="acknowledgements">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-3 col-xs-12">
+                            <p><img class="media-object" src="{% static 'Images/aswcc.gif' %}" alt="Arkansas Natural Resources Commission Logo"></p>
+                        </div>
+                        <div class="col-md-9 col-sm-9 col-xs-12 hcenter">
+                            <p><span>We hereby acknowledge the financial support from the Arkansas Natural Resources Commission (ANRC).</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer">
+                <div class="container">
+                    <div class="row panel-group" id="accordion">
+                        <div class="panel panel-default col-lg-2 col-md-2 col-sm-2 col-xs-12 left">
+                            <div class="panel-heading">
+                                <div class="panel-title">
+                                    <a class="collapsed" data-parent="#accordion" data-toggle="collapse" href="#footerone">Communication <i class="fa fa-plus right"></i><i class="fa fa-minus right"></i></a>
+                                </div>
+                            </div>
+                            <div class="panel-collapse collapse" id="footerone">
+                                <div class="panel-body">
+                                    <ul>
+                                        <li><a href="https://www.purdue.edu/employeeportal">Employee Portal</a></li>
+                                        <li><a href="http://www.itap.purdue.edu/learning/tools/blackboard/">Blackboard</a></li>
+                                        <li><a href="http://www.purdue.edu/newsroom/purduetoday/">Purdue Today</a></li>
+                                        <li><a href="https://www.itap.purdue.edu">Information Technology</a></li>
+                                        <li><a href="https://mymail.purdue.edu/">myMail</a></li>
+                                        <li><a href="https://exchange.purdue.edu/">Outlook</a></li>
+                                        <li><a href="https://wl.mypurdue.purdue.edu/">myPurdue</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default col-lg-2 col-md-2 col-sm-2 col-xs-12 left">
+                            <div class="panel-heading">
+                                <div class="panel-title">
+                                    <a class="collapsed" data-parent="#accordion" data-toggle="collapse" href="#footertwo">Campus <i class="fa fa-plus right"></i><i class="fa fa-minus right"></i></a>
+                                </div>
+                            </div>
+                            <div class="panel-collapse collapse" id="footertwo">
+                                <div class="panel-body">
+                                    <ul>
+                                        <li><a href="https://www.purdue.edu/purdue/information_for/for_faculty_staff_re.html">Faculty &amp; Staff</a></li>
+                                        <li><a href="http://www.purdue.edu/ais/" title="Administrative Information Services">AIS</a></li>
+                                        <li><a href="https://www.purdue.edu/physicalfacilities">Physical Facilities</a></li>
+                                        <li><a href="http://www.purdue.edu/ehps/">Public Safety</a>
+                                        <li><a href="https://www.itap.purdue.edu/directory">Directory</a></li>
+                                        <li><a href="https://www.purdue.edu/campus_map">Campus Map</a></li>
+                                        <li><a href="https://www.purdue.edu/physicalfacilities/constructionmap/index.html">Construction</a></li>
+                                        <!-- <li><a href="https://calendar.purdue.edu/">Calendar</a></li> -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default col-lg-2 col-md-2 col-sm-2 col-xs-12 right">
+                            <div class="panel-heading">
+                                <div class="panel-title">
+                                    <a class="collapsed" data-parent="#accordion" data-toggle="collapse" href="#footerthree">Information <i class="fa fa-plus right"></i><i class="fa fa-minus right"></i></a>
+                                </div>
+                            </div>
+                            <div class="panel-collapse collapse" id="footerthree">
+                                <div class="panel-body">
+                                    <ul>
+                                        <li><a href="https://engineering.purdue.edu/Engr/AboutUs/News">News &amp; Events</a></li>
+                                        <li><a href="https://engineering.purdue.edu/Engr/Academics/Schools">Schools &amp; Programs</a></li>
+                                        <li><a href="https://engineering.purdue.edu/ProEd">Engineering Professional Education</a></li>
+                                        <li><a href="https://engineering.purdue.edu/Engr/InfoFor/Employment">Faculty Hiring</a></li>
+                                        <li><a href="https://engineering.purdue.edu/discovery">Discovery magazine</a></li>
+                                        <li><a href="https://engineering.purdue.edu/EngineeringImpact">Impact magazine</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default col-lg-2 col-md-2 col-sm-2 col-xs-12 right">
+                            <div class="panel-heading">
+                                <div class="panel-title">
+                                    <a class="collapsed" data-parent="#accordion" data-toggle="collapse" href="#footerfour">Engineering <i class="fa fa-plus right"></i><i class="fa fa-minus right"></i></a>
+                                </div>
+                            </div>
+                            <div class="panel-collapse collapse" id="footerfour">
+                                <div class="panel-body">
+                                    <ul>
+                                        <li><a href="https://engineering.purdue.edu/Engr">College of Engineering</a></li>
+                                        <li><a href="https://engineering.purdue.edu/Engr/People">Engineering Directory</a></li>
+                                        <li><a href="/ECN">Engineering Computer Network</a></li>
+                                        <li><a href="///www.purdue.edu/futureengineers">Office of Future Engineers</a></li>
+                                        <li><a href="https://engineering.purdue.edu/ENE/Academics/FirstYear">First Year Engineering</a></li>
+                                        <li><a href="https://engineering.purdue.edu/Engr/AboutUs/contact_us">Contact Us</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="motto col-lg-4 col-md-4 col-sm-4">
+                            <img alt="Moves the World Forward" src="{% static 'Images/wearepurdue.png' %}" />
+                            <a href="https://www.facebook.com/Purdue-University-ABE-226993393978518/" target="_blank"><i class="fa fa-facebook"></i></a>
+                            <a href="http://twitter.com/LifeAtPurdue" target="_blank"><i class="fa fa-twitter"></i></a>
+                            <a href="http://www.youtube.com/user/PurdueUniversity" target="_blank"><i class="fa fa-youtube"></i></a>
+                            <a href="http://www.instagram.com/lifeatpurdue" target="_blank"><i class="fa fa-instagram"></i></a>
+                            <a href="http://www.pinterest.com/lifeatpurdue" target="_blank"><i class="fa fa-pinterest"></i></a>
+                            <a href="https://www.linkedin.com/groups/4153258" target="_blank"><i class="fa fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bottom">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <p>Purdue University, West Lafayette, IN 47907&#160;(765) 494-4600</p>
+                            <p><a href="http://www.purdue.edu/purdue/disclaimer.html">&#169; 2016 Purdue University</a> | <a href="http://www.purdue.edu/purdue/ea_eou_statement.html">An equal access/equal opportunity university</a> | <a href="http://www.purdue.edu/securepurdue/DMCAAgent.cfm">Copyright Complaints</a></p>
+                            <address>
+                                <p>If you have trouble accessing this page because of a disability, please contact the College of Engineering at <a href="mailto:webmaster-abe@ecn.purdue.edu?subject=Accessibility%20question" title="Contact us with accessibility questions and issues">webmaster@ecn.purdue.edu</a>.</p>
+                            </address>
+                            <p id="short-url">
+                                Shortcut URL:
+                                <span>http://eng.purdue.edu/jump/1570dfe</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </body>
+</html>

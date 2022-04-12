@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  redis:
+    container_name: swat-tools_redis
+    image: redis:6-alpine
+    volumes:
+      - ${REDIS_DATADIR}:/data
+    restart: always
+  celery:
+    container_name: swat-tools_celery
+    build: .
+    command: celery -A swatapps worker -l info 
+    volumes:
+      - ./code:/app
+    depends_on:
+      - redis
+    env_file:
+        - .app.env
+        - .db.env
+  celery-beat:
+    container_name: swat-tools_celery-beat
+    build: .
+    command: celery -A swatapps beat -l info
+    volumes:
+      - ./code:/app
+    depends_on:
+      - redis
+    env_file:
+        - .app.env
+        - .db.env
+  db:
+    container_name: swat-tools_db
+    image: mysql:8
+    volumes:
+      - ${MYSQL_DATADIR}:/var/lib/mysql
+    ports:
+      - 3306:3306
+    restart: always
+    env_file:
+      - ./.db.env
+  app:
+    container_name: swat-tools_app
+    build: .
+    command: 'python /app/manage.py runserver 0.0.0.0:8000 --settings=swatapps.settings.dev'
+    volumes:
+      - ./code:/app
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+      - redis
+    restart: always
+    env_file:
+        - ./.app.env
+        - ./.db.env

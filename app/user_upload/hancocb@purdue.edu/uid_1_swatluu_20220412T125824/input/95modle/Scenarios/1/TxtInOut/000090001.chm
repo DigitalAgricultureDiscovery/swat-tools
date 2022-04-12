@@ -1,0 +1,21 @@
+ .chm file Watershed HRU:32 Subbasin:9 HRU:1 Luse:RICE Soil: LGH Slope: 0-9999 2022/4/11 0:00:00 ArcSWAT 2009.93.7
+Soil Nutrient Data
+ Soil Layer               :           1           2           3           4           5           6           7           8           9          10
+ Soil NO3 [mg/kg]         :        0.00        0.00        0.00        0.00        0.00        0.00        0.00        0.00        0.00        0.00
+ Soil organic N [mg/kg]   :        0.00        0.00        0.00        0.00        0.00        0.00        0.00        0.00        0.00        0.00
+ Soil labile P [mg/kg]    :        0.00        0.00        0.00        0.00        0.00        0.00        0.00        0.00        0.00        0.00
+ Soil organic P [mg/kg]   :        0.00        0.00        0.00        0.00        0.00        0.00        0.00        0.00        0.00        0.00
+ Phosphorus perc coef     :       10.00       10.00       10.00       10.00       10.00       10.00       10.00       10.00       10.00       10.00
+Soil Pesticide Data
+ Pesticide  Pst on plant    Pst in 1st soil layer Pst enrichment
+   #           [kg/ha]           [kg/ha]           [kg/ha]
+   0              0.00              0.00              0.00
+   0              0.00              0.00              0.00
+   0              0.00              0.00              0.00
+   0              0.00              0.00              0.00
+   0              0.00              0.00              0.00
+   0              0.00              0.00              0.00
+   0              0.00              0.00              0.00
+   0              0.00              0.00              0.00
+   0              0.00              0.00              0.00
+   0              0.00              0.00              0.00

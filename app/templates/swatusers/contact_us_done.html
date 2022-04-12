@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% block meta_description %}
+    <meta name="description" content="Your message was successfully sent." />
+{% endblock %}
+{% block title %}Message Sent - {% endblock %}
+
+{% block content %}
+
+    <div class="row" style="padding: 15px">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center">
+            <div class="inner-block">
+                Message sent! Thank you for contacting us. We will respond 
+                to your message (if needed) within the next two business days.
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

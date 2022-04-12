@@ -1,0 +1,330 @@
+@charset "utf-8";
+/* CSS Document */
+
+body {
+    background-color: #f5f5f5;
+    color: #57011E;
+	font: 1em FreeSans, Arial, Verdana, Helvetica, sans-serif;
+}
+
+body.registration {
+    background: #e4e4cc;
+    font: 1em FreeSans, Arial, Verdana, Helvetica, sans-serif;
+    letter-spacing: 1pt;
+    color: #57011E;
+}
+
+a:link {
+    color: #000;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+.navbar-default .navbar-nav .open .dropdown-menu>li>a {
+    color: #000000;
+    text-decoration: none;
+}
+
+.navbar-default .navbar-toggle:focus {
+    background-color: none;
+}
+
+.navbar-welcome {
+  color: #FFFFFF;
+  display: block;
+  font-weight: 700;
+  line-height: 20px;
+  padding: 5px 15px;
+}
+
+/* Set Upload Speed page */
+#upload_form > ul {
+  display: inline-block;
+}
+
+#upload_form > ul > li > label {
+  float: left;
+}
+
+/* Tooltip */
+.info-tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+}
+
+.info-tooltip .info-tooltiptext {
+    visibility: hidden;
+    /*width: 120px;*/
+    /*background-color: black;*/
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+    top: -5px;
+    left: 105%;
+}
+
+.info-tooltip:hover .info-tooltiptext {
+    visibility: visible;
+}
+
+/* Acknowledgements */
+#acknowledgements {
+    background-color: #F0F0F0;
+    padding: 15px;
+}
+
+#acknowledgements img {
+    width: 100%;
+    height: auto;
+}
+
+#acknowledgements p {
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.hcenter{
+    text-align: center;
+}
+
+/* Footer */
+#footer {
+    background-image: url(./images/abe_footer.jpg);
+    background-position: top center;
+}
+
+footer, #content:after {
+    height: 248px;
+}
+
+.help-block {
+    font-size: .7em;
+}
+
+#uploadAlert, #help1div, #help2div, #help3div, #help4div, #help5div, #help6div, #help9div, #warning-percent {
+    display: none;
+}
+
+.inner-block {
+    background: #fff;
+    display: inline-block;
+    border: 1px solid #a1a1a1;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.departmentname {
+    background-color: #4b4538;
+    float: left;
+    width: 100%;
+    color: #FFF;
+    text-align: center;
+    height: 40px;
+    font-size: 12px;
+}
+
+.spacecontainer {
+    height: 10px;
+}
+
+.leftspacecontainer {
+    float: left;
+    width: 200px;
+}
+
+.department_name {
+    float: left;
+    height: 20px;
+    text-align: center;
+    border-right-style: solid;
+    border-right-width: thin;
+    padding: 3px;
+    font-weight: normal;
+}
+
+.stationname {
+    float: left;
+    height: 40px;
+    text-align: center;
+    padding: 3px;
+}
+
+.logoheader1 {
+    height: 150px;
+}
+
+.logoheader1 .topspace1 {
+    height:50px;
+}
+
+.logoheader1 .logo1 {
+    float:left;
+    width:150px;
+    padding:3px;
+}
+
+.logoheader1 .leftspace1 {
+    float: left;
+    width: 10%;
+}
+
+.toolbarwhole {
+    border-top-style: solid;
+    border-top-width: thin;
+    border-bottom-style: solid;
+    border-bottom-width: thin;
+    padding: 2px;
+}
+
+.toolbar {
+    height: 40px;
+    background-color: #ba0d2e;
+    padding: 2px;
+}
+
+.entireMainBody{
+    min-height: 300px;
+    max-height: 800px;
+    overflow: auto;
+    width: 80%;
+}
+
+.entireMainBody .topspace {
+    min-height: 40px;
+    max-height: 50px;
+}
+
+.navbar-default .navbar-nav > li > a {
+    color: #FFF;
+}
+
+.navbar-default .navbar-toggle {
+    border: none;
+}
+
+.navbar-default .navbar-toggle:focus, .navbar-default .navbar-toggle:hover {
+    background-color: #b1810b;
+}
+
+.navbar-default .navbar-toggle .icon-bar {
+    background-color: #FFF;
+}
+
+.navbar-default .navbar-toggle:hover .icon-bar {
+    background-color: #000;
+}
+
+.navbar-nav > li > a {
+    padding-bottom: 5px;
+    padding-top: 5px;
+    text-decoration: none;
+}
+.alertify-notifier .ajs-message.ajs-warning {
+    border: 4px solid #b1810b;
+    border-radius: 15px;
+    font-weight: 800;
+}
+
+.alertify-notifier .ajs-message.ajs-error {
+    border: 4px solid #a94442;
+    border-radius: 15px;
+    font-weight: 800;
+}
+
+/* progress bar for s3 uploads */
+.progress {
+    background: #333;
+    clear: left;
+    display: none;
+    float: left;
+    margin-bottom: 10px;
+    width: 200px;
+}
+
+.progress-active {
+    display: block;
+}
+
+.alert {
+    margin-bottom: 0px;
+}
+
+.overwrite {
+    display: none;
+    margin-bottom: 10px;
+}
+
+.overwrite-active {
+    display: block;
+}
+
+#id_upload_speed > li {
+    list-style-type: none;
+}
+
+@media (max-width: 767px) {
+
+    #anrc_logo_col {
+        padding: 5px;
+    }
+
+    #anrc_logo_link {
+        text-align: center;
+    }
+
+    #anrc_logo {
+        width: 100%;
+    }
+
+    #tool_title_col {
+        padding: 15px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    #anrc_logo_col {
+        padding: 7px 0px 0px 0px;
+    }
+
+    #anrc_logo_link {
+        text-align: center;
+    }
+
+    #anrc_logo {
+        width: 57%;
+    }
+}
+
+@media (min-width: 992px) {
+    #anrc_logo_col {
+        padding: 7px 0px 0px 0px;
+    }
+
+    #anrc_logo_link {
+        text-align: center;
+    }
+
+    #anrc_logo {
+        width: 51%;
+    }
+}
+
+@media (min-width: 1200px) {
+    #anrc_logo_col {
+        padding: 7px 0px 0px 0px;
+    }
+
+    #anrc_logo_link {
+        text-align: center;
+    }
+
+    #anrc_logo {
+        width: 48%;
+    }
+}

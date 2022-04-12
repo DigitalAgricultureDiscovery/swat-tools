@@ -1,0 +1,72 @@
+ .sub file Subbasin: 15 2022/4/11 0:00:00 ArcSWAT 2009.93.7
+        8.048604    | SUB_KM : Subbasin area [km2]
+
+Climate in subbasin
+       25.390654    | LATITUDE : Latitude of subbasin [degrees]
+          299.65    | ELEV : Elevation of subbasin [m]
+               2    | IRGAGE: precip gage data used in subbasin
+               2    | ITGAGE: temp gage data used in subbasin
+               0    | ISGAGE: solar radiation gage data used in subbasin
+               0    | IHGAGE: relative humidity gage data used in subbasin
+               0    | IWGAGE: wind speed gage data used in subbasin
+000150000.wgn       | WGNFILE: name of weather generator data file
+               1    | FCST_REG: Region number used to assign forecast data to the subbasin
+Elevation Bands
+| ELEVB: Elevation at center of elevation bands [m]
+   0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000
+| ELEVB_FR: Fraction of subbasin area within elevation band
+   0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000
+| SNOEB: Initial snow water content in elevation band [mm]
+     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0
+           0.000    | PLAPS : Precipitation lapse rate [mm/km]
+           0.000    | TLAPS : Temperature lapse rate [°„C/km]
+           0.000    | SNO_SUB : Initial snow water content [mm]
+Tributary Channels
+           5.384    | CH_L1 : Longest tributary channel length [km]
+           0.078    | CH_S1 : Average slope of tributary channel [m/m]
+           4.508    | CH_W1 : Average width of tributary channel [mm/km]
+           0.500    | CH_K1 : Effective hydraulic conductivity in tributary channel [mm/hr]
+           0.014    | CH_N1 : Manning's "n" value for the tributary channels
+Impoundments
+000150000.pnd       | PNDFILE: name of subbasin impoundment file
+Consumptive Water Use
+000150000.wus       | WUSFILE: name of subbasin water use file
+Climate Change
+           0.000    | CO2 : Carbon dioxide concentration [ppmv]
+| RFINC:  Climate change monthly rainfall adjustment (January - June)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| RFINC:  Climate change monthly rainfall adjustment (July - December)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| TMPINC: Climate change monthly temperature adjustment (January - June)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| TMPINC: Climate change monthly temperature adjustment (July - December)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| RADINC: Climate change monthly radiation adjustment (January - June)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| RADINC: Climate change monthly radiation adjustment (July - December)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| HUMINC: Climate change monthly humidity adjustment (January - June)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| HUMINC: Climate change monthly humidity adjustment (July - December)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| HRU data
+              11    | HRUTOT : Total number of HRUs modeled in subbasin
+
+HRU: Depressional Storage/Pothole
+
+Floodplain
+
+HRU: Riparian
+
+HRU: General
+000150001.hru000150001.mgt000150001.sol000150001.chm 000150001.gw000150001.ops000150001.sep
+000150002.hru000150002.mgt000150002.sol000150002.chm 000150002.gw000150002.ops000150002.sep
+000150003.hru000150003.mgt000150003.sol000150003.chm 000150003.gw000150003.ops000150003.sep
+000150004.hru000150004.mgt000150004.sol000150004.chm 000150004.gw000150004.ops000150004.sep
+000150005.hru000150005.mgt000150005.sol000150005.chm 000150005.gw000150005.ops000150005.sep
+000150006.hru000150006.mgt000150006.sol000150006.chm 000150006.gw000150006.ops000150006.sep
+000150007.hru000150007.mgt000150007.sol000150007.chm 000150007.gw000150007.ops000150007.sep
+000150008.hru000150008.mgt000150008.sol000150008.chm 000150008.gw000150008.ops000150008.sep
+000150009.hru000150009.mgt000150009.sol000150009.chm 000150009.gw000150009.ops000150009.sep
+000150010.hru000150010.mgt000150010.sol000150010.chm 000150010.gw000150010.ops000150010.sep
+000150011.hru000150011.mgt000150011.sol000150011.chm 000150011.gw000150011.ops000150011.sep

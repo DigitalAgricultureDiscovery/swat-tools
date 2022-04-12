@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% block meta_description %}
+    <meta name="description" content="Register a free account with SWAT Tools." />
+{% endblock %}
+{% block title %}Register - {% endblock %}
+
+{% block javascript %}
+  {# Google ReCaptcha #}
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <script>
+    function onSubmit(token) {
+      document.getElementById("registration-form").submit();
+    }
+  </script>
+{% endblock %}
+
+{% block content %}
+    <div class="row" style="padding: 15px">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center">
+            <div class="inner-block">
+                <form id="registration-form" role="form" method="post" action="{% url 'register' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% bootstrap_form form layout='inline' %}
+                    {% bootstrap_form_errors form layout='horizontal' %}
+                    {% if recaptcha_failed %}
+                    <span class="label label-danger">reCAPTCHA verification failed. Please try again.</span><br /><br />
+                    {% endif %}
+                    {% buttons %}
+                        <div align="center">
+                            <button class="btn btn-primary g-recaptcha" data-sitekey="{{ sitekey }}" data-callback="onSubmit" type="submit">
+                                Register
+                            </button>
+                        </div>
+                    {% endbuttons %}
+                    <strong style="font-size: 0.8em">All fields required unless otherwise noted.</strong>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

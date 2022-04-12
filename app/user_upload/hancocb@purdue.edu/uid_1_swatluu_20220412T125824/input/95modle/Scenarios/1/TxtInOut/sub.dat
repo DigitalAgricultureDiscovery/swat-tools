@@ -1,0 +1,21 @@
+  PRECIPmm                35      10
+ SNOMELTmm                45      10
+     PETmm                55      10
+      ETmm                65      10
+      SWmm                75      10
+    PERCmm                85      10
+    SURQmm                95      10
+    GW_Qmm               105      10
+    WYLDmm               115      10
+  SYLDt/ha               125      10
+ ORGNkg/ha               135      10
+ ORGPkg/ha               145      10
+NSURQkg/ha               155      10
+ SOLPkg/ha               165      10
+ SEDPkg/ha               175      10
+ LAT Q(mm)               185      10
+LATNO3kg/h               195      10
+GWNO3kg/ha               205      10
+CHOLAkg/ha               215      10
+CBODUkg/ha               225      10
+ DOXQkg/ha               235      10

@@ -1,0 +1,42 @@
+  FLOW_INcms              38      12
+ FLOW_OUTcms              50      12
+     EVAPcms              62      12
+    TLOSScms              74      12
+  SED_INtons              86      12
+ SED_OUTtons              98      12
+SEDCONCmg/kg             110      12
+   ORGN_INkg             122      12
+  ORGN_OUTkg             134      12
+   ORGP_INkg             146      12
+  ORGP_OUTkg             158      12
+    NO3_INkg             170      12
+   NO3_OUTkg             182      12
+    NH4_INkg             194      12
+   NH4_OUTkg             206      12
+    NO2_INkg             218      12
+   NO2_OUTkg             230      12
+   MINP_INkg             242      12
+  MINP_OUTkg             254      12
+   CHLA_INkg             266      12
+  CHLA_OUTkg             278      12
+   CBOD_INkg             290      12
+  CBOD_OUTkg             302      12
+  DISOX_INkg             314      12
+ DISOX_OUTkg             326      12
+ SOLPST_INmg             338      12
+SOLPST_OUTmg             350      12
+ SORPST_INmg             362      12
+SORPST_OUTmg             374      12
+  REACTPSTmg             386      12
+    VOLPSTmg             398      12
+  SETTLPSTmg             410      12
+RESUSP_PSTmg             422      12
+DIFFUSEPSTmg             434      12
+REACBEDPSTmg             446      12
+   BURYPSTmg             458      12
+   BED_PSTmg             470      12
+ BACTP_OUTct             482      12
+BACTLP_OUTct             494      12
+  CMETAL#1kg             506      12
+  CMETAL#2kg             518      12
+  CMETAL#3kg             530      12

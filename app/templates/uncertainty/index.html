@@ -1,0 +1,501 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% load class_tag %}
+
+{% block meta_description %}
+    <meta name="description" content="Small LULC errors can have a substantial effect on watershed model output. LUU Uncertainty enables the user to integrate LULC realizations in the SWAT model and evaluate the sensitivity of SWAT output to LULC errors." />
+{% endblock %}
+{% block title %}LUU Uncertainty - {% endblock %}
+
+{% block content %}
+
+{% load static %}
+
+{% block javascript %}
+  <link href="{% static 'css/bootstrap-progress.min.css' %}" rel="stylesheet" type="text/css" />
+  <script src="{% static 'js/s3upload/s3-upload.js' %}"></script>
+{% endblock %}
+
+    {# Load jquery resources #}
+
+    <script type='text/javascript'>
+        // Updates process message DOM after user clicks Process Button
+        function showProcess() {
+            document.getElementById(
+                'message_process')
+                    .innerHTML =
+                        'Processing may take several minutes. ' +
+                        'Please wait. Do not refresh or close tab';
+        }
+
+        function executeQuery() {
+            $.ajax({
+                url: './getProgress',
+                async: false,
+                success: function(data) {
+
+                }
+            });
+            setTimeout(executeQuery, 5000);
+        }
+
+        // Load jquery date picker input
+        $(function() {
+            $(".datepicker").datepicker({
+                buttonImage: "/static/Images/calendar.gif",
+                buttonImageOnly: true,
+                buttonText: "Select start date",
+                showOn: "button",
+                maxDate: ("+D")
+            });
+        });
+
+        $(document).ready(function() {
+            $(".tool-title").text('LUU Uncertainty');
+            // Toggle the up and down chevron in the 'Update Errors'
+            // panel heading. The icon should point up when the panel
+            // is expanded and down when the panel is contracted.
+            $("#update-errors-heading").click(function() {
+                cOneExpanded = $("#collapseOne").attr('class');
+                if (cOneExpanded == 'panel-collapse collapse') {
+                    $("#update-errors-icon")
+                        .removeClass('glyphicon glyphicon-menu-down')
+                        .addClass('glyphicon glyphicon-menu-up');
+                } else {
+                    $("#update-errors-icon")
+                        .removeClass('glyphicon glyphicon-menu-up')
+                        .addClass('glyphicon glyphicon-menu-down');
+                }
+            });
+
+            $("#Help1").mouseover(function() {
+                $("#help1div").show();
+                $("#help1div").append(
+                    "<p id='message1'>" +
+                    "The input should be a zip folder (<strong>single file " +
+                    "with .zip extension</strong>) with name same as the " +
+                    "Swat folder that is compressed. The input folder should " +
+                    "contain all required data." +
+                    "<br /><br />" +
+                    "If you are experiencing a server error due to the " +
+                    "size and/or duration of your upload, please try going " +
+                    "to <strong>Home > Set Upload Speed</strong> and " +
+                    "lowering your upload speed setting. If the problem " +
+                    "persists, please contact us so we may assist you.</p>");
+            });
+            $("#Help1").mouseout(function() {
+                $("#help1div").hide();
+                $("#message1").remove();
+            });
+
+
+            $("#Help2").mouseover(function() {
+                $("#help2div").show();
+                $("#help2div").append(
+                    "<p id='message2'>" +
+                    "The input should be a zip folder (<strong>single file " +
+                    "with .zip extension</strong>) with name same as the " +
+                    "Landuse folder that is compressed. The input folder " +
+                    "should contain all required data.</p>");
+            });
+            $("#Help2").mouseout(function() {
+                $("#help2div").hide();
+                $("#message2").remove();
+
+            });
+
+            $("#Help3").mouseover(function() {
+                $("#help3div").show();
+                $("#help3div").append(
+                    "<p id='message3'>" +
+                    "Specify the number of land use files available. Count " +
+                    "should be greater than 1.</p>");
+            });
+            $("#Help3").mouseout(function() {
+                $("#help3div").hide();
+                $("#message3").remove();
+
+            });
+
+            $("#Help4").mouseover(function() {
+                $("#help4div").show();
+                $("#help4div").append(
+                    "<p id='message4'>" +
+                    "Select the land use files along with dates. The files " +
+                    "selected should be available in Landuse folder in " +
+                    "grid format.</p>");
+            });
+            $("#Help4").mouseout(function() {
+                $("#help4div").hide();
+                $("#message4").remove();
+            });
+
+            $("#Help5").mouseover(function() {
+                $("#help5div").show();
+                $("#help5div").append(
+                    "<p id='message5'>" +
+                    "Select the look up file containing land use codes.</p>");
+            });
+            $("#Help5").mouseout(function() {
+                $("#help5div").hide();
+                $("#message5").remove();
+            });
+
+            // $("#Help6").mouseover(function() {
+            //     $("#help6div").show();
+            //     $("#help6div").append(
+            //         "<p id='message6'>" +
+            //         "Select the swat executable file (ex: swat2009.exe). " +
+            //         "The file should be available in TxtInOut Folder</p>");
+            // });
+            // $("#Help6").mouseout(function() {
+            //     $("#help6div").hide();
+            //     $("#message6").remove();
+            // });
+
+            var isS3Upload = false;
+            function determineDestination (file) {
+              $.ajax({
+                url: "s3/determine_upload_destination",
+                type: "POST",
+                data: {
+                  "file_size": file.size
+                },
+                success: function (data) {
+                  if (data.status === "true") {
+                    isS3Upload = true;
+                    getSignedRequest(file);
+                  } else {
+                    $("#upload1").prop("disabled", false);
+                  }
+                }
+              });
+            }
+
+            /* Reminder user about upload speed page */
+            var uploadCounter = [];
+            function startUploadCounter () {
+              uploadDuration = 0;
+              uploadCounter = setInterval(function () {
+                uploadDuration++;
+                if (uploadDuration > 60 && !isS3Upload) {
+                  $("#help1div").empty();
+                  $("#help1div").append("If you are on a slow connection or " +
+                                        "uploading a very large file, make sure " +
+                                        "your upload speed is set to the " +
+                                        "appropriate range. You can find a link " +
+                                        "to the Set Upload Speed page on the Tool " +
+                                        "Selection page.");
+                  $("#help1div").show();
+                  stopUploadCounter();
+                }
+              }, 1000);
+            }
+
+            function stopUploadCounter () {
+              clearInterval(uploadCounter);
+            }
+
+            $(function () {
+              document.getElementById("SwatModel").onchange = function () {
+                var files = document.getElementById("SwatModel").files;
+                var file = files[0];
+                if (!file) {
+                  return alert("No file selected.");
+                }
+                determineDestination(file);
+                startUploadCounter();
+              };
+            });
+        });
+
+    </script>
+
+    <div class="row" style="padding-top: 15px;">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
+            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;">
+                <form id="form1" role="form" method="post" action="{% url 'uncertainty/upload_swat_model_zip' %}" enctype="multipart/form-data" style="text-align: left">
+                    {% csrf_token %}
+                    <label><b>SWAT Model Input:</b> &nbsp;</label>
+
+                    {% buttons %}
+                        <div align="left">
+                            <input style="display: inline; padding-bottom: 5px" id="SwatModel" type="file" name="swat_model_zip">
+                            <button id="upload1" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading').show();" disabled>Validate</button>
+                            <button id="Help1" type="button">?</button>
+                        {% if request.session.uncertainty_swat_model_dir %}
+                            <span class="icon" style="color: #33CC33; margin-left: 15px">
+                                <i class="glyphicon glyphicon glyphicon-ok"></i>
+                            </span>
+                        {% endif %}
+                        </div>
+                    {% endbuttons %}
+                    <div class="progress progress-striped active">
+                      <div class="bar"></div>
+                    </div>
+                    <div class="upload overwrite">
+                      <label><strong>Overwrite existing file?</strong>&nbsp</label>
+                      <label class="radio-inline"><input type="radio" name="upload-overwrite" checked="checked" value="no">No</label>
+                      <label class="radio-inline"><input type="radio" name="upload-overwrite" value="yes">Yes</label>
+                    </div>
+                    <div id="loading" style="display: none; text-align: center">
+                        <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
+                    </div>
+                    <div id="uploadAlert" class="alert alert-success" role="alert"></div>
+                    <div id="help1div" class="alert alert-info" role="alert"></div>
+                    {% if request.session.error_swat_model %}
+                        <div class="alert alert-danger" role="alert">
+                            {% if request.session.error_swat_model|get_class == "list" %}
+                                <ul>
+                                    {% for error_msg in request.session.error_swat_model %}
+                                        <li>{{ error_msg }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <strong style="color:#F92E31;">{{ request.session.error_swat_model }}</strong><br/>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="padding-top: 5px">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
+            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;">
+                <form id="form2" role="form" method="post" action="{% url 'uncertainty/upload_landuse_zip' %}" enctype="multipart/form-data" style="text-align: left">
+                    {% csrf_token %}
+                    <label><b>Landuse Folder: </b>&nbsp;</label>
+
+                    {% buttons %}
+                        <div align="left">
+                            <input style="display: inline; padding-bottom: 5px" id="Landuse" type="file" name="landuse_zip">
+                            <button id="upload2" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading1').show();" {% if not request.session.uncertainty_swat_model_dir %}disabled{% endif %}>Upload</button>
+                            <button id="Help2" type="button">?</button>
+                        {% if request.session.uncertainty_landuse_dir %}
+                            <span class="icon" style="color: #33CC33; margin-left: 15px">
+                                <i class="glyphicon glyphicon glyphicon-ok"></i>
+                            </span>
+                        {% endif %}
+                        </div>
+                    {% endbuttons %}
+
+                    <div id="help2div" class="alert alert-info" role="alert"></div>
+                    <div id="loading1" style="display: none; text-align: center">
+                        <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
+                    </div>
+                    {% if request.session.error_landuse %}
+                      <div class="alert alert-danger" role="alert">
+                        <strong style="color:#F92E31;">{{ request.session.error_landuse }}</strong><br/>
+                      </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="padding-top: 5px">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
+            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;">
+                <form id="form4" role="form" method="post" action="{% url 'uncertainty/upload_landuse_layer' %}" enctype="multipart/form-data" style="text-align: left">
+                    {% csrf_token %}
+                    <label><b>Landuse layer: </b>&nbsp;</label>
+
+                    {% buttons %}
+                        <div align="left">
+                            <input style="display: inline; padding-bottom: 5px" id="Landuse_layer" type="file" name="landuse_layer">
+                            <button id="upload4" type="submit" class="btn btn-primary" value="Upload" onclick="$('#loading6').show();" {% if not request.session.uncertainty_landuse_dir %}disabled{% endif %}>Upload</button>
+                            <button id="Help4" type="button">?</button>
+                            <br><br>
+                            <label><strong>Select layer's start date:</strong></label>
+                            <input class="datepicker" placeholder="MM/DD/YYYY" type="text" name="dates" style="width: 30%"/>
+                            {% if request.session.uncertainty_landuse_layer_filename %}
+                                <span class="icon" style="color: #33CC33; margin-left: 15px">
+                                    <i class="glyphicon glyphicon glyphicon-ok"></i>
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endbuttons %}
+
+                    <div id="help4div" class="alert alert-info" role="alert"></div>
+                    <div id="loading6" style="display: none; text-align: center">
+                        <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
+                    </div>
+                    {% if request.session.error_landuse_layers %}
+                      <div class="alert alert-danger" role="alert">
+                        <strong style="color:#F92E31;">{{ request.session.error_landuse_layers }}</strong><br/>
+                      </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="padding-top: 5px">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center; width: 100%">
+            <div class="inner-block" style="max-width: 550px; min-width: 500px; width: 45%;">
+                <form id="form5" role="form" method="post" action="{% url 'uncertainty/upload_lookup_file' %}" enctype="multipart/form-data" style="text-align: left">
+                    {% csrf_token %}
+                    <label><b>Lookup file: </b>&nbsp;</label>
+
+                    {% buttons %}
+                        <div align="left">
+                            <input style="display: inline; padding-bottom: 5px" id="Lookup" type="file" name="lookup_file">
+                            <button 
+                                id="upload5" 
+                                type="submit" 
+                                class="btn btn-primary" 
+                                value="Upload" 
+                                onclick="$('#loading2').show();" 
+                                {% if not request.session.uncertainty_landuse_layer_filename or request.session.error_landuse_layers %}
+                                    disabled
+                                {% endif %}
+                            >
+                                Upload
+                            </button>
+                            <button id="Help5" type="button">?</button>
+                            {% if request.session.uncertainty_lookup_file_data %}
+                                <span class="icon" style="color: #33CC33; margin-left: 15px">
+                                    <i class="glyphicon glyphicon glyphicon-ok"></i>
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endbuttons %}
+                    <div id="help5div" class="alert alert-info" role="alert"></div>
+                    <div id="loading2" style="display: none; text-align: center">
+                        <img src="{% static "Images/loading1.gif"%}" width="20"  alt="" />
+                    </div>
+                    {% if request.session.error_lookup %}
+                      <div class="alert alert-danger" role="alert">
+                        <strong style="color:#F92E31;">{{ request.session.error_lookup }}</strong><br/>
+                      </div>
+                    {% endif %}
+                </form>
+                {% if request.session.uncertainty_lookup_file_data %}
+                    <div id="accordion" class="panel-group">
+                        <div class="panel panel-default">
+                            <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" style="text-decoration: none;">
+                                <div class="panel-heading" id="update-errors-heading" style="background-color: #eee;">
+                                    <h4 class="panel-title" style="padding-top: 0em;">
+                                        <span class="icon">
+                                            <i id="update-errors-icon" class="glyphicon glyphicon-menu-down"></i>
+                                        </span>
+                                        Update Errors
+                                    </h4>
+                                </div>
+                            </a>
+                            <div id="collapseOne" class="panel-collapse collapse">
+                                <div class="panel-body">
+                                    <p>For the landuses you are interested in
+                                    updating, set the Error (%) value to the
+                                    categorical error percentage. In the No. Realizations
+                                    column, provide the number of realizations. Once
+                                    you have finished making your adjustments click
+                                    the Update button.</p>
+                                </div>
+                                {% if uncertainty_lookup_loop_times %}
+                                <form id="form9" role="form" method="post" action="{% url 'uncertainty/update_error_percentage' %}" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <table id="uncertainty-error-panel-table" class="table" style="tablet-layout: fixed; margin-bottom: 0px; text-align: center">
+                                        <tr>
+                                            <th style="text-align: center"><strong>Landuse</strong></th>
+                                            <th style="text-align: center"><strong>Error (%)</strong></th>
+                                            <th style="text-align: center"><strong>No. Realizations</strong></th>
+                                        </tr>
+                                        {% for row in request.session.uncertainty_lookup_file_data %}
+                                            {% ifnotequal row.0 'Value' %}
+                                                <tr>
+                                                    <td width="150px">
+                                                        <label>
+                                                            <b> {{ row.0 }}: </b>&nbsp;
+                                                        </label>
+                                                    </td>
+                                                    <td width="150px">
+                                                        <select id="errors" name="errors">
+                                                            {% for error_perc in uncertainty_error_range %}
+                                                                <option value="{{ error_perc }}">{{ error_perc }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </td>
+                                                    <td width="150px">
+                                                        <select id="realizations" name="realizations">
+                                                            <option value="0">0</option>
+                                                            <option value="1">1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                            <option value="4">4</option>
+                                                            <option value="5">5</option>
+                                                            <option value="6">6</option>
+                                                            <option value="7">7</option>
+                                                            <option value="8">8</option>
+                                                            <option value="9">9</option>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            {% endifnotequal %}
+                                        {% endfor %}
+                                        <tr><td><td><td></td></tr>
+                                    </table>
+                                    <button id="upload9" type="submit" class="btn btn-primary" value="Upload" style="margin-bottom: 15px">Update</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="padding: 10px; width: 45%; max-width: 550px; min-width: 500px; margin: auto; text-align: center">
+        <form id="form6" role="form" method="post" action="{% url 'uncertainty/reset' %}" enctype="multipart/form-data" style="display: inline-block">
+        {% csrf_token %}
+            {% buttons %}
+                <button id="reset" type="submit" class="btn btn-warning" value="Reset">Reset</button>
+            {% endbuttons %}
+        </form>
+
+        <form id="form7" role="form" method="post" action="{% url 'uncertainty/process' %}" enctype="multipart/form-data" style="display: inline-block">
+        {% csrf_token %}
+            {% buttons %}
+            <button id="Process" type="submit" class="btn btn-success" onClick="showProcess()"
+                {% if not request.session.uncertainty_error_data or not request.session.uncertainty_lookup_file_data or not request.session.uncertainty_landuse_layer_filename or not request.session.uncertainty_landuse_dir or not request.session.uncertainty_swat_model_dir %}
+                    disabled
+                {% endif %}>Process
+            </button>
+            {% endbuttons %}
+        </form>
+    </div>
+
+    <div class="row" style="padding: 10px; width: 45%; max-width: 550px; min-width: 500px; margin: auto; text-align: center">
+        <div class="panel panel-default">
+            <div class="panel-heading" style="background-color: #fcf8e3">
+                <h3 class="panel-title" style="padding-top: 0px"><strong>Status</strong></h3>
+            </div>
+            <div class="panel-body">
+                <div id="progress">
+                    {% for message in request.session.progress_message %}
+                        <b id="message_process" style="color: #33CC33;">{{message }}</b><br/>
+                    {% endfor %}
+                    {% if request.session.error %}
+                        {% if request.session.error|get_class == "list" %}
+                            <ul>
+                                {% for error in request.session.error %}
+                                    <li>
+                                        <strong style="color: #F92E31;">{{ error }}</strong>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <b style ="color:#F92E31;">{{ request.session.error}}</b><br/>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

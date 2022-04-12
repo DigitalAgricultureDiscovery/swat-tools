@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% block meta_description %}
+    <meta name="description" content="Cannot find the file you are attempting to download." />
+{% endblock %}
+{% block title %}File does not exist - {% endblock %}
+
+{% block content %}
+
+    <div class="row" style="padding: 15px">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center">
+            <div class="inner-block">
+                The file you are attempting to download does not exist.
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

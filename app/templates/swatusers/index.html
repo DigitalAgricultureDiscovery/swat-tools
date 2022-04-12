@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% load static %}
+
+{% block title %}Welcome - {% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-12">
+            <div class="jumbotron">
+                <h1>Welcome to SWAT Tools</h1>
+                <p>SWAT Tools features four applications designed to assist with your analysis of
+                SWAT model data. A screenshot of each tool can be found below as well as a description
+                and link to each tool's related paper or presentation.</p>
+                <p>You will need to register to get started. This can be done by clicking the registration link
+                located in the above navigation bar or clicking "Get started" below. Once signed up,
+                you will gain access to detailed manuals for each tool and a contact form if further assistance is required.</p>
+                <p><a style="text-decoration: none; color: white" class="btn btn-primary btn-lg" href="{% url 'register' %}" role="button">Get started</a></p>
+                <div class="info-tooltip">
+                  <a style="text-decoration:none" href="{% url 'infographic' %}">Click here to view latest user statistics
+                    <span class="info-tooltiptext">
+                      <img src="{% static 'Images\infographic_preview.png' %}" />
+                    </span>
+                  </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12 col-md-6 col-lg-6">
+            <div class="thumbnail">
+                <a href="{% url 'luuchecker' %}">
+                    <img style="max-height: 400px;" src="{% static "Images\luu_checker_home.png" %}" alt="LUU Checker Home">
+                </a>
+                <div class="caption">
+                    <h3>LUU Checker</h3>
+                    <p>LUU Checker compares multiple land use cover
+                    datasets against a base layer on a subbasin level.
+                    Emerging land use covers are detected and a user
+                    defined percentage area of the new land use covers
+                    is applied to the base raster in the relevant subbasins.</p>
+                    <p>
+                        <a style="text-decoration: none;" target="_blank" href="https://elibrary.asabe.org/abstract.asp?aid=50891" class="btn btn-default" role="button">Paper</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-md-6 col-lg-6">
+            <div class="thumbnail">
+                <a href="{% url 'swatluu' %}">
+                    <img style="max-height: 400px;" src="{% static "Images\swat_luu_home.png" %}" alt="SWAT LUU Home">
+                </a>
+                <div class="caption">
+                    <h3>SWAT LUU</h3>
+                    <p>SWAT LUU is a geospatial tool that ingests multiple land
+                    use/land cover geospatial datasets and other associated information
+                    interactively and prepares the input files necessary for activating
+                    the land use update (LUU) module in SWAT.</p>
+                    <p>
+                        <a style="text-decoration: none;" target="_blank" href="http://elibrary.asabe.org/abstract.asp?aid=39854" class="btn btn-default" role="button">Paper</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12 col-md-6 col-lg-6">
+            <div class="thumbnail">
+                <a href="{% url 'uncertainty' %}">
+                    <img style="max-height: 400px;" src="{% static "Images\uncertainty_home.png" %}" alt="LUU Uncertainty">
+                </a>
+                <div class="caption">
+                    <h3>LUU Uncertainty</h3>
+                    <p>Small LULC errors can have a substantial effect on
+                    watershed model output. LUU Uncertainty enables the user
+                    to integrate LULC realizations in the SWAT model and
+                    evaluate the sensitivity of SWAT output to LULC errors.</p>
+                    <p>
+                        <a style="text-decoration: none;" target="_blank" href="http://elibrary.asabe.org/abstract.asp?aid=43977" class="btn btn-default" role="button">Paper</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-md-6 col-lg-6">
+            <div class="thumbnail">
+                <a href="{% url 'fieldswat' %}">
+                    <img style="max-height: 400px;" src="{% static "Images\fieldswat_home.png" %}" alt="Field SWAT">
+                </a>
+                <div class="caption">
+                    <h3>Field SWAT</h3>
+                    <p>Field SWAT is designed to map SWAT simulations from a
+                    HRU layer to a user-defined field boundaries layer. The
+                    tool ingests spatial and nonspatial SWAT ouputs and helps
+                    in visualizing them at the field scale using four
+                    different aggregation methods.</p>
+                    <p>
+                        <a style="text-decoration: none;" target="_blank" href="http://www.sciencedirect.com/science/article/pii/S0098300411002354" class="btn btn-default" role="button">Paper</a></li>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

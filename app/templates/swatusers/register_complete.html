@@ -1,0 +1,21 @@
+
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% block meta_description %}
+    <meta name="description" content="Your account was successfully registered." />
+{% endblock %}
+{% block title %}Registration Complete - {% endblock %}
+
+{% block content %}
+
+    <div class="row" style="padding: 15px">
+        <div class="col-sm-12 col-md-12 col-lg-12" style="text-align: center">
+            <div class="inner-block">
+                Your account was successfully created. Please <a href="{% url 'login' %}">Log In</a> to get started.
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
