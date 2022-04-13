@@ -2,4 +2,5 @@
 *.pyc
 
 static/*
-user_data/*
+*/user_result/*
+*/user_upload/*

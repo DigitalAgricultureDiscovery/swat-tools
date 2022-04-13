@@ -14,6 +14,8 @@ import os
 from logging.config import dictConfig
 from pathlib import Path
 
+from .logging_config import get_logging_config
+
 
 # Admins (name, email)
 
@@ -24,7 +26,7 @@ ADMINS = [admin.split(',') for admin in os.environ['ADMINS'].split(';')]
 
 BASE_DIR = str(Path(__file__).resolve().parent.parent)
 PROJECT_DIR = str(Path(__file__).parents[2])
-LOGS_DIR = os.path.join(PROJECT_DIR, 'logs/django/')
+LOGS_DIR = os.environ['LOGS_DIR']
 SETTINGS_DIR = os.path.dirname(__file__)
 USER_UPLOAD_DIR = os.path.join(PROJECT_DIR, 'user_upload/')
 USER_RESULT_DIR = os.path.join(PROJECT_DIR, 'user_result/')
@@ -53,7 +55,8 @@ INSTALLED_APPS = [
     'swatluu',
     'swatusers',
     'templates',
-    'uncertainty'
+    'uncertainty',
+    'gmailapi_backend'
 ]
 
 
@@ -113,6 +116,10 @@ DATABASES = {
         'PORT': os.environ['MYSQL_PORT']
     }
 }
+
+
+# Logging
+dictConfig(get_logging_config(LOGS_DIR))
 
 
 # Password validation
@@ -186,13 +193,11 @@ NORECAPTCHA_SECRET_KEY = os.environ['NORECAPTCHA_SECRET_KEY']
 
 
 # Email
-EMAIL_USE_TLS = True
-EMAIL_HOST = os.environ['EMAIL_HOST']
-EMAIL_HOST_USER = os.environ['EMAIL_USER']
-EMAIL_HOST_PASSWORD = os.environ['EMAIL_PASSWORD']
-EMAIL_PORT = os.environ['EMAIL_PORT']
-DEFAULT_FROM_EMAIL = os.environ['EMAIL_USER']
+EMAIL_BACKEND = 'gmailapi_backend.mail.GmailBackend'
 
+GMAIL_API_CLIENT_ID = os.environ['EMAIL_CLIENT_ID']
+GMAIL_API_CLIENT_SECRET = os.environ['EMAIL_CLIENT_SECRET']
+GMAIL_API_REFRESH_TOKEN = os.environ['EMAIL_REFRESH_TOKEN']
 
 # API key
 APIKEY = os.environ['API_KEY']

@@ -68,7 +68,7 @@ def sign_s3(request):
 
     if (not match_results[0] or overwrite == "true") and s3:
         # Path and name on bucket
-        key = "user_data/{0}/{1}".format(
+        key = "user_upload/{0}/{1}".format(
             request.user.id,
             file_name
         )
