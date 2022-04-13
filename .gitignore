@@ -1,6 +1,7 @@
 *.env
 *.pyc
+celerybeat-schedule
 
-static/*
-*/user_result/*
-*/user_upload/*
+static
+user_results
+user_uploads

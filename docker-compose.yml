@@ -13,6 +13,7 @@ services:
     command: celery -A swatapps worker -l info
     volumes:
       - ./app:/app
+      - ${LOGS_DIR}:/var/log/swat-tools
     depends_on:
       - redis
     env_file:
@@ -24,6 +25,7 @@ services:
     command: celery -A swatapps beat -l info
     volumes:
       - ./app:/app
+      - ${LOGS_DIR}:/var/log/swat-tools
     depends_on:
       - redis
     env_file:
