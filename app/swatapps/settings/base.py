@@ -28,8 +28,8 @@ BASE_DIR = str(Path(__file__).resolve().parent.parent)
 PROJECT_DIR = str(Path(__file__).parents[2])
 LOGS_DIR = os.environ['LOGS_DIR']
 SETTINGS_DIR = os.path.dirname(__file__)
-USER_UPLOAD_DIR = os.path.join(PROJECT_DIR, 'user_upload/')
-USER_RESULT_DIR = os.path.join(PROJECT_DIR, 'user_result/')
+USER_UPLOAD_DIR = os.path.join(PROJECT_DIR, 'user_uploads/')
+USER_RESULT_DIR = os.path.join(PROJECT_DIR, 'user_results/')
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
