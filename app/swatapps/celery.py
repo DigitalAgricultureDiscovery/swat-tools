@@ -7,10 +7,8 @@ from celery.schedules import crontab
 from django.conf import settings
 
 
-SETTINGS_ENV = os.environ['SETTINGS_ENV']
-
 # set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', f'swatapps.settings.{SETTINGS_ENV}')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', f'swatapps.settings.base')
 
 app = Celery('swatapps')
 

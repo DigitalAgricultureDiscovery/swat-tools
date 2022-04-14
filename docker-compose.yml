@@ -44,7 +44,7 @@ services:
   app:
     container_name: swat-tools_app
     build: .
-    command: 'python /app/manage.py runserver 0.0.0.0:8000 --settings=swatapps.settings.dev'
+    command: 'python /app/manage.py runserver 0.0.0.0:8000 --settings=swatapps.settings.base'
     volumes:
       - ./app:/app
       - ${LOGS_DIR}:/var/log/swat-tools

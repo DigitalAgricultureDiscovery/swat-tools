@@ -26,7 +26,7 @@ ADMINS = [admin.split(',') for admin in os.environ['ADMINS'].split(';')]
 
 BASE_DIR = str(Path(__file__).resolve().parent.parent)
 PROJECT_DIR = str(Path(__file__).parents[2])
-LOGS_DIR = os.environ['LOGS_DIR']
+LOGS_DIR = os.environ.get('LOGS_DIR')
 SETTINGS_DIR = os.path.dirname(__file__)
 USER_UPLOAD_DIR = os.path.join(PROJECT_DIR, 'user_uploads/')
 USER_RESULT_DIR = os.path.join(PROJECT_DIR, 'user_results/')
@@ -34,9 +34,20 @@ USER_RESULT_DIR = os.path.join(PROJECT_DIR, 'user_results/')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = os.environ['SECRET_KEY']
-AWS_ACCESS_KEY = os.environ['AWS_ACCESS_KEY_ID']
-AWS_ACCESS_SECRET = os.environ['AWS_SECRET_ACCESS_KEY']
+DEBUG = os.environ.get('DEBUG', default=0)
+SECRET_KEY = os.environ.get('SECRET_KEY')
+AWS_ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_ACCESS_SECRET = os.environ.get('AWS_SECRET_ACCESS_KEY')
+
+
+# Production session settings
+
+if not DEBUG:
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_AGE = 1209600  # Two weeks
+    SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+    SESSION_SAVE_EVERY_REQUEST = True
 
 
 # Application definition
@@ -96,7 +107,7 @@ WSGI_APPLICATION = 'swatapps.wsgi.application'
 
 # Celery
 
-BROKER_URL = os.environ['REDIS_HOST_PORT']
+BROKER_URL = os.environ.get('REDIS_HOST_PORT')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
@@ -109,11 +120,11 @@ CELERY_HIJACK_ROOT_LOGGER = False
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'HOST': os.environ['MYSQL_HOST'],
-        'NAME': os.environ['MYSQL_DATABASE'],
-        'USER': os.environ['MYSQL_USER'],
-        'PASSWORD': os.environ['MYSQL_PASSWORD'],
-        'PORT': os.environ['MYSQL_PORT']
+        'HOST': os.environ.get('MYSQL_HOST'),
+        'NAME': os.environ.get('MYSQL_DATABASE'),
+        'USER': os.environ.get('MYSQL_USER'),
+        'PASSWORD': os.environ.get('MYSQL_PASSWORD'),
+        'PORT': os.environ.get('MYSQL_PORT')
     }
 }
 
@@ -188,19 +199,19 @@ LOGIN_URL = '/login'
 
 
 # Google recaptcha site/secret keys
-NORECAPTCHA_SITE_KEY = os.environ['NORECAPTCHA_SITE_KEY']
-NORECAPTCHA_SECRET_KEY = os.environ['NORECAPTCHA_SECRET_KEY']
+NORECAPTCHA_SITE_KEY = os.environ.get('NORECAPTCHA_SITE_KEY')
+NORECAPTCHA_SECRET_KEY = os.environ.get('NORECAPTCHA_SECRET_KEY')
 
 
 # Email
 EMAIL_BACKEND = 'gmailapi_backend.mail.GmailBackend'
 
-GMAIL_API_CLIENT_ID = os.environ['EMAIL_CLIENT_ID']
-GMAIL_API_CLIENT_SECRET = os.environ['EMAIL_CLIENT_SECRET']
-GMAIL_API_REFRESH_TOKEN = os.environ['EMAIL_REFRESH_TOKEN']
+GMAIL_API_CLIENT_ID = os.environ.get('EMAIL_CLIENT_ID')
+GMAIL_API_CLIENT_SECRET = os.environ.get('EMAIL_CLIENT_SECRET')
+GMAIL_API_REFRESH_TOKEN = os.environ.get('EMAIL_REFRESH_TOKEN')
 
 # API key
-APIKEY = os.environ['API_KEY']
+APIKEY = os.environ.get('API_KEY')
 
 
 # Default primary key field type
