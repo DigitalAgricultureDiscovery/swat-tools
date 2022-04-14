@@ -388,9 +388,9 @@ class FieldSWATProcess(object):
         self.logger.info('Reshaping grid_x and grid_y.')
         # reshape the coordinates grid_x and grid_y to temporary column matrix
         grid_x_reshape = np.reshape(np.transpose(grid_x),
-                                    hrus1_info['rows'] * hrus1_info['cols'], 0)
+                                    hrus1_info['rows'] * hrus1_info['cols'])
         grid_y_reshape = np.reshape(np.transpose(grid_y),
-                                    hrus1_info['rows'] * hrus1_info['cols'], 0)
+                                    hrus1_info['rows'] * hrus1_info['cols'])
 
         return grid_x_reshape, grid_y_reshape
 
@@ -402,7 +402,7 @@ class FieldSWATProcess(object):
 
         # export HRU identified under each CLU in a separate excel file
         hru_id = np.reshape(np.transpose(self.hrus),
-                            len(self.hrus) * len(self.hrus[0]), 0)
+                            len(self.hrus) * len(self.hrus[0]))
 
         # open excel workbook and add new sheet titled HRU_Field
         workbook = xlsxwriter.Workbook(
@@ -448,7 +448,10 @@ class FieldSWATProcess(object):
             unique_hrus.sort()
 
             # remove the nodata value from the list of hrus
-            unique_hrus.remove(nodata)
+            try:
+                unique_hrus.remove(nodata)
+            except ValueError as e:
+                self.logger.warning(str(e))
 
             # write to the spreadsheet
             sheet.write(i + 1, 0, i + 1)
@@ -482,7 +485,7 @@ class FieldSWATProcess(object):
         # collect data for that year
         data_for_year = data[year_index_position]
 
-        hru_id = np.reshape(np.transpose(self.hrus), self.hrus.size, 0)
+        hru_id = np.reshape(np.transpose(self.hrus), self.hrus.size)
 
         # Create dictionary lookup for data values {hru_id: data_value}
         # Exclude last unique hru which is the nodata value
@@ -503,8 +506,8 @@ class FieldSWATProcess(object):
         hru_three = np.reshape(water, self.hrus.shape)
 
         # Flatten reshaped grids
-        cl = np.reshape(np.transpose(hru_two), hru_two.size, 0)
-        wt = np.reshape(np.transpose(hru_three), hru_three.size, 0)
+        cl = np.reshape(np.transpose(hru_two), hru_two.size)
+        wt = np.reshape(np.transpose(hru_three), hru_three.size)
 
         # Stores calculated field outputs
         field_output = np.zeros(len(field_shapefile.shapes()), dtype=float)

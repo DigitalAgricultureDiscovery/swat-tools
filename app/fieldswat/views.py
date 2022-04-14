@@ -46,7 +46,7 @@ def index(request):
             "fieldswat",
             timezone.datetime.now().strftime("%Y%m%dT%H%M%S"))
         unique_path = "{0}{1}/{2}".format(
-            settings.UPLOAD_DIR,
+            settings.USER_UPLOAD_DIR,
             request.user.email,
             unique_directory_name)
         request.session['directory'] = unique_path
@@ -184,19 +184,16 @@ def get_unique_years_from_mdb(swat_model_dir):
     """
     # java jdbc driver for reading access databases
     ucanaccess_jars = [
-        "/opt/UCanAccess/ucanaccess-4.0.4.jar",
-        "/opt/UCanAccess/lib/commons-lang-2.6.jar",
-        "/opt/UCanAccess/lib/commons-logging-1.1.3.jar",
-        "/opt/UCanAccess/lib/hsqldb.jar",
-        "/opt/UCanAccess/lib/jackcess-2.1.11.jar",
+        os.path.join(os.sep, "opt", "UCanAccess", "ucanaccess-5.0.1.jar"),
+        os.path.join(os.sep, "opt", "UCanAccess", "lib", "commons-lang3-3.8.1.jar"),
+        os.path.join(os.sep, "opt", "UCanAccess", "lib", "commons-logging-1.2.jar" ),
+        os.path.join(os.sep, "opt", "UCanAccess", "lib", "hsqldb-2.5.0.jar"),
+        os.path.join(os.sep, "opt", "UCanAccess", "lib", "jackcess-3.0.1.jar")
     ]
     classpath = ":".join(ucanaccess_jars)
 
     # create path to SWATOutput.mdb
-    swat_mdb_filepath = os.path.join(
-        swat_model_dir,
-        'Scenarios/Default/TablesOut/SWATOutput.mdb'
-    )
+    swat_mdb_filepath = os.path.join(swat_model_dir, "Scenarios", "Default", "TablesOut", "SWATOutput.mdb")
 
     # open SWATOutput.mdb using pyodbc and MDBTools driver
     dbcon = jaydebeapi.connect(
