@@ -13,6 +13,8 @@ services:
       context: ./app
       dockerfile: Dockerfile.prod
     command: celery -A swatapps worker -l info
+    volumes:
+      - user_data:/home/swatapps/web/user_data
     depends_on:
       - redis
     env_file:
@@ -24,6 +26,8 @@ services:
       context: ./app
       dockerfile: Dockerfile.prod
     command: celery -A swatapps beat -l info
+    volumes:
+      - user_data:/home/swatapps/web/user_data
     depends_on:
       - redis
     env_file:
@@ -45,6 +49,7 @@ services:
     command: gunicorn swatapps.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - static_volume:/home/swatapps/web/staticfiles
+      - user_data:/home/swatapps/web/user_data
     expose:
       - 8000
     depends_on:
@@ -68,3 +73,4 @@ volumes:
   mysql_data:
   redis_data:
   static_volume:
+  user_data:
