@@ -1,6 +1,12 @@
-.env*
+# environment files
+.env.dev
+.env.dev.db
+.env.prod
+.env.prod.db
+
+# misc
 *.pyc
 celerybeat-schedule
 
-static/
+# user uploads and results
 user_data/
