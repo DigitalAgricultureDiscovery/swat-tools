@@ -34,7 +34,7 @@ USER_RESULT_DIR = os.path.join(PROJECT_DIR, 'user_results/')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-DEBUG = os.environ.get('DEBUG', default=0)
+DEBUG = int(os.environ.get('DEBUG', default=0))
 SECRET_KEY = os.environ.get('SECRET_KEY')
 AWS_ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_ACCESS_SECRET = os.environ.get('AWS_SECRET_ACCESS_KEY')
