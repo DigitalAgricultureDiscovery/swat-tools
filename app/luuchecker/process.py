@@ -59,7 +59,7 @@ class LUUCheckerProcess(object):
                 'new_landuse_raster_filenames']
             self.landuse_percent = data['landuse_percent']
             self.process_root_dir = data['process_root_dir']
-            self.results_directory = data['output_dir']
+            self.results_directory = data['results_directory']
             self.output_directory = data['output_directory']
             self.temp_output_directory = data['temp_output_directory']
             self.task_id = data['task_id']
