@@ -727,11 +727,11 @@ def delete_user_data(request):
     unique_path = request.session.get('directory')
     if (unique_path is not None):
         # Delete user's uploaded input data
-        if os.path.exists(unique_path + '/input'):
-            shutil.rmtree(unique_path + '/input')
+        if os.path.exists(os.path.join(unique_path, 'input')):
+            shutil.rmtree(os.path.join(unique_path, 'input'))
         # Delete user's output data
-        if os.path.exists(unique_path + '/output'):
-            shutil.rmtree(unique_path + '/output')
+        if os.path.exists(os.path.join(unique_path, 'output')):
+            shutil.rmtree(os.path.join(unique_path, 'output'))
 
 
 @login_required

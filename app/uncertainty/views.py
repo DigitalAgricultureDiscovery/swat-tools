@@ -577,7 +577,7 @@ def request_process(request):
         'process_root_dir': request.session.get('directory'),
         'post_processing_dir': proc_dir,
         'results_dir': os.path.join(request.session.get('directory'), 'output'),
-        'output_dir': os.path.join(settings.USER_RESULT_DIR, request.user.email, request.session['unique_directory_name'], 'Output'),
+        'output_dir': os.path.join(settings.USER_RESULT_DIR, request.user.email, request.session['unique_directory_name'], 'output'),
         'swat_dir': request.session.get('uncertainty_swat_model_dir'),
         'hrus1_dir': os.path.join(request.session.get('uncertainty_swat_model_dir'), 'Watershed', 'Grid', 'hrus1'),
         'landuse_dir': request.session.get('uncertainty_landuse_dir'),

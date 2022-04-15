@@ -187,9 +187,7 @@ class SWATLUUProcess(object):
         """
         self.logger.info('Creating output directory structure.')
         # create temporary and output folders
-        print("*" * 170)
-        print(f"\n{self.output_dir}")
-        print("*" * 170)
+
         output_dir = self.output_dir
         if os.path.exists(output_dir):
             if os.path.exists(output_dir + '/Raster'):
