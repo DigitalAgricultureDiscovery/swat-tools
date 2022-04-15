@@ -1,0 +1,57 @@
+###########
+# BUILDER #
+###########
+
+# base image for container
+FROM python:3.9-bullseye as builder
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONBUFFERED=1
+ENV JAVA_HOME=/usr/lib/jvm/default-java
+
+# create the non-root app user
+RUN adduser --system --home /home/swatapps --shell /bin/bash --group swatapps
+
+# create env variables and work env
+ENV HOME=/home/swatapps
+ENV APP_HOME=/home/swatapps/web
+RUN mkdir -p $APP_HOME
+RUN mkdir -p $APP_HOME/staticfiles
+WORKDIR $APP_HOME
+
+# install system dependencies
+RUN apt-get update && apt-get install -y software-properties-common gdal-bin libgdal-dev default-jre netcat
+
+# install python dependencies
+COPY ./requirements.txt .
+RUN python -m pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+# must install last to prevent an issue with reading raster data into 
+# numpy arrays that occurs when installed at the same time as numpy
+RUN pip install gdal==3.2.2.1
+
+# copy entrypoint.prod.sh
+COPY ./entrypoint.prod.sh .
+RUN sed -i 's/\r$//g'  $APP_HOME/entrypoint.prod.sh
+RUN chmod +x  $APP_HOME/entrypoint.prod.sh
+
+# copy project
+COPY . $APP_HOME
+
+# copy UCanAccess
+COPY ./UCanAccess-5.0.1.bin /opt/UCanAccess
+
+# chown all the files to the app user
+RUN chown -R swatapps:swatapps $APP_HOME
+
+# create directory for app logs
+RUN mkdir /var/log/swat-tools
+RUN chown -R swatapps:swatapps /var/log/swat-tools
+
+# change to the app user
+USER swatapps
+
+# run entrypoint.prod.sh
+ENTRYPOINT ["/home/swatapps/web/entrypoint.prod.sh"]

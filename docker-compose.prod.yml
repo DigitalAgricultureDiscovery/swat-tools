@@ -9,26 +9,26 @@ services:
     restart: always
   celery:
     container_name: swat-tools_celery
-    build: ./app
+    build:
+      context: ./app
+      dockerfile: Dockerfile.prod
     command: celery -A swatapps worker -l info
-    volumes:
-      - ./app/:/usr/src/app/
     depends_on:
       - redis
     env_file:
-      - .env.dev
-      - .env.dev.db
+      - .env.prod
+      - .env.prod.db
   celery-beat:
     container_name: swat-tools_celery-beat
-    build: ./app
+    build:
+      context: ./app
+      dockerfile: Dockerfile.prod
     command: celery -A swatapps beat -l info
-    volumes:
-      - ./app/:/usr/src/app/
     depends_on:
       - redis
     env_file:
-      - .env.dev
-      - .env.dev.db
+      - .env.prod
+      - .env.prod.db
   db:
     container_name: swat-tools_db
     image: mysql:8
@@ -38,23 +38,26 @@ services:
       - 3306:3306
     restart: always
     env_file:
-      - ./.env.dev.db
+      - .env.prod.db
   app:
     container_name: swat-tools_app
-    build: ./app
-    command: 'python manage.py runserver 0.0.0.0:8000'
+    build:
+      context: ./app
+      dockerfile: Dockerfile.prod
+    command: gunicorn swatapps.wsgi:application --bind 0.0.0.0:8000
     volumes:
-      - ./app/:/usr/src/app/
+      - static_volume:/home/swatapps/web/staticfiles
     ports:
-      - 8000:8000
+      - 8003:8000
     depends_on:
       - db
       - redis
     restart: always
     env_file:
-      - ./.env.dev
-      - ./.env.dev.db
+      - .env.prod
+      - .env.prod.db
 
 volumes:
   mysql_data:
   redis_data:
+  static_volume:

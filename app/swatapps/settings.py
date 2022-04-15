@@ -24,8 +24,8 @@ ADMINS = [admin.split(',') for admin in os.environ['ADMINS'].split(';')]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
-BASE_DIR = str(Path(__file__).resolve().parent.parent)
-PROJECT_DIR = str(Path(__file__).parents[2])
+BASE_DIR = str(Path(__file__).resolve().parent)
+PROJECT_DIR = str(Path(__file__).parents[1])
 LOGS_DIR = os.environ.get('LOGS_DIR')
 SETTINGS_DIR = os.path.dirname(__file__)
 USER_UPLOAD_DIR = os.path.join(PROJECT_DIR, 'user_uploads/')
@@ -175,7 +175,7 @@ MEDIA_URL = '/media/'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
+STATIC_ROOT = os.path.join(PROJECT_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (os.path.join(PROJECT_DIR, 'static_storage'),)
 

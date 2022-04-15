@@ -8,7 +8,7 @@ from django.conf import settings
 
 
 # set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', f'swatapps.settings.base')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', f'swatapps.settings')
 
 app = Celery('swatapps')
 
