@@ -34,8 +34,6 @@ services:
     image: mysql:8
     volumes:
       - mysql_data:/var/lib/mysql
-    ports:
-      - 3306:3306
     restart: always
     env_file:
       - .env.prod.db
