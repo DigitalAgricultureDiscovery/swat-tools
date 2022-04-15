@@ -45,8 +45,7 @@ def index(request):
         unique_directory_name = 'uid_' + str(request.user.id) + '_swatluu_' + \
                                 timezone.datetime.now().strftime(
                                     "%Y%m%dT%H%M%S")
-        unique_path = settings.USER_UPLOAD_DIR + request.user.email + \
-            '/' + unique_directory_name
+        unique_path = os.path.join(settings.USER_UPLOAD_DIR, request.user.email, unique_directory_name)
         request.session['unique_directory_name'] = unique_directory_name
         request.session['on_s3'] = {}
         request.session['directory'] = unique_path

@@ -33,10 +33,7 @@ def index(request):
             str(request.user.id),
             "luuchecker",
             timezone.datetime.now().strftime("%Y%m%dT%H%M%S"))
-        unique_path = "{0}{1}/{2}".format(
-            settings.USER_UPLOAD_DIR,
-            request.user.email,
-            unique_directory_name)
+        unique_path = os.path.join(settings.USER_UPLOAD_DIR, request.user.email, unique_directory_name)
         request.session['unique_directory_name'] = unique_directory_name
         request.session['directory'] = unique_path
         # Render main LUU Checker view
