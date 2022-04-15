@@ -47,8 +47,8 @@ services:
     command: gunicorn swatapps.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - static_volume:/home/swatapps/web/staticfiles
-    ports:
-      - 8003:8000
+    expose:
+      - 8000
     depends_on:
       - db
       - redis
@@ -56,6 +56,15 @@ services:
     env_file:
       - .env.prod
       - .env.prod.db
+  nginx:
+    container_name: swat-tools_nginx
+    build: ./nginx
+    volumes:
+      - static_volume:/home/swatapps/web/staticfiles
+    ports:
+      - 8003:80
+    depends_on:
+      - app
 
 volumes:
   mysql_data:
