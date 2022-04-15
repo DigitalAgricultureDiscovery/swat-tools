@@ -2,6 +2,5 @@
 *.pyc
 celerybeat-schedule
 
-static
-user_results
-user_uploads
+static/
+user_data/

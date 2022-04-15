@@ -478,14 +478,18 @@ def task_status(request):
                 task_status = 'processing'
             elif int(task.task_status) == 1:
                 task_status = 'done'
+                
+                # Set domain based on DEBUG status
+                domain = os.environ.get('DOMAIN', default='http://localhost:8000')
+
                 if task_name == 'LUU Checker':
-                    task_download_url = 'https://saraswat-swat.rcac.purdue.edu/luuchecker/download_data?id=' + task.task_id
+                    task_download_url = f'{domain}/luuchecker/download_data?id={task.task_id}'
                 elif task_name == 'SWAT LUU':
-                    task_download_url = 'https://saraswat-swat.rcac.purdue.edu/swatluu/download_data?id=' + task.task_id
+                    task_download_url = f'{domain}/swatluu/download_data?id={task.task_id}'
                 elif task_name == 'LUU Uncertainty':
-                    task_download_url = 'https://saraswat-swat.rcac.purdue.edu/uncertainty/download_data?id=' + task.task_id
+                    task_download_url = f'{domain}/uncertainty/download_data?id={task.task_id}'
                 elif task_name == 'Field SWAT':
-                    task_download_url = 'https://saraswat-swat.rcac.purdue.edu/fieldswat/download_data?id=' + task.task_id
+                    task_download_url = f'{domain}/fieldswat/download_data?id={task.task_id}'
             else:
                 task_status = 'error'
 

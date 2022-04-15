@@ -715,10 +715,10 @@ def download_data(request):
     if task_id != '':
         user_id = task_id.split('_')[1]
         if int(user_id) == int(request.user.id):
-            if os.path.exists(os.path.join(settings.USER_RESULT_DIR, request.user.email, task_id, '/output')):
+            if os.path.exists(os.path.join(settings.USER_RESULT_DIR, request.user.email, task_id, 'output')):
                 file = io.BytesIO()
 
-                dir_to_zip = os.path.exists(os.path.join(settings.USER_RESULT_DIR, request.user.email, task_id, '/output'))
+                dir_to_zip = os.path.join(settings.USER_RESULT_DIR, request.user.email, task_id, 'output')
 
                 dir_to_zip_len = len(dir_to_zip.rstrip(os.sep)) + 1
 

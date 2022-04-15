@@ -1,7 +1,3 @@
-###########
-# BUILDER #
-###########
-
 # base image for container
 FROM python:3.9-bullseye as builder
 
