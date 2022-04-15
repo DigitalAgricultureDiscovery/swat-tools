@@ -22,7 +22,7 @@ import swattools
 import zipfile
 
 
-logger = logging.getLogger('django')
+logger = logging.getLogger('swatluu')
 
 
 @login_required

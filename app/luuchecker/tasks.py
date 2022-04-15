@@ -5,7 +5,7 @@ from celery.utils.log import get_task_logger
 from .process import LUUCheckerProcess
 
 
-logger = get_task_logger(__name__)
+logger = get_task_logger('luuchecker')
 
 
 @shared_task

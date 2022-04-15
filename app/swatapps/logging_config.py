@@ -125,7 +125,7 @@ def get_logging_config(logs_dir):
                 'level': 'DEBUG',
                 'propagate': True,
             },
-            'fieldswat.tasks': {
+            'fieldswat': {
                 'handlers': [
                     'console',
                     'fieldswat_logger',
@@ -134,7 +134,7 @@ def get_logging_config(logs_dir):
                 'level': 'DEBUG',
                 'propagate': True,
             },
-            'luuchecker.tasks': {
+            'luuchecker': {
                 'handlers': [
                     'console',
                     'luuchecker_logger',
@@ -152,7 +152,7 @@ def get_logging_config(logs_dir):
                 'level': 'DEBUG',
                 'propagate': True,
             },
-            'swatluu.tasks': {
+            'swatluu': {
                 'handlers': [
                     'console',
                     'mail_admins',
@@ -170,7 +170,7 @@ def get_logging_config(logs_dir):
                 'level': 'DEBUG',
                 'propagate': True,
             },
-            'uncertainty.tasks': {
+            'uncertainty': {
                 'handlers': [
                     'console',
                     'mail_admins',

@@ -17,7 +17,7 @@ import subprocess
 import zipfile
 
 
-logger = logging.getLogger('django')
+logger = logging.getLogger('luuchecker')
 
 
 @login_required

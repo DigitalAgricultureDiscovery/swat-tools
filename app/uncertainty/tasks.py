@@ -5,7 +5,7 @@ from celery.utils.log import get_task_logger
 from .process import UncertaintyProcess
 
 
-logger = get_task_logger(__name__)
+logger = get_task_logger('uncertainty')
 
 
 @shared_task

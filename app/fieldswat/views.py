@@ -22,7 +22,7 @@ import subprocess
 import zipfile
 
 
-logger = logging.getLogger('django')
+logger = logging.getLogger('fieldswat')
 
 
 # Create your views here.
