@@ -10,7 +10,7 @@ ENV JAVA_HOME=/usr/lib/jvm/default-java
 WORKDIR /usr/src/app
 
 # install system dependencies
-RUN apt-get update && apt-get install -y software-properties-common gdal-bin libgdal-dev default-jre
+RUN apt-get update && apt-get install -y software-properties-common gdal-bin libgdal-dev default-jre vim
 
 # install python dependencies
 RUN python -m pip install --upgrade pip
