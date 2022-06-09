@@ -14,6 +14,7 @@ services:
       dockerfile: Dockerfile.prod
     command: celery -A swatapps worker -l info
     volumes:
+      - $HOST_CELERY_LOG_DIR:/var/log/swat-tools
       - user_data:/home/swatapps/web/user_data
     depends_on:
       - redis
@@ -48,7 +49,8 @@ services:
       dockerfile: Dockerfile.prod
     command: gunicorn swatapps.wsgi:application --bind 0.0.0.0:8000
     volumes:
-      - static_volume:/home/swatapps/web/staticfiles
+      - $HOST_DJANGO_LOG_DIR:/var/log/swat-tools
+      - static_data:/home/swatapps/web/staticfiles
       - user_data:/home/swatapps/web/user_data
     expose:
       - 8000
@@ -63,7 +65,7 @@ services:
     container_name: swat-tools_nginx
     build: ./nginx
     volumes:
-      - static_volume:/home/swatapps/web/staticfiles
+      - static_data:/home/swatapps/web/staticfiles
     ports:
       - 8003:80
     depends_on:
@@ -72,5 +74,5 @@ services:
 volumes:
   mysql_data:
   redis_data:
-  static_volume:
+  static_data:
   user_data:
