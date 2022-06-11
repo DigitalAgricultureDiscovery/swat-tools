@@ -4,8 +4,10 @@ import shutil
 import subprocess
 
 from django.core.files.uploadedfile import UploadedFile
+import boto3
 import fiona
 
+from s3upload.models import S3Upload
 from .utils import create_working_directory, fix_file_permissions
 
 UPLOAD_KEYS = ["workspace", "local", "aws"]
@@ -54,7 +56,7 @@ class SWATModelZip:
                 write_file_to_disk(workspace_input, upload["local"])
             else:
                 download_file_to_server(
-                    os.path.join(workspace_input, self.filename), upload["aws"][0].s3_url)
+                    os.path.join(workspace_input, self.filename), upload["aws"][0])
 
         check_if_file_exists(os.path.join(workspace_input, self.filename))
         check_if_file_is_zip(os.path.join(workspace_input, self.filename))
@@ -182,22 +184,38 @@ def remove_existing_upload(workspace: str, filename: str) -> None:
         os.remove(os.path.join(workspace, filename))
 
 
-def download_file_to_server(workspace: str, url: str) -> None:
+def download_file_to_server(filepath: str, upload_obj: S3Upload) -> None:
     """
     Downloads uploaded zip file from a remote server.
 
     Parameters
     ----------
-    workspace: str
-        Current working directory for task.
-    url: str
-        URL for the uploaded zip file.
+    filepath: str
+        Full filepath for file to be downloaded from S3.
+    upload_obj: S3Upload
+        S3Upload object for the file that will be downloaded.
 
     Returns
     -------
     None
     """
-    subprocess.call(["curl", "-o", workspace, url])
+    # Get name of S3 bucket
+    s3_bucket = os.environ['AWS_STORAGE_BUCKET_NAME']
+
+    # Connect to S3 services w/ credentials
+    s3 = boto3.client(
+            "s3",
+            aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+            aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY']
+        )
+    
+    # Download file from bucket
+    with open(filepath, 'wb') as file_obj:
+        s3.download_fileobj(
+            s3_bucket, 
+            f'user_uploads/{upload_obj.user_id}/{upload_obj.file_name}', 
+            file_obj
+        )
 
 
 def write_file_to_disk(workspace: str, local_file: UploadedFile) -> None:
