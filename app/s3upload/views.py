@@ -1,16 +1,18 @@
+import logging
+import os
+
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.utils import timezone
 
 import boto3
-import logging
 
 from .models import S3Upload
 from .forms import UploadDestinationForm, UpdateUploadStatusForm
 
 
-logger = logging.getLogger("django")
+logger = logging.getLogger("s3upload")
 
 
 @login_required

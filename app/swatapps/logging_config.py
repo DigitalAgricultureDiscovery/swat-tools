@@ -143,6 +143,15 @@ def get_logging_config(logs_dir):
                 'level': 'DEBUG',
                 'propagate': True,
             },
+            's3upload': {
+                'handlers': [
+                    'console',
+                    'mail_admins',
+                    's3upload_logger',
+                ],
+                'level': 'DEBUG',
+                'propagate': True,
+            },
             's3upload.tasks': {
                 'handlers': [
                     'console',
