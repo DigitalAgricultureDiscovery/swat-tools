@@ -47,7 +47,7 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile.prod
-    command: gunicorn swatapps.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn swatapps.wsgi:application --bind 0.0.0.0:8000 --timeout 180
     volumes:
       - $HOST_DJANGO_LOG_DIR:/var/log/swat-tools
       - static_data:/home/swatapps/web/staticfiles

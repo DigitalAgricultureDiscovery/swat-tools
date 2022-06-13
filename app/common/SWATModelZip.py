@@ -2,7 +2,7 @@ import glob
 import logging
 import os
 import shutil
-import subprocess
+from zipfile import ZipFile
 
 from django.core.files.uploadedfile import UploadedFile
 import boto3
@@ -292,7 +292,8 @@ def unzip_file(workspace: str, filename: str) -> None:
     None
     """
     filepath = os.path.join(workspace, filename)
-    subprocess.call(["unzip", "-qq", "-o", filepath, "-d", workspace])
+    with ZipFile(filepath, "r") as zf:
+        zf.extractall(workspace)
 
     # Remove zip file after extraction finishes
     os.remove(filepath)
