@@ -1,4 +1,5 @@
 import glob
+import logging
 import os
 import shutil
 import subprocess
@@ -11,6 +12,8 @@ from s3upload.models import S3Upload
 from .utils import create_working_directory, fix_file_permissions
 
 UPLOAD_KEYS = ["workspace", "local", "aws"]
+
+logger = logging.getLogger('swatmodelzip')
 
 
 class NotAZipError(Exception):

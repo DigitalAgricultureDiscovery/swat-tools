@@ -83,7 +83,7 @@ def upload_swat_model_zip(request):
         try:
             swat_model = SWATModelZip(upload)
         except Exception as e:
-            logger.error(e)
+            logger.error(str(e))
             error_msg = 'An unexpected error has occurred, ' \
                         'please try again. If the issue persists ' \
                         'please use the Contact Us form to request ' \

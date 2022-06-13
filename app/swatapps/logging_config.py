@@ -103,6 +103,15 @@ def get_logging_config(logs_dir):
                 'backupCount': 20,
                 'encoding': 'utf8',
             },
+            'swatmodelzip_logger': {
+                'level': 'INFO',
+                'class': 'logging.handlers.RotatingFileHandler',
+                'filename': os.path.join(logs_dir, 'swatmodelzip.log'),
+                'formatter': 'verbose',
+                'maxBytes': 1024 * 1024 * 100,
+                'backupCount': 20,
+                'encoding': 'utf8',
+            },
             'uncertainty_logger': {
                 'level': 'INFO',
                 'class': 'logging.handlers.RotatingFileHandler',
@@ -169,6 +178,15 @@ def get_logging_config(logs_dir):
                 ],
                 'level': 'DEBUG',
                 'propagate': True,
+            },
+            'swatmodelzip': {
+                'handlers': [
+                    'console',
+                    'mail_admins',
+                    'swatmodelzip_logger'
+                ],
+                'level': 'DEBUG',
+                'propagate': True
             },
             'swatusers.tasks': {
                 'handlers': [

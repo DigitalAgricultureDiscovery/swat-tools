@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'swatusers',
     'templates',
     'uncertainty',
+    'common',
     'gmailapi_backend'
 ]
 
