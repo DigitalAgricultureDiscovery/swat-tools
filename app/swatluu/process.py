@@ -823,7 +823,11 @@ class SWATLUUProcess(object):
         message += 'There you will find a record of your completed '
         message += 'task and a link to download the results data. '
         message += 'The link will expire on ' + self.get_expiration_date()
-        message += ' (48 hours).<br><br>Sincerely,<br>SWAT Tools'
+        message += ' (48 hours).<br /><br />'
+        message += 'We would love to hear from you. Please take this '
+        message += '<a title="Survey link" href="https://purdue.ca1.qualtrics.com/jfe/form/SV_9Zk54sQJ13GvnUO" target="_blank" rel="noopener noreferrer">brief survey</a> '
+        message += 'to let us know how you use SWAT Tools.'
+        message += '<br /><br />Sincerely,<br />SWAT Tools'
         try:
             send_mail(
                 subject,
