@@ -8,13 +8,7 @@
 {% block title %}Register - {% endblock %}
 
 {% block javascript %}
-  {# Google ReCaptcha #}
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-  <script>
-    function onSubmit(token) {
-      document.getElementById("registration-form").submit();
-    }
-  </script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 {% endblock %}
 
 {% block content %}
@@ -25,12 +19,13 @@
                     {% csrf_token %}
                     {% bootstrap_form form layout='inline' %}
                     {% bootstrap_form_errors form layout='horizontal' %}
-                    {% if recaptcha_failed %}
-                    <span class="label label-danger">reCAPTCHA verification failed. Please try again.</span><br /><br />
+                    {% if verification_failed %}
+                    <span class="label label-danger">Verification failed. Please try again.</span><br /><br />
                     {% endif %}
+                    <div class="cf-turnstile" data-sitekey="{{ sitekey }}" data-theme="light" style="margin-bottom: 15px"></div>
                     {% buttons %}
-                        <div align="center">
-                            <button class="btn btn-primary g-recaptcha" data-sitekey="{{ sitekey }}" data-callback="onSubmit" type="submit">
+                        <div style="text-align: center">
+                            <button class="btn btn-primary" type="submit">
                                 Register
                             </button>
                         </div>

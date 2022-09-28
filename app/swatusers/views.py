@@ -11,11 +11,14 @@ from swatusers.models import UserTask, SwatUser
 
 from datetime import datetime, timedelta
 import json
+import logging
 import os
 import shutil
 import urllib
 
 from .mytools import mydatabase
+
+logger = logging.getLogger('swatusers.views')
 
 
 def index(request):
@@ -132,22 +135,16 @@ def infographic(request):
     )
 
 
-def validate_recaptcha_response(recaptcha_response):
-    """ Verifies the g-recaptcha-response payload with Google. """
+def validate_turnstile_response(turnstile_payload):
+    """ Verifies the turnstile payload with Cloudflare. """
 
-    # Google's verification url
-    verification_url = "https://www.google.com/recaptcha/api/siteverify"
-
-    # Parameters required for verification
-    verification_data = {
-        "secret": settings.NORECAPTCHA_SECRET_KEY,
-        "response": recaptcha_response
-    }
+    # Turnstile verification url
+    verification_url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
 
     # Post verification data to verification url
     response = urllib.request.urlopen(
         verification_url,
-        urllib.parse.urlencode(verification_data).encode("utf-8"))
+        urllib.parse.urlencode(turnstile_payload).encode("utf-8"))
 
     # Read response from verification post
     content = json.loads(response.read().decode("utf-8"))
@@ -168,14 +165,19 @@ def register_user(request):
 
             form = RegistrationForm(data=request.POST)
 
-            # Capture the Google recaptcha response
-            recaptcha_response = request.POST.get("g-recaptcha-response")
+            # Prepare Turnstile payload
+            ip = request.META.get("HTTP_CF_CONNECTING_IP")
+            if ip is None:
+                ip = request.META.get("REMOTE_ADDR")
 
-            # Pass response to verification method
-            recaptcha_is_valid = validate_recaptcha_response(recaptcha_response)
+            turnstile_body = {
+                "secret": settings.TURNSTILE_SECRET_KEY,
+                "response": request.POST.get("cf-turnstile-response"),
+                "remoteip": ip
+            }
 
             # Check if forms validate
-            if form.is_valid() and recaptcha_is_valid:
+            if form.is_valid() and validate_turnstile_response:
                 # Save new user and create/save profile
                 new_user = form.save()
 
@@ -187,8 +189,8 @@ def register_user(request):
                     'registration/register.html',
                     {
                         'form': form,
-                        'sitekey': settings.NORECAPTCHA_SITE_KEY,
-                        'recaptcha_failed': True
+                        'sitekey': settings.TURNSTILE_SITE_KEY,
+                        'verification_failed': True
                     }
                 )
         else:
@@ -198,7 +200,7 @@ def register_user(request):
             "registration/register.html",
             {
                 'form': form,
-                'sitekey': settings.NORECAPTCHA_SITE_KEY
+                'sitekey': settings.TURNSTILE_SITE_KEY
             }
         )
 

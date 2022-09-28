@@ -188,6 +188,15 @@ def get_logging_config(logs_dir):
                 'level': 'DEBUG',
                 'propagate': True
             },
+            'swatusers.views': {
+                'handlers': [
+                    'console',
+                    'mail_admins',
+                    'swatusers_logger'
+                ],
+                'level': 'DEBUG',
+                'propagate': True,
+            },
             'swatusers.tasks': {
                 'handlers': [
                     'console',

@@ -199,9 +199,9 @@ FILE_UPLOAD_PERMISSIONS = 0o664
 LOGIN_URL = '/login'
 
 
-# Google recaptcha site/secret keys
-NORECAPTCHA_SITE_KEY = os.environ.get('NORECAPTCHA_SITE_KEY')
-NORECAPTCHA_SECRET_KEY = os.environ.get('NORECAPTCHA_SECRET_KEY')
+# Cloudflare Turnstile site/secret keys
+TURNSTILE_SITE_KEY = os.environ.get('TURNSTILE_SITE_KEY')
+TURNSTILE_SECRET_KEY = os.environ.get('TURNSTILE_SECRET_KEY')
 
 
 # Email
