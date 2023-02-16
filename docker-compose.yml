@@ -60,3 +60,8 @@ services:
 volumes:
   mysql_data:
   redis_data:
+
+networks:
+  default:
+    external:
+      name: swatapps-net
