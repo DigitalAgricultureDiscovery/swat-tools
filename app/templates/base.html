@@ -34,14 +34,24 @@
         <link href="{% static "css/main.css"%}" rel="stylesheet" type="text/css" />
         <link rel="shortcut icon" href="{% static "Images/favicon.ico" %}" />
 
-        {# Google tag (gtag.js) #}
-        <script async src="https://www.googletagmanager.com/gtag/js?id={{ gtag }}"></script>
+        {# Google tag (GA4) (gtag.js) #}
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ gtag_ga4 }}"></script>
         <script>
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
 
-            gtag('config', '{{ gtag }}');
+            gtag('config', '{{ gtag_ga4 }}');
+        </script>
+
+        {# Google tag (UA) (gtag.js) #}
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ gtag_ua }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', '{{ gtag_ua }}');
         </script>
 
         {% block javascript %}{% endblock %}

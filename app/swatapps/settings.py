@@ -99,7 +99,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 # custom
-                'swatapps.context_processors.gtag_processor'
+                'swatapps.context_processors.gtag_ga4_processor',
+                'swatapps.context_processors.gtag_ua_processor'
             ],
         },
     },
