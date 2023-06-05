@@ -10,7 +10,7 @@ ENV JAVA_HOME=/usr/lib/jvm/default-java
 WORKDIR /usr/src/app
 
 # install system dependencies
-RUN apt-get update && apt-get install -y software-properties-common gdal-bin libgdal-dev default-jre vim
+RUN apt-get update && apt-get install -y software-properties-common gdal-bin libgdal-dev default-jre vim netcat
 
 # install python dependencies
 RUN python -m pip install --upgrade pip
@@ -34,3 +34,6 @@ COPY . .
 
 # copy UCanAccess
 COPY ./UCanAccess-5.0.1.bin /opt/UCanAccess
+
+# run entrypoint.sh
+ENTRYPOINT ["/usr/src/app/entrypoint.sh"]

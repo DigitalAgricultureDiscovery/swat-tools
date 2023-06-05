@@ -1,4 +1,5 @@
 # environment files
+.env
 .env.dev
 .env.dev.db
 .env.prod

@@ -17,8 +17,8 @@ services:
     depends_on:
       - redis
     env_file:
+      - .env
       - .env.dev
-      - .env.dev.db
   celery-beat:
     container_name: swat-tools_celery-beat
     build: ./app
@@ -28,8 +28,8 @@ services:
     depends_on:
       - redis
     env_file:
+      - .env
       - .env.dev
-      - .env.dev.db
   db:
     container_name: swat-tools_db
     image: mysql:8
@@ -38,8 +38,11 @@ services:
     ports:
       - 3306:3306
     restart: always
-    env_file:
-      - ./.env.dev.db
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
   app:
     container_name: swat-tools_app
     build: ./app
@@ -54,8 +57,8 @@ services:
       - redis
     restart: always
     env_file:
-      - ./.env.dev
-      - ./.env.dev.db
+      - .env
+      - .env.dev
 
 volumes:
   mysql_data:
@@ -63,5 +66,5 @@ volumes:
 
 networks:
   default:
-    external:
-      name: swatapps-net
+    name: swat-tools-net
+    external: true
