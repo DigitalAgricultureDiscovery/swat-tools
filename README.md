@@ -25,11 +25,11 @@ You must have access to [`docker`](https://docs.docker.com/engine/) and [`docker
 
    ```
    MYSQL_DATABASE=swatapps
+   MYSQL_ROOT_PASSWORD=myrootpassword
    MYSQL_HOST=db
+   MYSQL_USER=swatapps
    MYSQL_PASSWORD=mypassword
    MYSQL_PORT=3306
-   MYSQL_ROOT_PASSWORD=myrootpassword
-   MYSQL_USER=swatapps
    ```
 
 4. Copy `.env.dev.example` to a new file named `.env.dev`.
@@ -71,6 +71,11 @@ You must have access to [`docker`](https://docs.docker.com/engine/) and [`docker
    It may take several minutes for this process to finish.
 
 3. Start the containers in the background by running:
+
    ```
    docker-compose up -d
    ```
+
+   It may take several minutes for the application server to be ready. Once available, the site can be reached from a browser as `http://localhost:8000`.
+
+   The `docker logs CONTAINER` command can be used to check the logs for any of the containers. For example, `docker logs swat-tools_app` will display the logs for the main Django application container.
